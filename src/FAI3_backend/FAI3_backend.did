@@ -1,0 +1,60 @@
+type DataPoint = record {
+  data_point_id: nat;
+  target: bool;
+  privileged: bool;
+  predicted: bool;
+  timestamp: nat64;
+};
+
+type Metrics = record {
+  statistical_parity_difference: opt float32;
+  disparate_impact: opt float32;
+  average_odds_difference: opt float32;
+  equal_opportunity_difference: opt float32;
+};
+
+type Model = record {
+  model_id: nat;
+  model_name: text;
+  user_id: principal;
+  data_points: vec DataPoint;
+  metrics: Metrics;
+};
+
+type User = record {
+  user_id: principal;
+  models: vec record { nat; Model };
+};
+
+service : {
+    // Model management
+    "add_model": (text) -> (nat);
+    "delete_model": (nat) -> ();
+
+    // Data point management
+    "add_data_point": (nat, bool, bool, bool) -> ();
+    "delete_data_point": (nat, nat) -> ();
+
+    // Fairness metrics
+    "calculate_statistical_parity_difference": (nat) -> (float32);
+    "calculate_disparate_impact": (nat) -> (float32);
+    "calculate_average_odds_difference": (nat) -> (float32);
+    "calculate_equal_opportunity_difference": (nat) -> (float32);
+    
+    // Calculate all fairness metrics
+    "calculate_all_metrics": (nat) ->  (
+        equal_opportunity_difference : float32,
+        statistical_parity_difference : float32,
+        disparate_impact : float32,
+        average_odds_difference : float32
+    );
+
+    // Example data
+    "add_example_data_points": (nat) -> ();
+
+    // Model retrieval queries
+    "get_all_models": () -> (vec Model) query;
+    "get_model_data_points": (nat) -> (vec DataPoint) query;
+    "get_model_metrics": (nat) -> (Metrics) query;
+    "get_model": (nat) -> (Model) query;
+}
