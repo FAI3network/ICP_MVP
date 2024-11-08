@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <div>
-      <h1>Footer</h1>
-    </div>
+    <footer className="flex justify-center p-10 mt-10">
+      <p>© 2024 FAI3</p>
+    </footer>
   );
 }
