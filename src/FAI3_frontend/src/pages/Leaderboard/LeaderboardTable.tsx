@@ -60,7 +60,7 @@ export default function LeaderboardTable({ models }: any) {
             to={`/model/${row.original.verifier}`}
             className="text-start hover:underline"
           >
-            {row.original.data.name}
+            {row.original.model_name}
           </Link>
         )
       ),
@@ -92,7 +92,7 @@ export default function LeaderboardTable({ models }: any) {
                                     : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
                                 }`}
           >
-            {Number(metrics[0]).toFixed(3)}
+            {Number(metrics.statistical_parity_difference[0]).toFixed(3)}
           </div>
         );
       },
@@ -123,7 +123,7 @@ export default function LeaderboardTable({ models }: any) {
                 : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
             }`}
           >
-            {Number(metrics[1]).toFixed(3)}
+            {Number(metrics.disparate_impact[0]).toFixed(3)}
           </div>
         );
       },
@@ -154,7 +154,7 @@ export default function LeaderboardTable({ models }: any) {
                 : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
             }`}
           >
-            {Number(metrics[2]).toFixed(3)}
+            {Number(metrics.average_odds_difference[0]).toFixed(3)}
           </div>
         );
       },
@@ -185,7 +185,7 @@ export default function LeaderboardTable({ models }: any) {
                 : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
             }`}
           >
-            {Number(metrics[3]).toFixed(3)}
+            {Number(metrics.equal_opportunity_difference[0]).toFixed(3)}
           </div>
         );
       },
