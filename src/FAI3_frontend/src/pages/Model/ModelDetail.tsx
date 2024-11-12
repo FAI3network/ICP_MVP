@@ -5,14 +5,31 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
+  Button,
+  Modal,
+  ModalContent,
+  ModalTrigger,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+  ModalFooter,
+  openModal,
+  closeModal,
 } from "../../components/ui";
 
-import { 
+import {
   LineChartchart,
-  TabChart 
+  TabChart
 } from "../../components/charts";
 
+import { FileUpload } from "../../components";
+
+import { useState } from "react";
+
+import Papa from "papaparse";
+
 export function ModelDetail({ model, metrics }: any) {
+  const [file, setFile] = useState<File | null>(null);
 
   const chartConfig = {
     SPD: {
@@ -65,16 +82,47 @@ export function ModelDetail({ model, metrics }: any) {
       fairRange: [-0.1, 0.1],
     },
   };
+
+  const handleFileUpload = () => {
+    Papa.parse(file as File, {
+      header: true,
+      complete: (result: Papa.ParseResult<any>) => {
+        console.log(result);
+      },
+    });
+  }
+
   return (
     <div className="grid min-h-screen w-full bg-white">
       {model && metrics && (
         <section className="grid gap-8 p-6 md:p-10">
-          <div className="text-center">
+          <div className="text-center relative">
             <h1 className="text-4xl font-bold pb-3">{model.name}</h1>
             <h3>
               Get a detailed overview of the model&apos;s architecture and
               performance.
             </h3>
+
+            <div className="absolute top-1/2 right-0">
+              <Modal>
+                <ModalTrigger>
+                  Upload Data
+                </ModalTrigger>
+                <ModalContent>
+                  <ModalHeader>
+                    <ModalTitle>Upload Data</ModalTitle>
+                  </ModalHeader>
+                  <ModalBody>
+                    <p>Upload your data to retrain the model.</p>
+                    <FileUpload onFileChange={setFile} />
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button variant="secondary" onClick={closeModal}>Cancel</Button>
+                    <Button variant="secondary" onClick={handleFileUpload}>Upload</Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
+            </div>
           </div>
           <div className="grid gap-8 lg:grid-cols-2 lg:h-[500px]">
             <Card className="bg-[#fffaeb]">

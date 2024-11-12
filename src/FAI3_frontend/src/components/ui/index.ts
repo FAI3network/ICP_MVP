@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Input } from './input';
 import { Checkbox } from './checkbox';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle, } from './chart';
+import { Modal, ModalContent, ModalTrigger, ModalHeader, ModalBody, ModalTitle, ModalFooter, openModal, closeModal } from './modal';
 
 export {
   Button,
@@ -48,4 +49,13 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  Modal,
+  ModalContent,
+  ModalTrigger,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+  ModalFooter,
+  openModal,
+  closeModal,
 }

@@ -9,7 +9,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useState } from "react";
 
-export function DropdownMenuCheckboxes() {
+export default function DropdownMenuCheckboxes() {
   const categories = ["Xgboost Credit Classifier", "Neuro Imaging Classifier"];
   const [currentCategory, setCurrentCategory] = useState(categories[0]);
   return (

@@ -57,7 +57,7 @@ export default function LeaderboardTable({ models }: any) {
         console.log(row.original),
         (
           <Link
-            to={`/model/${row.original.verifier}`}
+            to={`/model/${row.original.model_id}`}
             className="text-start hover:underline"
           >
             {row.original.model_name}
