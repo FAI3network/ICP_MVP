@@ -30,8 +30,8 @@ export default function Model() {
       console.log(metrics);
     };
 
-    fetchModel();
-    fetchMetrics();
+    // fetchModel();
+    // fetchMetrics();
   }, [modelId]);
 
   const [modelWithDetails, setModelWithDetails] = useState({

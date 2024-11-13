@@ -15,6 +15,12 @@ import {
   ModalFooter,
   openModal,
   closeModal,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableBody
 } from "../../components/ui";
 
 import {
@@ -24,12 +30,33 @@ import {
 
 import { FileUpload } from "../../components";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Papa from "papaparse";
 
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
+
 export function ModelDetail({ model, metrics }: any) {
   const [file, setFile] = useState<File | null>(null);
+  const [uploadedData, setUploadedData] = useState<any[]>([]);
+  const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
+  const [showTable, setShowTable] = useState(false);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
 
   const chartConfig = {
     SPD: {
@@ -88,9 +115,59 @@ export function ModelDetail({ model, metrics }: any) {
       header: true,
       complete: (result: Papa.ParseResult<any>) => {
         console.log(result);
+        setUploadedData(result.data);
+        createColumns(result.data);
       },
     });
   }
+
+  const createColumns = (data: any) => {
+    const object = data[0];
+
+    const columns = Object.keys(object).map((key, index) => {
+      return {
+        id: index.toString(),
+        accessorKey: key,
+        header: ({ column }: any) => {
+          return (
+            <div className="flex justify-center items-center">
+              {key}
+            </div>
+          );
+        },
+        cell: ({ row }: any) => {
+          const value = row.original[key];
+          const parsed = parseFloat(value);
+          return isNaN(parsed) ? (
+            <div className="flex justify-center items-center">
+              {value}
+            </div>
+          ) : (
+            <div className="flex justify-center items-center">
+              {Number.isInteger(parsed) ? parsed : parsed.toFixed(2)}
+            </div>
+          )
+        },
+      };
+    });
+
+    setUploadedColumns(columns);
+  }
+
+  const uploadedTable = useReactTable({
+    data: uploadedData || [],
+    columns: uploadedColumns || [],
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  useEffect(() => {
+    console.log(uploadedColumns);
+    if (uploadedColumns.length) {
+      console.log(uploadedData);
+
+      setShowTable(true);
+    }
+  }, [uploadedColumns]);
 
   return (
     <div className="grid min-h-screen w-full bg-white">
@@ -113,8 +190,67 @@ export function ModelDetail({ model, metrics }: any) {
                     <ModalTitle>Upload Data</ModalTitle>
                   </ModalHeader>
                   <ModalBody>
-                    <p>Upload your data to retrain the model.</p>
-                    <FileUpload onFileChange={setFile} />
+                    {
+                      showTable ? (
+                        <Table className="overflow-scroll">
+                          <TableHeader>
+                            {uploadedTable.getHeaderGroups().map((headerGroup) => {
+                              console.log(headerGroup);
+                              return (
+                                <TableRow key={headerGroup.id}>
+                                  {/* <TableHead>#</TableHead> */}
+                                  {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id}>
+                                      {header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                          header.column.columnDef.header,
+                                          header.getContext()
+                                        )}</TableHead>
+                                  ))}
+                                </TableRow>
+                              )
+                            })}
+                          </TableHeader>
+                          <TableBody>
+                            {uploadedTable.getRowModel().rows?.length ? (
+                              uploadedTable.getRowModel().rows.map((row) => (
+                                <TableRow
+                                  key={row.id}
+                                  data-state={row.getIsSelected() && "selected"}
+                                >
+                                  <TableCell>
+                                    {row.index + 1}
+                                  </TableCell>
+                                  {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id}>
+                                      {flexRender(
+                                        cell.column.columnDef.cell,
+                                        cell.getContext()
+                                      )}
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={uploadedColumns.length}
+                                  className="h-24 text-center"
+                                >
+                                  No results.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      ) : (
+                        <>
+                          <p>Upload your data to retrain the model.</p>
+                          <FileUpload onFileChange={setFile} />
+                        </>
+                      )
+                    }
                   </ModalBody>
                   <ModalFooter>
                     <Button variant="secondary" onClick={closeModal}>Cancel</Button>

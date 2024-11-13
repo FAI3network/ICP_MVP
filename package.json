@@ -14,5 +14,8 @@
   "type": "module",
   "workspaces": [
     "src/FAI3_frontend"
-  ]
+  ],
+  "devDependencies": {
+    "@types/papaparse": "^5.3.15"
+  }
 }

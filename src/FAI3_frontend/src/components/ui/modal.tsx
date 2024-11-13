@@ -66,7 +66,7 @@ export const ModalContent = React.forwardRef(({ className, closeButton = true, .
     {({ isOpen, close }) => (
       <div
         className={cn(
-          "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50",
+          "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4",
           className
         )}
         style={{ display: isOpen ? "flex" : "none" }}
@@ -74,7 +74,7 @@ export const ModalContent = React.forwardRef(({ className, closeButton = true, .
       >
         <div
           ref={ref}
-          className={cn("bg-white rounded-lg p-4 w-96 relative", className)}
+          className={cn("bg-white max-w-full max-h-full rounded-lg p-4 relative overflow-y-auto", className)}
           onClick={(e) => e.stopPropagation()}
           {...props}
         >

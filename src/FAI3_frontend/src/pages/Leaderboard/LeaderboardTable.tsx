@@ -53,7 +53,7 @@ export default function LeaderboardTable({ models }: any) {
           </Button>
         );
       },
-      cell: ({ row }: any ) => (
+      cell: ({ row }: any) => (
         console.log(row.original),
         (
           <Link
@@ -84,13 +84,12 @@ export default function LeaderboardTable({ models }: any) {
         return (
           <div
             className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]
-                                ${
-                                  metrics[0] < 0.1 && metrics[0] > -0.1
-                                    ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
-                                    : metrics[0] > 0.4 || metrics[0] < -0.4
-                                    ? `text-[#D60E0E] bg-[#FFE0E0]`
-                                    : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
-                                }`}
+                                ${metrics[0] < 0.1 && metrics[0] > -0.1
+                ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
+                : metrics[0] > 0.4 || metrics[0] < -0.4
+                  ? `text-[#D60E0E] bg-[#FFE0E0]`
+                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              }`}
           >
             {Number(metrics.statistical_parity_difference[0]).toFixed(3)}
           </div>
@@ -115,13 +114,12 @@ export default function LeaderboardTable({ models }: any) {
 
         return (
           <div
-            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${
-              metrics[1] > 0.8 && metrics[1] < 1.25
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[1] > 0.8 && metrics[1] < 1.25
                 ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
                 : metrics[1] < 0.8 || metrics[1] > 1.25
-                ? `text-[#D60E0E] bg-[#FFE0E0]`
-                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
-            }`}
+                  ? `text-[#D60E0E] bg-[#FFE0E0]`
+                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              }`}
           >
             {Number(metrics.disparate_impact[0]).toFixed(3)}
           </div>
@@ -146,13 +144,12 @@ export default function LeaderboardTable({ models }: any) {
 
         return (
           <div
-            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${
-              metrics[2] < 0.1 && metrics[2] > -0.1
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[2] < 0.1 && metrics[2] > -0.1
                 ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
                 : metrics[2] > 0.2 || metrics[2] < -0.2
-                ? `text-[#D60E0E] bg-[#FFE0E0]`
-                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
-            }`}
+                  ? `text-[#D60E0E] bg-[#FFE0E0]`
+                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              }`}
           >
             {Number(metrics.average_odds_difference[0]).toFixed(3)}
           </div>
@@ -177,13 +174,12 @@ export default function LeaderboardTable({ models }: any) {
 
         return (
           <div
-            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${
-              metrics[2] < 0.1 && metrics[2] > -0.1
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[2] < 0.1 && metrics[2] > -0.1
                 ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
                 : metrics[2] > 0.2 || metrics[2] < -0.2
-                ? `text-[#D60E0E] bg-[#FFE0E0]`
-                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
-            }`}
+                  ? `text-[#D60E0E] bg-[#FFE0E0]`
+                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              }`}
           >
             {Number(metrics.equal_opportunity_difference[0]).toFixed(3)}
           </div>
@@ -236,18 +232,16 @@ export default function LeaderboardTable({ models }: any) {
                     className="hover:bg-[#ECE8EF] hover:bg-opacity-30"
                   >
                     <TableHead>#</TableHead>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      </TableHead>
+                    ))}
                   </TableRow>
                 ))}
               </TableHeader>
