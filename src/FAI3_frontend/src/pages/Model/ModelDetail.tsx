@@ -35,28 +35,16 @@ import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 
 export function ModelDetail({ model, metrics }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
   const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
   const [showTable, setShowTable] = useState(false);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
 
   const chartConfig = {
     SPD: {
@@ -169,6 +157,20 @@ export function ModelDetail({ model, metrics }: any) {
     }
   }, [uploadedColumns]);
 
+  const closeFile = () => {
+    setFile(null);
+    setUploadedData([]);
+    setUploadedColumns([]);
+    setShowTable(false);
+  }
+
+  const uploadData = () => {
+    //TODO: Implement storing data to smart contract
+
+    closeFile();
+    closeModal();
+  }
+
   return (
     <div className="grid min-h-screen w-full bg-white">
       {model && metrics && (
@@ -181,24 +183,32 @@ export function ModelDetail({ model, metrics }: any) {
             </h3>
 
             <div className="absolute top-1/2 right-0">
-              <Modal>
+              <Modal onClose={closeFile}>
                 <ModalTrigger>
                   Upload Data
                 </ModalTrigger>
-                <ModalContent>
-                  <ModalHeader>
-                    <ModalTitle>Upload Data</ModalTitle>
-                  </ModalHeader>
-                  <ModalBody>
-                    {
-                      showTable ? (
+                {
+                  showTable ? (
+                    <ModalContent>
+                      <ModalHeader>
+                        <ModalTitle>{file?.name}</ModalTitle>
+                      </ModalHeader>
+                      <ModalBody>
+                        <div className="flex w-full gap-2">
+                          <Button onClick={uploadData}>
+                            Upload
+                          </Button>
+                          <Button variant="secondary" onClick={closeFile}>
+                            Use another file
+                          </Button>
+                        </div>
                         <Table className="overflow-scroll">
                           <TableHeader>
                             {uploadedTable.getHeaderGroups().map((headerGroup) => {
                               console.log(headerGroup);
                               return (
                                 <TableRow key={headerGroup.id}>
-                                  {/* <TableHead>#</TableHead> */}
+                                  <TableHead>#</TableHead>
                                   {headerGroup.headers.map((header) => (
                                     <TableHead key={header.id}>
                                       {header.isPlaceholder
@@ -244,19 +254,25 @@ export function ModelDetail({ model, metrics }: any) {
                             )}
                           </TableBody>
                         </Table>
-                      ) : (
-                        <>
-                          <p>Upload your data to retrain the model.</p>
-                          <FileUpload onFileChange={setFile} />
-                        </>
-                      )
-                    }
-                  </ModalBody>
-                  <ModalFooter>
-                    <Button variant="secondary" onClick={closeModal}>Cancel</Button>
-                    <Button variant="secondary" onClick={handleFileUpload}>Upload</Button>
-                  </ModalFooter>
-                </ModalContent>
+                      </ModalBody>
+                    </ModalContent>
+                  ) : (
+                    <ModalContent>
+                      <ModalHeader>
+                        <ModalTitle>Upload Data</ModalTitle>
+                      </ModalHeader>
+                      <ModalBody>
+                        <p>Upload your data to retrain the model.</p>
+                        <FileUpload onFileChange={setFile} />
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button variant="secondary" onClick={closeModal}>Cancel</Button>
+                        <Button onClick={handleFileUpload}>Next</Button>
+                      </ModalFooter>
+                    </ModalContent>
+                  )
+                }
+
               </Modal>
             </div>
           </div>

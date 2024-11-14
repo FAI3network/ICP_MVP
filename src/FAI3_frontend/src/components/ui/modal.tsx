@@ -17,11 +17,14 @@ const ModalContext = React.createContext<ModalContextType>({
 
 let modalInstance: { open: () => void; close: () => void } | null = null;
 
-export const Modal = React.forwardRef(({ className, ...props }: any, ref) => {
+export const Modal = React.forwardRef(({ className, onClose=null, ...props }: any, ref) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
+  const close = () => {
+    setIsOpen(false)
+    onClose && onClose()
+  };
 
   modalInstance = { open, close };
 
