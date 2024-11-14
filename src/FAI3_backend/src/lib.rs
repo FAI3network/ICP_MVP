@@ -388,6 +388,12 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32) {
     )
 }
 
+
+#[ic_cdk::update]
+fn test_function() -> bool {
+    true
+}
+
 // Getters
 #[ic_cdk::query]
 fn get_all_models() -> Vec<Model> {
