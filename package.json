@@ -14,5 +14,8 @@
   "type": "module",
   "workspaces": [
     "src/FAI3_frontend"
-  ]
+  ],
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
 }
