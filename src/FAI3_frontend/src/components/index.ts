@@ -1,5 +1,9 @@
 import Layout from "./Layout";
+import DropdownMenuCheckboxes from "./DropdownMenu";
+import FileUpload from "./FileUpload";
 
 export {
-  Layout
+  Layout,
+  DropdownMenuCheckboxes,
+  FileUpload
 }
