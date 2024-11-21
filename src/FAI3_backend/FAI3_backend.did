@@ -33,6 +33,7 @@ service : {
 
     // Data point management
     "add_data_point": (nat, bool, bool, bool) -> ();
+    "add_data_points": (nat, bool, bool, bool) -> ();
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
@@ -57,4 +58,5 @@ service : {
     "get_model_data_points": (nat) -> (vec DataPoint) query;
     "get_model_metrics": (nat) -> (Metrics) query;
     "get_model": (nat) -> (Model) query;
+    "test_function": () -> (bool);
 }
