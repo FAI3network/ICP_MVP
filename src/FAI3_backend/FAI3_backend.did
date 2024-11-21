@@ -3,6 +3,7 @@ type DataPoint = record {
   target: bool;
   privileged: bool;
   predicted: bool;
+  features: vec float64; 
   timestamp: nat64;
 };
 
@@ -32,8 +33,8 @@ service : {
     "delete_model": (nat) -> ();
 
     // Data point management
-    "add_data_point": (nat, bool, bool, bool) -> ();
-    "add_data_points": (nat, bool, bool, bool) -> ();
+    "add_dataset": (nat, vec vec float64, vec text, vec bool, vec bool) -> ();
+    "add_data_point": (nat, bool, bool, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
@@ -51,7 +52,7 @@ service : {
     );
 
     // Example data
-    "add_example_data_points": (nat) -> ();
+    //"add_example_data_points": (nat) -> ();
 
     // Model retrieval queries
     "get_all_models": () -> (vec Model) query;
