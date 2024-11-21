@@ -181,6 +181,56 @@ fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: boo
 }
 
 #[ic_cdk::update]
+fn add_data_points(
+    model_id: u128,
+    predictions: Vec<bool>,
+    ground_truth: Vec<bool>,
+    privilege_vars: Vec<bool>,
+) {
+    check_cycles_before_action();
+
+    // Verificar que todas las entradas tengan la misma longitud
+    if predictions.len() != ground_truth.len() || ground_truth.len() != privilege_vars.len() {
+        ic_cdk::api::trap("Error: Las longitudes de predictions, ground_truth y privilege_vars deben ser iguales.");
+    }
+
+    let caller: Principal = ic_cdk::api::caller();
+    let timestamp: u64 = ic_cdk::api::time();
+
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
+        let user: &mut User = users.get_mut(&caller).expect("User not found");
+
+        let model: &mut Model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != caller {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
+            let mut next_data_point_id = next_data_point_id.borrow_mut();
+
+            // Agregar cada punto de datos al modelo
+            for i in 0..predictions.len() {
+                let data_point = DataPoint {
+                    data_point_id: *next_data_point_id,
+                    target: ground_truth[i],
+                    privileged: privilege_vars[i],
+                    predicted: predictions[i],
+                    timestamp,
+                };
+
+                model.data_points.push(data_point);
+                *next_data_point_id += 1;
+            }
+        });
+    });
+}
+
+#[ic_cdk::update]
 fn delete_model(model_id: u128) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
@@ -386,6 +436,12 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32) {
         calculate_average_odds_difference(model_id),
         calculate_equal_opportunity_difference(model_id),
     )
+}
+
+
+#[ic_cdk::update]
+fn test_function() -> bool {
+    true
 }
 
 // Getters
