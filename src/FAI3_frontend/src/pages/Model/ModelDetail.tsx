@@ -40,11 +40,19 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import {
+  Trash2
+} from "lucide-react";
+
 export function ModelDetail({ model, metrics }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
   const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
-  const [showTable, setShowTable] = useState(false);
+  const [showUploadedContent, setShowUploadedContent] = useState(false);
+  const [imageData, setImageData] = useState<any[]>([{
+    key: "",
+    value: ""
+  }]);
 
   const chartConfig = {
     SPD: {
@@ -99,14 +107,20 @@ export function ModelDetail({ model, metrics }: any) {
   };
 
   const handleFileUpload = () => {
-    Papa.parse(file as File, {
-      header: true,
-      complete: (result: Papa.ParseResult<any>) => {
-        console.log(result);
-        setUploadedData(result.data);
-        createColumns(result.data);
-      },
-    });
+    console.log("file type", file?.type);
+
+    if (file?.type.includes("csv")) {
+      Papa.parse(file as File, {
+        header: true,
+        complete: (result: Papa.ParseResult<any>) => {
+          console.log(result);
+          setUploadedData(result.data);
+          createColumns(result.data);
+        },
+      });
+    } else if (file?.type.includes("image")) {
+      setShowUploadedContent(true);
+    }
   }
 
   const createColumns = (data: any) => {
@@ -153,7 +167,7 @@ export function ModelDetail({ model, metrics }: any) {
     if (uploadedColumns.length) {
       console.log(uploadedData);
 
-      setShowTable(true);
+      setShowUploadedContent(true);
     }
   }, [uploadedColumns]);
 
@@ -161,7 +175,7 @@ export function ModelDetail({ model, metrics }: any) {
     setFile(null);
     setUploadedData([]);
     setUploadedColumns([]);
-    setShowTable(false);
+    setShowUploadedContent(false);
   }
 
   const uploadData = () => {
@@ -188,7 +202,7 @@ export function ModelDetail({ model, metrics }: any) {
                   Upload Data
                 </ModalTrigger>
                 {
-                  showTable ? (
+                  showUploadedContent ? (
                     <ModalContent>
                       <ModalHeader>
                         <ModalTitle>{file?.name}</ModalTitle>
@@ -202,58 +216,146 @@ export function ModelDetail({ model, metrics }: any) {
                             Use another file
                           </Button>
                         </div>
-                        <Table className="overflow-scroll">
-                          <TableHeader>
-                            {uploadedTable.getHeaderGroups().map((headerGroup) => {
-                              console.log(headerGroup);
-                              return (
-                                <TableRow key={headerGroup.id}>
-                                  <TableHead>#</TableHead>
-                                  {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
-                                      {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext()
-                                        )}</TableHead>
-                                  ))}
-                                </TableRow>
-                              )
-                            })}
-                          </TableHeader>
-                          <TableBody>
-                            {uploadedTable.getRowModel().rows?.length ? (
-                              uploadedTable.getRowModel().rows.map((row) => (
-                                <TableRow
-                                  key={row.id}
-                                  data-state={row.getIsSelected() && "selected"}
-                                >
-                                  <TableCell>
-                                    {row.index + 1}
-                                  </TableCell>
-                                  {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                      {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                      )}
+                        {
+                          file?.type.includes("image") ? (
+                            <div>
+                              <img className="my-4" src={URL.createObjectURL(file)} alt="Uploaded" />
+                              <div className="flex flex-col space-y-2 items-start">
+                                <label className="text-sm font-medium">Data:</label>
+                                <div className="flex items-center flex-col">
+                                  {
+                                    imageData.map((data, index) => (
+                                      <div key={index} className="flex w-full my-2 items-center">
+                                        <input
+                                          type="text"
+                                          placeholder="Key"
+                                          value={data.key}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setImageData(
+                                              imageData.map((d, i) => {
+                                                if (i === index) {
+                                                  return {
+                                                    ...d,
+                                                    key: value
+                                                  }
+                                                }
+                                                return d;
+                                              })
+                                            )
+                                          }}
+                                          className="w-1/4 p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <span className="text-lg mx-2">:</span>
+                                        <input
+                                          type="text"
+                                          placeholder="Value"
+                                          value={data.value}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setImageData(
+                                              imageData.map((d, i) => {
+                                                if (i === index) {
+                                                  return {
+                                                    ...d,
+                                                    value
+                                                  }
+                                                }
+                                                return d;
+                                              })
+                                            )
+                                          }}
+                                          className="w-3/4 p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        {
+                                          imageData.length > 1 && (
+                                            <Button
+                                              variant="destructive"
+                                              className="ml-2"
+                                              onClick={() => setImageData(
+                                                imageData.filter((_, i) => i !== index)
+                                              )}
+                                            >
+                                              <Trash2 size={16} />
+                                            </Button>
+                                          )
+                                        }
+
+                                      </div>
+                                    ))
+                                  }
+                                  <div className="flex w-full my-2">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => setImageData([
+                                        ...imageData,
+                                        {
+                                          key: "",
+                                          value: ""
+                                        }
+                                      ])}
+                                    >
+                                      Add field
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <Table className="overflow-scroll">
+                              <TableHeader>
+                                {uploadedTable.getHeaderGroups().map((headerGroup) => {
+                                  console.log(headerGroup);
+                                  return (
+                                    <TableRow key={headerGroup.id}>
+                                      <TableHead>#</TableHead>
+                                      {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id}>
+                                          {header.isPlaceholder
+                                            ? null
+                                            : flexRender(
+                                              header.column.columnDef.header,
+                                              header.getContext()
+                                            )}</TableHead>
+                                      ))}
+                                    </TableRow>
+                                  )
+                                })}
+                              </TableHeader>
+                              <TableBody>
+                                {uploadedTable.getRowModel().rows?.length ? (
+                                  uploadedTable.getRowModel().rows.map((row) => (
+                                    <TableRow
+                                      key={row.id}
+                                      data-state={row.getIsSelected() && "selected"}
+                                    >
+                                      <TableCell>
+                                        {row.index + 1}
+                                      </TableCell>
+                                      {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                          {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext()
+                                          )}
+                                        </TableCell>
+                                      ))}
+                                    </TableRow>
+                                  ))
+                                ) : (
+                                  <TableRow>
+                                    <TableCell
+                                      colSpan={uploadedColumns.length}
+                                      className="h-24 text-center"
+                                    >
+                                      No results.
                                     </TableCell>
-                                  ))}
-                                </TableRow>
-                              ))
-                            ) : (
-                              <TableRow>
-                                <TableCell
-                                  colSpan={uploadedColumns.length}
-                                  className="h-24 text-center"
-                                >
-                                  No results.
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
+                                  </TableRow>
+                                )}
+                              </TableBody>
+                            </Table>
+                          )
+                        }
                       </ModalBody>
                     </ModalContent>
                   ) : (
@@ -263,7 +365,7 @@ export function ModelDetail({ model, metrics }: any) {
                       </ModalHeader>
                       <ModalBody>
                         <p>Upload your data to retrain the model.</p>
-                        <FileUpload onFileChange={setFile} />
+                        <FileUpload onFileChange={setFile} accept=".csv, image/*" />
                       </ModalBody>
                       <ModalFooter>
                         <Button variant="secondary" onClick={closeModal}>Cancel</Button>

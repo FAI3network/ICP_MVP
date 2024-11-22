@@ -1,7 +1,7 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Input } from "./ui";
 
-export default function FileUpload({ accept = ".csv", onFileChange }: { accept?: string, onFileChange: (file: File) => void }) {
+export default function FileUpload({ onFileChange, accept = "*/*" }: { accept?: string, onFileChange: (file: File) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
