@@ -44,6 +44,10 @@ import {
   Trash2
 } from "lucide-react";
 
+import { FAI3_backend } from "../../../../declarations/FAI3_backend";
+
+import { useParams } from "react-router-dom";
+
 export function ModelDetail({ model, metrics }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
@@ -53,6 +57,8 @@ export function ModelDetail({ model, metrics }: any) {
     key: "",
     value: ""
   }]);
+
+  const { modelId } = useParams();
 
   const chartConfig = {
     SPD: {
@@ -181,8 +187,45 @@ export function ModelDetail({ model, metrics }: any) {
   const uploadData = () => {
     //TODO: Implement storing data to smart contract
 
-    closeFile();
-    closeModal();
+    if (file?.type.includes("csv")) {
+      uploadDataSet();
+    }
+
+    // closeFile();
+    // closeModal();
+  }
+
+  const uploadDataSet = () => {
+    //For now only the test upload csv file works
+    let dataByAtr: any= {};
+    uploadedData.forEach((d) => {
+      for (let key in d) {
+        const parsed = parseFloat(d[key]);
+        if (!isNaN(parsed)) {
+          if (!dataByAtr[key]) {
+            dataByAtr[key] = [];
+          }
+          dataByAtr[key].push(parsed);
+        } 
+      }
+    });
+
+    console.log(dataByAtr);
+
+    const arg1 = [];
+
+    for (let key in dataByAtr) {
+      if (key == "Labels" || key == "Gender" || key == "Predictions") continue;
+      arg1.push(dataByAtr[key]);
+    }
+
+    const arg2 = dataByAtr["Gender"].map((d : number) => d == 1 ? "Male" : "Female");
+
+    const arg3 = dataByAtr["Labels"].map((d : number) => d == 1 ? true : false);
+
+    const arg4 = dataByAtr["Predictions"].map((d : number) => d == 1 ? true : false);
+
+    FAI3_backend.add_dataset(BigInt(modelId!), arg1, arg2, arg3, arg4);
   }
 
   return (

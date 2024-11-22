@@ -6,34 +6,6 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 export default function Model() {
   const { modelId } = useParams();
 
-  useEffect(() => {
-    if (Number.isNaN(parseInt(modelId || ""))) {
-      console.error("Invalid model ID");
-      return;
-    }
-
-    let id = BigInt(modelId || "");
-
-    //TODO: exception if id doesnt exist
-
-    console.log(id);
-
-    const fetchModel = async () => {
-      const model = await FAI3_backend.get_model(id);
-      // setModelWithDetails(model);
-      console.log(model);
-    };
-
-    const fetchMetrics = async () => {
-      const metrics = await FAI3_backend.get_model_metrics(id);
-      // setMetrics(metrics);
-      console.log(metrics);
-    };
-
-    // fetchModel();
-    // fetchMetrics();
-  }, [modelId]);
-
   const [modelWithDetails, setModelWithDetails] = useState({
     "name": "Credit Scoring Xgboost Model",
     "description": "An Xgboost-based machine learning model for credit scoring applications.",
@@ -74,6 +46,40 @@ export default function Model() {
         "EOD": -0.067
     }
   ]);
+
+  useEffect(() => {
+    if (Number.isNaN(parseInt(modelId || ""))) {
+      console.error("Invalid model ID");
+      return;
+    }
+
+    let id = BigInt(modelId || "");
+
+    //TODO: exception if id doesnt exist
+
+    console.log(id);
+
+    const fetchModel = async () => {
+      const model = await FAI3_backend.get_model(id);
+      // setModelWithDetails(model);
+      
+      setModelWithDetails({
+        ...modelWithDetails,
+        "name": model.model_name
+      });
+      
+      console.log(model);
+    };
+
+    const fetchMetrics = async () => {
+      const metrics = await FAI3_backend.get_model_metrics(id);
+      // setMetrics(metrics);
+      console.log(metrics);
+    };
+
+    fetchModel();
+    fetchMetrics();
+  }, [modelId]);
 
   return (
     <div>
