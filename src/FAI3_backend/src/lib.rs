@@ -3,7 +3,7 @@ use ic_cdk::api::call::CallResult;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-#[ic_cdk::update]
+/* #[ic_cdk::update]
 async fn add_example_data_points(model_id: u128) -> CallResult<()> {
     check_cycles_before_action();
 
@@ -28,7 +28,7 @@ async fn add_example_data_points(model_id: u128) -> CallResult<()> {
     }
 
     Ok(())
-}
+} */
 
 fn get_random_bit(bytes: &[u8], index: &mut usize) -> bool {
     let byte_index = *index / 8;
@@ -72,6 +72,7 @@ pub struct DataPoint {
     target: bool,
     privileged: bool,
     predicted: bool,
+    features: Vec<f64>,       // New Cols as features
     timestamp: u64,
 }
 
@@ -105,6 +106,70 @@ thread_local! {
 }
 
 // Operations
+
+#[ic_cdk::update]
+fn add_dataset(
+    model_id: u128,
+    features: Vec<Vec<f64>>,
+    gender: Vec<String>,
+    labels: Vec<bool>,
+    predictions: Vec<bool>,
+) {
+    check_cycles_before_action();
+
+    // Verificar que la longitud de todas las columnas sea consistente
+    let data_length = labels.len();
+    if gender.len() != data_length || predictions.len() != data_length {
+        ic_cdk::api::trap("Error: Las longitudes de gender, labels y predictions deben ser iguales.");
+    }
+    for feature_column in &features {
+        if feature_column.len() != data_length {
+            ic_cdk::api::trap("Error: Todas las columnas de features deben tener la misma longitud que labels.");
+        }
+    }
+
+    let caller: Principal = ic_cdk::api::caller();
+    let timestamp: u64 = ic_cdk::api::time();
+
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
+        let user: &mut User = users.get_mut(&caller).expect("User not found");
+
+        let model: &mut Model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != caller {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
+            let mut next_data_point_id = next_data_point_id.borrow_mut();
+
+            for i in 0..data_length {
+                let privileged = gender[i].to_lowercase() == "male"; // Asumimos que "male" es privilegiado
+
+                let mut feature_vector = Vec::new();
+                for feature_column in &features {
+                    feature_vector.push(feature_column[i]);
+                }
+
+                let data_point = DataPoint {
+                    data_point_id: *next_data_point_id,
+                    target: labels[i],
+                    privileged,
+                    predicted: predictions[i],
+                    features: feature_vector.clone(), // Asegurarse de agregar las características
+                    timestamp,
+                };
+
+                model.data_points.push(data_point);
+                *next_data_point_id += 1;
+            }
+        });
+    });
+}
 
 #[ic_cdk::update]
 fn add_model(model_name: String) -> u128 {
@@ -145,7 +210,7 @@ fn add_model(model_name: String) -> u128 {
     })
 }
 
-#[ic_cdk::update]
+/* #[ic_cdk::update]
 fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: bool) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
@@ -178,22 +243,11 @@ fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: boo
             *next_data_point_id.borrow_mut() += 1;
         });
     });
-}
+} */
 
 #[ic_cdk::update]
-fn add_data_points(
-    model_id: u128,
-    predictions: Vec<bool>,
-    ground_truth: Vec<bool>,
-    privilege_vars: Vec<bool>,
-) {
+fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: bool, features: Vec<f64>) {
     check_cycles_before_action();
-
-    // Verificar que todas las entradas tengan la misma longitud
-    if predictions.len() != ground_truth.len() || ground_truth.len() != privilege_vars.len() {
-        ic_cdk::api::trap("Error: Las longitudes de predictions, ground_truth y privilege_vars deben ser iguales.");
-    }
-
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
 
@@ -205,27 +259,24 @@ fn add_data_points(
             .models
             .get_mut(&model_id)
             .expect("Model not found or not owned by user");
-
         if model.user_id != caller {
             ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
         }
 
         NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
-            let mut next_data_point_id = next_data_point_id.borrow_mut();
+            let data_point_id: u128 = *next_data_point_id.borrow();
 
-            // Agregar cada punto de datos al modelo
-            for i in 0..predictions.len() {
-                let data_point = DataPoint {
-                    data_point_id: *next_data_point_id,
-                    target: ground_truth[i],
-                    privileged: privilege_vars[i],
-                    predicted: predictions[i],
-                    timestamp,
-                };
+            let data_point: DataPoint = DataPoint {
+                data_point_id,
+                target,
+                privileged,
+                predicted,
+                features, // Añadir las características del punto de datos
+                timestamp,
+            };
 
-                model.data_points.push(data_point);
-                *next_data_point_id += 1;
-            }
+            model.data_points.push(data_point);
+            *next_data_point_id.borrow_mut() += 1;
         });
     });
 }
