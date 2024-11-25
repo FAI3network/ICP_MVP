@@ -26,12 +26,23 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
+  Modal,
+  ModalContent,
+  ModalTrigger,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+  ModalFooter,
+  openModal,
+  closeModal,
+
 } from "../../components/ui";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
 import { DropdownMenuCheckboxes } from "../../components";
+import { FAI3_backend } from "../../../../declarations/FAI3_backend"
+
 
 export default function LeaderboardTable({ models }: any) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -115,10 +126,10 @@ export default function LeaderboardTable({ models }: any) {
         return (
           <div
             className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[1] > 0.8 && metrics[1] < 1.25
-                ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
-                : metrics[1] < 0.8 || metrics[1] > 1.25
-                  ? `text-[#D60E0E] bg-[#FFE0E0]`
-                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
+              : metrics[1] < 0.8 || metrics[1] > 1.25
+                ? `text-[#D60E0E] bg-[#FFE0E0]`
+                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
               }`}
           >
             {Number(metrics.disparate_impact[0]).toFixed(3)}
@@ -145,10 +156,10 @@ export default function LeaderboardTable({ models }: any) {
         return (
           <div
             className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[2] < 0.1 && metrics[2] > -0.1
-                ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
-                : metrics[2] > 0.2 || metrics[2] < -0.2
-                  ? `text-[#D60E0E] bg-[#FFE0E0]`
-                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
+              : metrics[2] > 0.2 || metrics[2] < -0.2
+                ? `text-[#D60E0E] bg-[#FFE0E0]`
+                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
               }`}
           >
             {Number(metrics.average_odds_difference[0]).toFixed(3)}
@@ -175,10 +186,10 @@ export default function LeaderboardTable({ models }: any) {
         return (
           <div
             className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${metrics[2] < 0.1 && metrics[2] > -0.1
-                ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
-                : metrics[2] > 0.2 || metrics[2] < -0.2
-                  ? `text-[#D60E0E] bg-[#FFE0E0]`
-                  : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
+              ? `text-[#007F00] bg-[#CDFFCD80] bg-opacity-50`
+              : metrics[2] > 0.2 || metrics[2] < -0.2
+                ? `text-[#D60E0E] bg-[#FFE0E0]`
+                : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
               }`}
           >
             {Number(metrics.equal_opportunity_difference[0]).toFixed(3)}

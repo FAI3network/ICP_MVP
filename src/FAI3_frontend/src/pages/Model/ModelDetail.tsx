@@ -20,7 +20,8 @@ import {
   TableRow,
   TableHead,
   TableCell,
-  TableBody
+  TableBody,
+  Input
 } from "../../components/ui";
 
 import {
@@ -53,10 +54,11 @@ export function ModelDetail({ model, metrics }: any) {
   const [uploadedData, setUploadedData] = useState<any[]>([]);
   const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
   const [showUploadedContent, setShowUploadedContent] = useState(false);
-  const [imageData, setImageData] = useState<any[]>([{
+  const [imageData, setImageData] = useState<any[]>([{ label: "" }, {
     key: "",
     value: ""
   }]);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { modelId } = useParams();
 
@@ -184,20 +186,48 @@ export function ModelDetail({ model, metrics }: any) {
     setShowUploadedContent(false);
   }
 
+  const clearImageData = () => {
+    setImageData([{ label: "" }, {
+      key: "",
+      value: ""
+    }]);
+  }
+
   const uploadData = () => {
     //TODO: Implement storing data to smart contract
+    setErrorMessage("");
 
     if (file?.type.includes("csv")) {
-      uploadDataSet();
+      // uploadDataSet();
+    } else {
+      console.log(imageData);
+      uploadImageData();
+      clearImageData();
     }
 
     // closeFile();
     // closeModal();
   }
 
+  const uploadImageData = () => {
+    if (!imageData[0].label) {
+      setErrorMessage("Label is required");
+      return;
+    } 
+
+    for (let i = 1; i < imageData.length; i++) {
+      if (!imageData[i].key && imageData[i].value || imageData[i].key && !imageData[i].value) {
+        setErrorMessage("Incomplete data");
+        return;
+      }
+    }
+
+
+  }
+
   const uploadDataSet = () => {
     //For now only the test upload csv file works
-    let dataByAtr: any= {};
+    let dataByAtr: any = {};
     uploadedData.forEach((d) => {
       for (let key in d) {
         const parsed = parseFloat(d[key]);
@@ -206,7 +236,7 @@ export function ModelDetail({ model, metrics }: any) {
             dataByAtr[key] = [];
           }
           dataByAtr[key].push(parsed);
-        } 
+        }
       }
     });
 
@@ -219,27 +249,35 @@ export function ModelDetail({ model, metrics }: any) {
       arg1.push(dataByAtr[key]);
     }
 
-    const arg2 = dataByAtr["Gender"].map((d : number) => d == 1 ? "Male" : "Female");
+    const arg2 = dataByAtr["Gender"].map((d: number) => d == 1 ? "Male" : "Female");
 
-    const arg3 = dataByAtr["Labels"].map((d : number) => d == 1 ? true : false);
+    const arg3 = dataByAtr["Labels"].map((d: number) => d == 1 ? true : false);
 
-    const arg4 = dataByAtr["Predictions"].map((d : number) => d == 1 ? true : false);
+    const arg4 = dataByAtr["Predictions"].map((d: number) => d == 1 ? true : false);
 
     FAI3_backend.add_dataset(BigInt(modelId!), arg1, arg2, arg3, arg4);
+  }
+
+  const calculateMetrics = async () => {
+    const res = await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
+
+    if (res) {
+      console.log("Metrics calculated");
+    }
   }
 
   return (
     <div className="grid min-h-screen w-full bg-white">
       {model && metrics && (
         <section className="grid gap-8 p-6 md:p-10">
-          <div className="text-center relative">
+          <div className="text-center relative w-full">
             <h1 className="text-4xl font-bold pb-3">{model.name}</h1>
             <h3>
               Get a detailed overview of the model&apos;s architecture and
               performance.
             </h3>
 
-            <div className="absolute top-1/2 right-0">
+            <div className="w-full flex">
               <Modal onClose={closeFile}>
                 <ModalTrigger>
                   Upload Data
@@ -259,21 +297,51 @@ export function ModelDetail({ model, metrics }: any) {
                             Use another file
                           </Button>
                         </div>
+                        <div className="flex w-full pt-2 text-red-700">
+                          {errorMessage}
+                        </div>
                         {
                           file?.type.includes("image") ? (
                             <div>
-                              <img className="my-4" src={URL.createObjectURL(file)} alt="Uploaded" />
+                              <img className="mb-4 mt-2" src={URL.createObjectURL(file)} alt="Uploaded" />
                               <div className="flex flex-col space-y-2 items-start">
-                                <label className="text-sm font-medium">Data:</label>
-                                <div className="flex items-center flex-col">
+                                <h3 className="text-lg text-gray-600 font-semibold">Data:</h3>
+                                <div className="flex w-full items-center">
+                                  <p className="text-sm text-left w-1/4">Label</p>
+                                  <strong className="text-xl mx-1">:</strong>
+                                  <Input
+                                    type="text"
+                                    placeholder="Label"
+                                    value={imageData[0].label}
+                                    onChange={(e: any) => {
+                                      const value = e.target.value;
+                                      setImageData(
+                                        imageData.map((d, i) => {
+                                          if (i === 0) {
+                                            return {
+                                              ...d,
+                                              label: value
+                                            }
+                                          }
+                                          return d;
+                                        })
+                                      )
+                                    }}
+                                    className="w-3/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div className="flex items-center flex-col gap-1">
                                   {
-                                    imageData.map((data, index) => (
-                                      <div key={index} className="flex w-full my-2 items-center">
-                                        <input
+                                    imageData.map((data, index) => { 
+                                      if (index == 0) return null; 
+                                      
+                                      return (
+                                      <div key={index} className="flex w-full items-center">
+                                        <Input
                                           type="text"
                                           placeholder="Key"
                                           value={data.key}
-                                          onChange={(e) => {
+                                          onChange={(e: any) => {
                                             const value = e.target.value;
                                             setImageData(
                                               imageData.map((d, i) => {
@@ -287,14 +355,14 @@ export function ModelDetail({ model, metrics }: any) {
                                               })
                                             )
                                           }}
-                                          className="w-1/4 p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          className="w-1/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
-                                        <span className="text-lg mx-2">:</span>
-                                        <input
+                                        <strong className="text-xl mx-1">:</strong>
+                                        <Input
                                           type="text"
                                           placeholder="Value"
                                           value={data.value}
-                                          onChange={(e) => {
+                                          onChange={(e: any) => {
                                             const value = e.target.value;
                                             setImageData(
                                               imageData.map((d, i) => {
@@ -308,10 +376,10 @@ export function ModelDetail({ model, metrics }: any) {
                                               })
                                             )
                                           }}
-                                          className="w-3/4 p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          className="w-3/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                         {
-                                          imageData.length > 1 && (
+                                          imageData.length > 2 && (
                                             <Button
                                               variant="destructive"
                                               className="ml-2"
@@ -325,7 +393,7 @@ export function ModelDetail({ model, metrics }: any) {
                                         }
 
                                       </div>
-                                    ))
+                                    )})
                                   }
                                   <div className="flex w-full my-2">
                                     <Button
@@ -419,6 +487,9 @@ export function ModelDetail({ model, metrics }: any) {
                 }
 
               </Modal>
+              <Button variant="secondary" className="ml-auto" onClick={calculateMetrics}>
+                Calculate Metrics
+              </Button>
             </div>
           </div>
           <div className="grid gap-8 lg:grid-cols-2 lg:h-[500px]">
