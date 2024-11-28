@@ -17,7 +17,7 @@ const ModalContext = React.createContext<ModalContextType>({
 
 let modalInstance: { open: () => void; close: () => void } | null = null;
 
-export const Modal = React.forwardRef(({ className, onClose=null, ...props }: any, ref) => {
+export const Modal = React.forwardRef(({ className, onClose = null, ...props }: any, ref) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const open = () => setIsOpen(true);
@@ -30,7 +30,16 @@ export const Modal = React.forwardRef(({ className, onClose=null, ...props }: an
 
   return (
     <ModalContext.Provider value={{ isOpen, open, close }}>
-      <div className={cn("relative", className)} {...props} />
+      <div
+        className={cn(
+          "fixed inset-0 z-50 bg-black bg-opacity-50 p-4 w-full h-full",
+          className
+        )}
+        style={{ display: isOpen ? "flex" : "none" }}
+        onClick={close}
+      >
+        <div className={cn("relative w-full h-full flex items-center justify-center", className)} {...props} />
+      </div>
     </ModalContext.Provider>
   );
 });
@@ -68,30 +77,21 @@ export const ModalContent = React.forwardRef(({ className, closeButton = true, .
   <ModalContext.Consumer>
     {({ isOpen, close }) => (
       <div
-        className={cn(
-          "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4",
-          className
-        )}
-        style={{ display: isOpen ? "flex" : "none" }}
-        onClick={close}
+        ref={ref}
+        className={cn("bg-white max-w-full max-h-full rounded-lg p-4 relative overflow-y-auto", className)}
+        onClick={(e) => e.stopPropagation()}
+        {...props}
       >
-        <div
-          ref={ref}
-          className={cn("bg-white max-w-full max-h-full rounded-lg p-4 relative overflow-y-auto", className)}
-          onClick={(e) => e.stopPropagation()}
-          {...props}
-        >
-          {closeButton && (
-            <button
-              className="absolute top-2 right-2"
-              onClick={close}
-            >
-              <X />
-            </button>
-          )}
+        {closeButton && (
+          <button
+            className="absolute top-2 right-2"
+            onClick={close}
+          >
+            <X />
+          </button>
+        )}
 
-          {props.children}
-        </div>
+        {props.children}
       </div>
     )}
   </ModalContext.Consumer>

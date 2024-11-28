@@ -198,15 +198,15 @@ export function ModelDetail({ model, metrics }: any) {
     setErrorMessage("");
 
     if (file?.type.includes("csv")) {
-      // uploadDataSet();
+      uploadDataSet();
     } else {
       console.log(imageData);
       uploadImageData();
       clearImageData();
     }
 
-    // closeFile();
-    // closeModal();
+    closeFile();
+    closeModal();
   }
 
   const uploadImageData = () => {
@@ -271,17 +271,17 @@ export function ModelDetail({ model, metrics }: any) {
       {model && metrics && (
         <section className="grid gap-8 p-6 md:p-10">
           <div className="text-center relative w-full">
-            <h1 className="text-4xl font-bold pb-3">{model.name}</h1>
+            <h1 className="text-4xl font-bold pb-3">{model.model_name}</h1>
             <h3>
               Get a detailed overview of the model&apos;s architecture and
               performance.
             </h3>
 
             <div className="w-full flex">
+              <Button onClick={openModal}>
+                Upload Data
+              </Button>
               <Modal onClose={closeFile}>
-                <ModalTrigger>
-                  Upload Data
-                </ModalTrigger>
                 {
                   showUploadedContent ? (
                     <ModalContent>
@@ -497,26 +497,26 @@ export function ModelDetail({ model, metrics }: any) {
               <CardHeader className="">
                 <CardTitle>Model Details</CardTitle>
                 <CardDescription className="text-md">
-                  {model.description}
+                  {model.details?.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-8 max-h-96">
                 <div className="grid gap-4 h-fit text-lg">
                   <p>
-                    <strong>Framework:</strong> {model.framework}
+                    <strong>Framework:</strong> {model.details?.framework}
                   </p>
                   <p>
-                    <strong>Version:</strong> {model.version}
+                    <strong>Version:</strong> {model.details?.version}
                   </p>
                   <p>
-                    <strong>Size:</strong> {model.size}
+                    <strong>Size:</strong> {model.details?.size}
                   </p>
                   <p>
-                    <strong>Accuracy:</strong> {model.accuracy}
+                    <strong>Accuracy:</strong> {model.details?.accuracy}
                   </p>
                   <p>
                     <strong>Objective:</strong>{" "}
-                    {model.hyperparameters.objective}
+                    {model.details?.objective}
                   </p>
                 </div>
               </CardContent>

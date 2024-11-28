@@ -9,28 +9,32 @@ export default function Leaderboard() {
   const [modelsWithDetails, setModelsWithDetails] = useState<
     Model[]
   >([
-      {
-      "metrics": {
-        "equal_opportunity_difference": [-0.128571428571428572],
-        "statistical_parity_difference": [0.735294117647058822],
-        "disparate_impact": [-0.111515151515151515],
-        "average_odds_difference": [-0.066666666666666667]
-      },
-      "model_name": "Credit Scoring Xgboost Model",
-      "user_id": Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai"),
-      "model_id": BigInt(1),
-      "data_points": [],
-    },
+    //   {
+    //   "metrics": {
+    //     "equal_opportunity_difference": [-0.128571428571428572],
+    //     "statistical_parity_difference": [0.735294117647058822],
+    //     "disparate_impact": [-0.111515151515151515],
+    //     "average_odds_difference": [-0.066666666666666667]
+    //   },
+    //   "model_name": "Credit Scoring Xgboost Model",
+    //   "user_id": Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai"),
+    //   "model_id": BigInt(1),
+    //   "data_points": [],
+    // },
   ]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchModels = async () => {
-      const models = await FAI3_backend.get_all_models();
-      setModelsWithDetails(models);
-      console.log(models);
-    };
     fetchModels();
   }, [])
+
+  const fetchModels = async () => {
+    setLoading(true);
+    const models = await FAI3_backend.get_all_models();
+    setModelsWithDetails(models);
+    console.log(models);
+    setLoading(false);
+  };
 
   return (
     <div className="mx-20">
@@ -43,10 +47,10 @@ export default function Leaderboard() {
           Compare the performance of different machine learning models.
         </p>
       </div>
-      {modelsWithDetails.length === 0 ? (
+      {loading ? (
         <div className="w-full text-center">Loading...</div>
       ) : (
-        <LeaderboardTable models={modelsWithDetails} />
+        <LeaderboardTable models={modelsWithDetails} fetchModels={fetchModels} />
       )}
     </div>
   );

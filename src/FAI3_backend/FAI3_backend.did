@@ -20,6 +20,14 @@ type Model = record {
   user_id: principal;
   data_points: vec DataPoint;
   metrics: Metrics;
+  details: ModelDetails;
+};
+
+type ModelDetails = record {
+  description: text;
+  framework: text;
+  version: text;
+  objective: text;
 };
 
 type User = record {
@@ -29,7 +37,7 @@ type User = record {
 
 service : {
     // Model management
-    "add_model": (text) -> (nat);
+    "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
 
     // Data point management

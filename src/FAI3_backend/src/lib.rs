@@ -91,6 +91,15 @@ pub struct Model {
     user_id: Principal,
     data_points: Vec<DataPoint>,
     metrics: Metrics,
+    details: ModelDetails,
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct ModelDetails {
+    description: String,
+    framework: String,
+    version: String,
+    objective: String,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -172,7 +181,7 @@ fn add_dataset(
 }
 
 #[ic_cdk::update]
-fn add_model(model_name: String) -> u128 {
+fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
     check_cycles_before_action();
 
     if model_name.trim().is_empty() {
@@ -202,6 +211,12 @@ fn add_model(model_name: String) -> u128 {
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
                     },
+                    details: ModelDetails {
+                        description: model_details.description,
+                        framework: model_details.framework,
+                        version: model_details.version,
+                        objective: model_details.objective,
+                    }
                 },
             );
             *next_model_id.borrow_mut() += 1;

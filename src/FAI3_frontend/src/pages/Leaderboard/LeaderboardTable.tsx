@@ -44,11 +44,13 @@ import { DropdownMenuCheckboxes } from "../../components";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 
 
-export default function LeaderboardTable({ models }: any) {
+export default function LeaderboardTable({ models, fetchModels }: any) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const columns = [
     {
@@ -65,7 +67,7 @@ export default function LeaderboardTable({ models }: any) {
         );
       },
       cell: ({ row }: any) => (
-        console.log(row.original),
+        // console.log(row.original),
         (
           <Link
             to={`/model/${row.original.model_id}`}
@@ -218,11 +220,126 @@ export default function LeaderboardTable({ models }: any) {
     },
   });
 
+  const uploadModel = async () => {
+    setErrorMessage("");
+
+    if (newModel.name === "") {
+      setErrorMessage("Please enter a model name.");
+      return;
+    }
+
+    const model = await FAI3_backend.add_model(newModel.name, newModel.details);
+    console.log(model);
+
+    if (model) {
+      fetchModels();
+      closeModal();
+      setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
+    }
+  }
+
+  const clearModelForm = () => {
+    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
+    closeModal();
+  }
+
   return (
     <div className="w-full">
       {models && (
         <>
+          <Modal>
+            <ModalContent className="w-1/3">
+              <ModalHeader>
+                <ModalTitle>
+                  Add Model
+                </ModalTitle>
+              </ModalHeader>
+              <ModalBody className="my-4">
+                <h3 className="text-lg font-bold mb-4">
+                  Model Information
+                </h3>
+                <div>
+                  <h4 className="text-sm font-bold mb-2">
+                    Model Name
+                  </h4>
+                  <Input
+                    placeholder="Model Name"
+                    className="mb-4"
+                    value={newModel.name}
+                    onChange={(event: any) => setNewModel({ ...newModel, name: event.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold mb-2">
+                    Model Description
+                  </h4>
+                  <Input
+                    placeholder="description"
+                    className="mb-4"
+                    value={newModel.details.description}
+                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, description: event.target.value } })}
+                  />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold mb-2">
+                    Model Framework
+                  </h4>
+                  <Input
+                    placeholder="framework"
+                    className="mb-4"
+                    value={newModel.details.framework}
+                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, framework: event.target.value } })}
+                  />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold mb-2">
+                    Model Version
+                  </h4>
+                  <Input
+                    placeholder="version"
+                    className="mb-4"
+                    value={newModel.details.version}
+                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, version: event.target.value } })}
+                  />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold mb-2">
+                    Model Objective
+                  </h4>
+                  <Input
+                    placeholder="objective"
+                    className="mb-4"
+                    value={newModel.details.objective}
+                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, objective: event.target.value } })}
+                  />
+                </div>
+
+
+              </ModalBody>
+              <ModalFooter className="flex-col">
+                <div className="text-red-500 text-sm w-full text-center">
+                  {errorMessage}
+                </div>
+                <div className="flex w-full justify-end gap-2">
+                  <Button onClick={clearModelForm}>
+                    Cancel
+                  </Button>
+                  <Button onClick={uploadModel}>
+                    Add
+                  </Button>
+                </div>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+
           <div className="flex items-center justify-center py-4 mb-4 gap-3">
+            <Button onClick={openModal}>
+              Add Model
+            </Button>
             <Input
               placeholder="Search your favorite model..."
               value={table.getColumn("name")?.getFilterValue() ?? ""}
