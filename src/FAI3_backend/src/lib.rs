@@ -72,7 +72,7 @@ pub struct DataPoint {
     target: bool,
     privileged: bool,
     predicted: bool,
-    features: Vec<f64>,       // New Cols as features
+    features: Vec<f64>,
     timestamp: u64,
 }
 
@@ -111,20 +111,20 @@ thread_local! {
 fn add_dataset(
     model_id: u128,
     features: Vec<Vec<f64>>,
-    gender: Vec<String>,
     labels: Vec<bool>,
     predictions: Vec<bool>,
+    privilege_indices: Vec<usize>,
 ) {
     check_cycles_before_action();
 
-    // Verificar que la longitud de todas las columnas sea consistente
+    // Verify that all columns have consistent lengths
     let data_length = labels.len();
-    if gender.len() != data_length || predictions.len() != data_length {
-        ic_cdk::api::trap("Error: Las longitudes de gender, labels y predictions deben ser iguales.");
+    if predictions.len() != data_length {
+        ic_cdk::api::trap("Error: Lengths of labels and predictions must be equal.");
     }
     for feature_column in &features {
         if feature_column.len() != data_length {
-            ic_cdk::api::trap("Error: Todas las columnas de features deben tener la misma longitud que labels.");
+            ic_cdk::api::trap("Error: All feature columns must have the same length as labels.");
         }
     }
 
@@ -148,11 +148,19 @@ fn add_dataset(
             let mut next_data_point_id = next_data_point_id.borrow_mut();
 
             for i in 0..data_length {
-                let privileged = gender[i].to_lowercase() == "male"; // Asumimos que "male" es privilegiado
-
                 let mut feature_vector = Vec::new();
                 for feature_column in &features {
                     feature_vector.push(feature_column[i]);
+                }
+
+                // Determine if the data point belongs to a privileged group
+                let mut privileged = false;
+                for &index in &privilege_indices {
+                    if index < feature_vector.len() && feature_vector[index] > 0.0 {                
+                        // Assume that a positive value indicates belonging to a privileged group
+                        privileged = true;
+                        break;
+                    }
                 }
 
                 let data_point = DataPoint {
@@ -160,7 +168,7 @@ fn add_dataset(
                     target: labels[i],
                     privileged,
                     predicted: predictions[i],
-                    features: feature_vector.clone(), // Asegurarse de agregar las características
+                    features: feature_vector.clone(), // Ensure features are added
                     timestamp,
                 };
 
@@ -210,41 +218,6 @@ fn add_model(model_name: String) -> u128 {
     })
 }
 
-/* #[ic_cdk::update]
-fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: bool) {
-    check_cycles_before_action();
-    let caller: Principal = ic_cdk::api::caller();
-    let timestamp: u64 = ic_cdk::api::time();
-
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users.get_mut(&caller).expect("User not found");
-
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
-            let data_point_id: u128 = *next_data_point_id.borrow();
-
-            let data_point: DataPoint = DataPoint {
-                data_point_id,
-                target,
-                privileged,
-                predicted,
-                timestamp,
-            };
-
-            model.data_points.push(data_point);
-            *next_data_point_id.borrow_mut() += 1;
-        });
-    });
-} */
-
 #[ic_cdk::update]
 fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: bool, features: Vec<f64>) {
     check_cycles_before_action();
@@ -271,7 +244,7 @@ fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: boo
                 target,
                 privileged,
                 predicted,
-                features, // Añadir las características del punto de datos
+                features,
                 timestamp,
             };
 

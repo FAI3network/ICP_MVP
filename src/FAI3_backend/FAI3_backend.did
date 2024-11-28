@@ -33,7 +33,7 @@ service : {
     "delete_model": (nat) -> ();
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec text, vec bool, vec bool) -> ();
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, vec nat) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, bool, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 
