@@ -20,7 +20,8 @@ import {
   TableRow,
   TableHead,
   TableCell,
-  TableBody
+  TableBody,
+  Input
 } from "../../components/ui";
 
 import {
@@ -40,11 +41,26 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import {
+  Trash2
+} from "lucide-react";
+
+import { FAI3_backend } from "../../../../declarations/FAI3_backend";
+
+import { useParams } from "react-router-dom";
+
 export function ModelDetail({ model, metrics }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
   const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
-  const [showTable, setShowTable] = useState(false);
+  const [showUploadedContent, setShowUploadedContent] = useState(false);
+  const [imageData, setImageData] = useState<any[]>([{ label: "" }, {
+    key: "",
+    value: ""
+  }]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const { modelId } = useParams();
 
   const chartConfig = {
     SPD: {
@@ -99,14 +115,20 @@ export function ModelDetail({ model, metrics }: any) {
   };
 
   const handleFileUpload = () => {
-    Papa.parse(file as File, {
-      header: true,
-      complete: (result: Papa.ParseResult<any>) => {
-        console.log(result);
-        setUploadedData(result.data);
-        createColumns(result.data);
-      },
-    });
+    console.log("file type", file?.type);
+
+    if (file?.type.includes("csv")) {
+      Papa.parse(file as File, {
+        header: true,
+        complete: (result: Papa.ParseResult<any>) => {
+          console.log(result);
+          setUploadedData(result.data);
+          createColumns(result.data);
+        },
+      });
+    } else if (file?.type.includes("image")) {
+      setShowUploadedContent(true);
+    }
   }
 
   const createColumns = (data: any) => {
@@ -153,7 +175,7 @@ export function ModelDetail({ model, metrics }: any) {
     if (uploadedColumns.length) {
       console.log(uploadedData);
 
-      setShowTable(true);
+      setShowUploadedContent(true);
     }
   }, [uploadedColumns]);
 
@@ -161,34 +183,107 @@ export function ModelDetail({ model, metrics }: any) {
     setFile(null);
     setUploadedData([]);
     setUploadedColumns([]);
-    setShowTable(false);
+    setShowUploadedContent(false);
+  }
+
+  const clearImageData = () => {
+    setImageData([{ label: "" }, {
+      key: "",
+      value: ""
+    }]);
   }
 
   const uploadData = () => {
     //TODO: Implement storing data to smart contract
+    setErrorMessage("");
+
+    if (file?.type.includes("csv")) {
+      uploadDataSet();
+    } else {
+      console.log(imageData);
+      uploadImageData();
+      clearImageData();
+    }
 
     closeFile();
     closeModal();
+  }
+
+  const uploadImageData = () => {
+    if (!imageData[0].label) {
+      setErrorMessage("Label is required");
+      return;
+    } 
+
+    for (let i = 1; i < imageData.length; i++) {
+      if (!imageData[i].key && imageData[i].value || imageData[i].key && !imageData[i].value) {
+        setErrorMessage("Incomplete data");
+        return;
+      }
+    }
+
+
+  }
+
+  const uploadDataSet = () => {
+    //For now only the test upload csv file works
+    let dataByAtr: any = {};
+    uploadedData.forEach((d) => {
+      for (let key in d) {
+        const parsed = parseFloat(d[key]);
+        if (!isNaN(parsed)) {
+          if (!dataByAtr[key]) {
+            dataByAtr[key] = [];
+          }
+          dataByAtr[key].push(parsed);
+        }
+      }
+    });
+
+    console.log(dataByAtr);
+
+    const arg1 = [];
+
+    for (let key in dataByAtr) {
+      if (key == "Labels" || key == "Gender" || key == "Predictions") continue;
+      arg1.push(dataByAtr[key]);
+    }
+
+    const arg2 = dataByAtr["Gender"].map((d: number) => d == 1 ? "Male" : "Female");
+
+    const arg3 = dataByAtr["Labels"].map((d: number) => d == 1 ? true : false);
+
+    const arg4 = dataByAtr["Predictions"].map((d: number) => d == 1 ? true : false);
+
+    FAI3_backend.add_dataset(BigInt(modelId!), arg1, arg2, arg3, arg4);
+  }
+
+  const calculateMetrics = async () => {
+    const res = await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
+
+    if (res) {
+      console.log("Metrics calculated");
+    }
   }
 
   return (
     <div className="grid min-h-screen w-full bg-white">
       {model && metrics && (
         <section className="grid gap-8 p-6 md:p-10">
-          <div className="text-center relative">
-            <h1 className="text-4xl font-bold pb-3">{model.name}</h1>
+          <div className="text-center relative w-full">
+            <h1 className="text-4xl font-bold pb-3">{model.model_name}</h1>
             <h3>
               Get a detailed overview of the model&apos;s architecture and
               performance.
             </h3>
 
-            <div className="absolute top-1/2 right-0">
+            <div className="w-full flex">
+              <Button onClick={openModal}>
+                Upload Data
+              </Button>
               <Modal onClose={closeFile}>
-                <ModalTrigger>
-                  Upload Data
-                </ModalTrigger>
                 {
-                  showTable ? (
+                  showUploadedContent ? (
                     <ModalContent>
                       <ModalHeader>
                         <ModalTitle>{file?.name}</ModalTitle>
@@ -202,58 +297,176 @@ export function ModelDetail({ model, metrics }: any) {
                             Use another file
                           </Button>
                         </div>
-                        <Table className="overflow-scroll">
-                          <TableHeader>
-                            {uploadedTable.getHeaderGroups().map((headerGroup) => {
-                              console.log(headerGroup);
-                              return (
-                                <TableRow key={headerGroup.id}>
-                                  <TableHead>#</TableHead>
-                                  {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
-                                      {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext()
-                                        )}</TableHead>
-                                  ))}
-                                </TableRow>
-                              )
-                            })}
-                          </TableHeader>
-                          <TableBody>
-                            {uploadedTable.getRowModel().rows?.length ? (
-                              uploadedTable.getRowModel().rows.map((row) => (
-                                <TableRow
-                                  key={row.id}
-                                  data-state={row.getIsSelected() && "selected"}
-                                >
-                                  <TableCell>
-                                    {row.index + 1}
-                                  </TableCell>
-                                  {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                      {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                      )}
+                        <div className="flex w-full pt-2 text-red-700">
+                          {errorMessage}
+                        </div>
+                        {
+                          file?.type.includes("image") ? (
+                            <div>
+                              <img className="mb-4 mt-2" src={URL.createObjectURL(file)} alt="Uploaded" />
+                              <div className="flex flex-col space-y-2 items-start">
+                                <h3 className="text-lg text-gray-600 font-semibold">Data:</h3>
+                                <div className="flex w-full items-center">
+                                  <p className="text-sm text-left w-1/4">Label</p>
+                                  <strong className="text-xl mx-1">:</strong>
+                                  <Input
+                                    type="text"
+                                    placeholder="Label"
+                                    value={imageData[0].label}
+                                    onChange={(e: any) => {
+                                      const value = e.target.value;
+                                      setImageData(
+                                        imageData.map((d, i) => {
+                                          if (i === 0) {
+                                            return {
+                                              ...d,
+                                              label: value
+                                            }
+                                          }
+                                          return d;
+                                        })
+                                      )
+                                    }}
+                                    className="w-3/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+                                <div className="flex items-center flex-col gap-1">
+                                  {
+                                    imageData.map((data, index) => { 
+                                      if (index == 0) return null; 
+                                      
+                                      return (
+                                      <div key={index} className="flex w-full items-center">
+                                        <Input
+                                          type="text"
+                                          placeholder="Key"
+                                          value={data.key}
+                                          onChange={(e: any) => {
+                                            const value = e.target.value;
+                                            setImageData(
+                                              imageData.map((d, i) => {
+                                                if (i === index) {
+                                                  return {
+                                                    ...d,
+                                                    key: value
+                                                  }
+                                                }
+                                                return d;
+                                              })
+                                            )
+                                          }}
+                                          className="w-1/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <strong className="text-xl mx-1">:</strong>
+                                        <Input
+                                          type="text"
+                                          placeholder="Value"
+                                          value={data.value}
+                                          onChange={(e: any) => {
+                                            const value = e.target.value;
+                                            setImageData(
+                                              imageData.map((d, i) => {
+                                                if (i === index) {
+                                                  return {
+                                                    ...d,
+                                                    value
+                                                  }
+                                                }
+                                                return d;
+                                              })
+                                            )
+                                          }}
+                                          className="w-3/4 h-fit p-1 text-gray-600 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        {
+                                          imageData.length > 2 && (
+                                            <Button
+                                              variant="destructive"
+                                              className="ml-2"
+                                              onClick={() => setImageData(
+                                                imageData.filter((_, i) => i !== index)
+                                              )}
+                                            >
+                                              <Trash2 size={16} />
+                                            </Button>
+                                          )
+                                        }
+
+                                      </div>
+                                    )})
+                                  }
+                                  <div className="flex w-full my-2">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => setImageData([
+                                        ...imageData,
+                                        {
+                                          key: "",
+                                          value: ""
+                                        }
+                                      ])}
+                                    >
+                                      Add field
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <Table className="overflow-scroll">
+                              <TableHeader>
+                                {uploadedTable.getHeaderGroups().map((headerGroup) => {
+                                  console.log(headerGroup);
+                                  return (
+                                    <TableRow key={headerGroup.id}>
+                                      <TableHead>#</TableHead>
+                                      {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id}>
+                                          {header.isPlaceholder
+                                            ? null
+                                            : flexRender(
+                                              header.column.columnDef.header,
+                                              header.getContext()
+                                            )}</TableHead>
+                                      ))}
+                                    </TableRow>
+                                  )
+                                })}
+                              </TableHeader>
+                              <TableBody>
+                                {uploadedTable.getRowModel().rows?.length ? (
+                                  uploadedTable.getRowModel().rows.map((row) => (
+                                    <TableRow
+                                      key={row.id}
+                                      data-state={row.getIsSelected() && "selected"}
+                                    >
+                                      <TableCell>
+                                        {row.index + 1}
+                                      </TableCell>
+                                      {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                          {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext()
+                                          )}
+                                        </TableCell>
+                                      ))}
+                                    </TableRow>
+                                  ))
+                                ) : (
+                                  <TableRow>
+                                    <TableCell
+                                      colSpan={uploadedColumns.length}
+                                      className="h-24 text-center"
+                                    >
+                                      No results.
                                     </TableCell>
-                                  ))}
-                                </TableRow>
-                              ))
-                            ) : (
-                              <TableRow>
-                                <TableCell
-                                  colSpan={uploadedColumns.length}
-                                  className="h-24 text-center"
-                                >
-                                  No results.
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
+                                  </TableRow>
+                                )}
+                              </TableBody>
+                            </Table>
+                          )
+                        }
                       </ModalBody>
                     </ModalContent>
                   ) : (
@@ -263,7 +476,7 @@ export function ModelDetail({ model, metrics }: any) {
                       </ModalHeader>
                       <ModalBody>
                         <p>Upload your data to retrain the model.</p>
-                        <FileUpload onFileChange={setFile} />
+                        <FileUpload onFileChange={setFile} accept=".csv, image/*" />
                       </ModalBody>
                       <ModalFooter>
                         <Button variant="secondary" onClick={closeModal}>Cancel</Button>
@@ -274,6 +487,9 @@ export function ModelDetail({ model, metrics }: any) {
                 }
 
               </Modal>
+              <Button variant="secondary" className="ml-auto" onClick={calculateMetrics}>
+                Calculate Metrics
+              </Button>
             </div>
           </div>
           <div className="grid gap-8 lg:grid-cols-2 lg:h-[500px]">
@@ -281,26 +497,26 @@ export function ModelDetail({ model, metrics }: any) {
               <CardHeader className="">
                 <CardTitle>Model Details</CardTitle>
                 <CardDescription className="text-md">
-                  {model.description}
+                  {model.details?.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-8 max-h-96">
                 <div className="grid gap-4 h-fit text-lg">
                   <p>
-                    <strong>Framework:</strong> {model.framework}
+                    <strong>Framework:</strong> {model.details?.framework}
                   </p>
                   <p>
-                    <strong>Version:</strong> {model.version}
+                    <strong>Version:</strong> {model.details?.version}
                   </p>
                   <p>
-                    <strong>Size:</strong> {model.size}
+                    <strong>Size:</strong> {model.details?.size}
                   </p>
                   <p>
-                    <strong>Accuracy:</strong> {model.accuracy}
+                    <strong>Accuracy:</strong> {model.details?.accuracy}
                   </p>
                   <p>
                     <strong>Objective:</strong>{" "}
-                    {model.hyperparameters.objective}
+                    {model.details?.objective}
                   </p>
                 </div>
               </CardContent>
