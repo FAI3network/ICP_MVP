@@ -91,6 +91,7 @@ pub struct Model {
     user_id: Principal,
     data_points: Vec<DataPoint>,
     metrics: Metrics,
+    metrics_history: Vec<Metrics>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -210,6 +211,7 @@ fn add_model(model_name: String) -> u128 {
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
                     },
+                    metrics_history: Vec::new(),
                 },
             );
             *next_model_id.borrow_mut() += 1;
@@ -424,6 +426,7 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
 
 #[ic_cdk::update]
 fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
+    calculate_all_metrics(model_id);
     check_cycles_before_action();
     USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
         let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
@@ -446,8 +449,13 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
         let unprivileged_tpr: f32 =
             unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
 
+        let result: f32 = unprivileged_tpr - privileged_tpr;    
+        let unprivileged_tpr: f32 =
+            unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
+
         let result: f32 = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result);
+        model.metrics_history.push(model.metrics.clone());
         result
     })
 }
