@@ -20,7 +20,7 @@ export default function Leaderboard() {
     //   "user_id": Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai"),
     //   "model_id": BigInt(1),
     //   "data_points": [],
-    // },
+    // }, 
   ]);
   const [loading, setLoading] = useState(true);
 
