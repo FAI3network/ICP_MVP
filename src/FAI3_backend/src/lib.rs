@@ -82,6 +82,9 @@ pub struct Metrics {
     disparate_impact: Option<f32>,
     average_odds_difference: Option<f32>,
     equal_opportunity_difference: Option<f32>,
+    accuracy: Option<f32>,
+    precision: Option<f32>,
+    recall: Option<f32>,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -210,6 +213,9 @@ fn add_model(model_name: String) -> u128 {
                         disparate_impact: None,
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
+                        accuracy: None,
+                        recall: None,
+                        precision: None,
                     },
                     metrics_history: Vec::new(),
                 },
@@ -461,12 +467,35 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
 }
 
 #[ic_cdk::update]
-fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32) {
+fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) {
+    let statistical_parity_difference = calculate_statistical_parity_difference(model_id);
+    let disparate_impact = calculate_disparate_impact(model_id);
+    let average_odds_difference = calculate_average_odds_difference(model_id);
+    let equal_opportunity_difference = calculate_equal_opportunity_difference(model_id);
+    let accuracy = calculate_accuracy(model_id);
+    let precision = calculate_precision(model_id);
+    let recall = calculate_recall(model_id);
+
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+        model.metrics_history.push(model.metrics.clone());
+    });
+
     (
-        calculate_statistical_parity_difference(model_id),
-        calculate_disparate_impact(model_id),
-        calculate_average_odds_difference(model_id),
-        calculate_equal_opportunity_difference(model_id),
+        statistical_parity_difference,
+        disparate_impact,
+        average_odds_difference,
+        equal_opportunity_difference,
+        accuracy,
+        precision,
+        recall,
     )
 }
 
@@ -597,7 +626,25 @@ fn calculate_confusion_matrix(
         unprivileged_fn,
     )
 }
+ 
 
+ fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
+    let mut tp = 0;
+    let mut tn = 0;
+    let mut fp = 0;
+    let mut fn_ = 0;
+
+    for point in data_points {
+        match (point.target, point.predicted) {
+            (true, true) => tp += 1,
+            (false, false) => tn += 1,
+            (false, true) => fp += 1,
+            (true, false) => fn_ += 1,
+        }
+    }
+
+    (tp, tn, fp, fn_)
+}
 fn calculate_true_positive_false_negative(
     data_points: &Vec<DataPoint>,
 ) -> (i128, i128, i128, i128) {
@@ -620,4 +667,94 @@ fn calculate_true_positive_false_negative(
         unprivileged_tp,
         unprivileged_fn,
     )
+}
+
+#[ic_cdk::update]
+fn calculate_accuracy(model_id: u128) -> f32 {
+    check_cycles_before_action();
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != ic_cdk::api::caller() {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&model.data_points);
+
+        let total = tp + tn + fp + fn_;
+        if total == 0 {
+            ic_cdk::api::trap("No data points to calculate accuracy");
+        }
+
+        let accuracy = (tp + tn) as f32 / total as f32;
+        model.metrics.accuracy = Some(accuracy);
+        accuracy
+    })
+}
+
+#[ic_cdk::update]
+fn calculate_precision(model_id: u128) -> f32 {
+    check_cycles_before_action();
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != ic_cdk::api::caller() {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        let (tp, _, fp, _) = calculate_overall_confusion_matrix(&model.data_points);
+
+        let denominator = tp + fp;
+        if denominator == 0 {
+            ic_cdk::api::trap("No positive predictions to calculate precision");
+        }
+
+        let precision = tp as f32 / denominator as f32;
+        model.metrics.precision = Some(precision);
+        precision
+    })
+}
+
+#[ic_cdk::update]
+fn calculate_recall(model_id: u128) -> f32 {
+    check_cycles_before_action();
+    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
+        let mut users = users.borrow_mut();
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != ic_cdk::api::caller() {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&model.data_points);
+
+        let denominator = tp + fn_;
+        if denominator == 0 {
+            ic_cdk::api::trap("No actual positives to calculate recall");
+        }
+
+        let recall = tp as f32 / denominator as f32;
+        model.metrics.recall = Some(recall);
+        recall
+    })
 }
