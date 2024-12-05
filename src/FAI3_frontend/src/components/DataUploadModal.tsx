@@ -129,6 +129,7 @@ export default function DataUploadModal() {
     setUploadedData([]);
     setUploadedColumns([]);
     setShowUploadedContent(false);
+    setCurrentSection(0);
   }
 
   const clearImageData = () => {
@@ -205,8 +206,37 @@ export default function DataUploadModal() {
     FAI3_backend.add_dataset(BigInt(modelId!), arg1, arg2, arg3, arg4);
   }
 
-  const confirmDataUpload = () => {
+  const confirmDataUpload = async () => {
+    let labels: boolean[] = [];
+    let predictions: boolean[] = [];
+    const privledgedIndexs: bigint[] = []; //index of columns that are privledged
+    let features: number[][] = [];
+
+    for (let i = 0; i < uploadedColumns.length; i++) {
+      if (uploadedColumns[i].accessorKey === formattedData.labels) {
+        labels = uploadedTable.getRowModel().rows.map((row) => (row.original[formattedData.labels] == 1 ? true : false));
+      } else if (uploadedColumns[i].accessorKey === formattedData.predictions) {
+        predictions = uploadedTable.getRowModel().rows.map((row) => (row.original[formattedData.predictions] == 1 ? true : false));
+      } else if (uploadedColumns[i].accessorKey === formattedData.privledged) {
+        console.log("privledged", i);
+        privledgedIndexs.push(BigInt(i));
+      } else {
+        features.push(uploadedTable.getRowModel().rows.map((row) => parseFloat(row.original[uploadedColumns[i].accessorKey])));
+      }
+    }
+
+
     console.log(formattedData);
+    console.log(labels);
+    console.log(predictions);
+    console.log(privledgedIndexs);
+    console.log(features);
+
+    await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
+  
+    console.log("Data uploaded");
+    closeFile();
+    closeModal();
   }
 
   const DataPreviewSection = () => (
@@ -447,24 +477,27 @@ export default function DataUploadModal() {
           </div>
         </div>
       </ModalBody>
-      <ModalFooter>
-        <Button variant="secondary" onClick={closeModal}>Cancel</Button>
-        <Button onClick={confirmDataUpload}>Confirm and Upload</Button>
+      <ModalFooter className="flex flex-row justify-between">
+        <Button variant="secondary" onClick={() => setCurrentSection(0)}>Back</Button>
+        <div className="flex gap-4">
+          <Button variant="secondary" onClick={closeModal}>Cancel</Button>
+          <Button onClick={confirmDataUpload}>Confirm and Upload</Button>
+        </div>
       </ModalFooter>
     </ModalContent>
   )
 
   const SelectComp = ({ options, selection, setSelection }: any) => (
     <Select.Root value={selection} onValueChange={(value: string) => setSelection(value)}>
-      <Select.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white text-violet-700 shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
+      <Select.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
         <Select.Value placeholder="Select a fruit…" />
-        <Select.Icon className="text-violet-700">
+        <Select.Icon>
           <ChevronDown />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
         <Select.Content className="overflow-hidden bg-white rounded-lg shadow-lg z-50">
-          <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-violet-700 cursor-default">
+          <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-white cursor-default">
             <ChevronDown />
           </Select.ScrollUpButton>
           <Select.Viewport className="p-1">
@@ -476,7 +509,7 @@ export default function DataUploadModal() {
               }
             </Select.Group>
           </Select.Viewport>
-          <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-white text-violet-700 cursor-default">
+          <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-white cursor-default">
             <ChevronDown />
           </Select.ScrollDownButton>
         </Select.Content>
@@ -489,7 +522,7 @@ export default function DataUploadModal() {
 
       return (
         <Select.Item
-          className={cn("text-sm leading-none text-violet-700 rounded flex items-center h-6 px-6 py-1 relative select-none", className)}
+          className={cn("text-sm leading-none rounded flex items-center h-6 px-6 py-1 relative select-none", className)}
           {...props}
           ref={forwardedRef}
         >
