@@ -1,0 +1,138 @@
+import {
+  Button,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalTitle,
+  ModalFooter,
+  closeModal,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableBody,
+  Input
+} from "../ui";
+
+import FileUpload from "../FileUpload";
+
+import { useEffect, useState, forwardRef } from "react";
+
+import Papa from "papaparse";
+
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
+import {
+  Trash2
+} from "lucide-react";
+
+import { FAI3_backend } from "../../../../declarations/FAI3_backend";
+
+import { useParams } from "react-router-dom";
+
+import * as Select from "@radix-ui/react-select";
+import { cn } from "../../utils";
+import { Check, ChevronDown } from "lucide-react";
+
+import ColumnSelectionSection from "./ColumnSelectionSection";
+import CSVTableView from "./CSVTableView";
+import ImageUploader from "./ImageUploader";
+import UploadDataFile from "./UploadDataFile";
+
+import { DataUploadContext } from "./utils";
+
+export default function DataUploadModal() {
+  const [file, setFile] = useState<File | null>(null);
+  const [data, setData] = useState<any[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
+  const [uploadedContent, setUploadedContent] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const { modelId } = useParams();
+
+  const closeFile = () => {
+    setFile(null);
+    setUploadedContent(false);
+    setCurrentStep(0);
+  }
+
+  useEffect(() => {
+    if (file?.type.includes("csv")) {
+      Papa.parse(file as File, {
+        header: true,
+        complete: (result: Papa.ParseResult<any>) => {
+          //Do not accept filelds that are empty strings
+          //Remove the empty string field
+          if (result.data[0][""] !== undefined) {
+            result.data.forEach((element: any) => {
+              delete element[""];
+            });
+          }
+
+          setData(result.data);
+          createColumns(result.data);
+        },
+      });
+    }
+  }, [file]);
+
+  const createColumns = (receivedData: any[]) => {
+    const object = receivedData[0];
+
+    const columnsObject = Object.keys(object).map((key, index) => {
+      return {
+        id: index.toString(),
+        accessorKey: key,
+        header: ({ column }: any) => {
+          return (
+            <div className="flex justify-center items-center">
+              {key}
+            </div>
+          );
+        },
+        cell: ({ row }: any) => {
+          const value = row.original[key];
+          const parsed = parseFloat(value);
+          return isNaN(parsed) ? (
+            <div className="flex justify-center items-center">
+              {value}
+            </div>
+          ) : (
+            <div className="flex justify-center items-center">
+              {Number.isInteger(parsed) ? parsed : parsed.toFixed(2)}
+            </div>
+          )
+        },
+      };
+    });
+
+    setColumns(columnsObject);
+  }
+
+  const table = useReactTable({
+    data: data || [],
+    columns: columns || [],
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const steps = [
+    <UploadDataFile />,
+    <ImageUploader />,
+    <CSVTableView />,
+    <ColumnSelectionSection />
+  ];
+
+  return (
+    <DataUploadContext.Provider value={{ modelId, file, setFile, currentStep, setCurrentStep, table, columns, data, closeFile }}>
+      <Modal onClose={closeFile}>
+        {steps[currentStep]}
+      </Modal>
+    </DataUploadContext.Provider>
+  )
+}

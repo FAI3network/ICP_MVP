@@ -40,11 +40,11 @@ import * as Select from "@radix-ui/react-select";
 import { cn } from "../utils";
 import { Check, ChevronDown } from "lucide-react";
 
-export default function DataUploadModal() {
+function DataUploadModal() {
   const [currentSection, setCurrentSection] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
-  const [uploadedColumns, setUploadedColumns] = useState<any[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
   const [showUploadedContent, setShowUploadedContent] = useState(false);
   const [imageData, setImageData] = useState<any[]>([{ label: "" }, {
     key: "",
@@ -60,13 +60,10 @@ export default function DataUploadModal() {
   const { modelId } = useParams();
 
   const handleFileUpload = () => {
-    console.log("file type", file?.type);
-
     if (file?.type.includes("csv")) {
       Papa.parse(file as File, {
         header: true,
         complete: (result: Papa.ParseResult<any>) => {
-          console.log(result);
           setUploadedData(result.data);
           createColumns(result.data);
         },
@@ -79,7 +76,7 @@ export default function DataUploadModal() {
   const createColumns = (data: any) => {
     const object = data[0];
 
-    const columns = Object.keys(object).map((key, index) => {
+    const columnsObject = Object.keys(object).map((key, index) => {
       return {
         id: index.toString(),
         accessorKey: key,
@@ -106,33 +103,28 @@ export default function DataUploadModal() {
       };
     });
 
-    setUploadedColumns(columns);
+    setColumns(columnsObject);
   }
 
   const uploadedTable = useReactTable({
     data: uploadedData || [],
-    columns: uploadedColumns || [],
+    columns: columns || [],
     getCoreRowModel: getCoreRowModel(),
   });
 
   useEffect(() => {
-    console.log(uploadedColumns);
-    if (uploadedColumns.length) {
-      console.log(uploadedData);
-
+    if (columns.length) {
       setShowUploadedContent(true);
     }
-  }, [uploadedColumns]);
+  }, [columns]);
 
   const closeFile = () => {
     setFile(null);
     setUploadedData([]);
-    setUploadedColumns([]);
+    setColumns([]);
     setShowUploadedContent(false);
     setCurrentSection(0);
-  }
 
-  const clearImageData = () => {
     setImageData([{ label: "" }, {
       key: "",
       value: ""
@@ -140,20 +132,14 @@ export default function DataUploadModal() {
   }
 
   const uploadData = () => {
-    //TODO: Implement storing data to smart contract
     setErrorMessage("");
 
     if (file?.type.includes("csv")) {
-      // uploadDataSet();
-      setCurrentSection(1);
-      return;
+      confirmDataUpload();
     } else {
-      console.log(imageData);
       uploadImageData();
-      clearImageData();
     }
 
-    closeFile();
     closeModal();
   }
 
@@ -173,70 +159,25 @@ export default function DataUploadModal() {
 
   }
 
-  const uploadDataSet = () => {
-    //For now only the test upload csv file works
-    let dataByAtr: any = {};
-    uploadedData.forEach((d) => {
-      for (let key in d) {
-        const parsed = parseFloat(d[key]);
-        if (!isNaN(parsed)) {
-          if (!dataByAtr[key]) {
-            dataByAtr[key] = [];
-          }
-          dataByAtr[key].push(parsed);
-        }
-      }
-    });
-
-    console.log(dataByAtr);
-
-    const arg1 = [];
-
-    for (let key in dataByAtr) {
-      if (key == "Labels" || key == "Gender" || key == "Predictions") continue;
-      arg1.push(dataByAtr[key]);
-    }
-
-    const arg2 = dataByAtr["Gender"].map((d: number) => d == 1 ? "Male" : "Female");
-
-    const arg3 = dataByAtr["Labels"].map((d: number) => d == 1 ? true : false);
-
-    const arg4 = dataByAtr["Predictions"].map((d: number) => d == 1 ? true : false);
-
-    FAI3_backend.add_dataset(BigInt(modelId!), arg1, arg2, arg3, arg4);
-  }
-
   const confirmDataUpload = async () => {
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
     const privledgedIndexs: bigint[] = []; //index of columns that are privledged
     let features: number[][] = [];
 
-    for (let i = 0; i < uploadedColumns.length; i++) {
-      if (uploadedColumns[i].accessorKey === formattedData.labels) {
+    for (let i = 0; i < columns.length; i++) {
+      if (columns[i].accessorKey === formattedData.labels) {
         labels = uploadedTable.getRowModel().rows.map((row) => (row.original[formattedData.labels] == 1 ? true : false));
-      } else if (uploadedColumns[i].accessorKey === formattedData.predictions) {
+      } else if (columns[i].accessorKey === formattedData.predictions) {
         predictions = uploadedTable.getRowModel().rows.map((row) => (row.original[formattedData.predictions] == 1 ? true : false));
-      } else if (uploadedColumns[i].accessorKey === formattedData.privledged) {
-        console.log("privledged", i);
+      } else if (columns[i].accessorKey === formattedData.privledged) {
         privledgedIndexs.push(BigInt(i));
       } else {
-        features.push(uploadedTable.getRowModel().rows.map((row) => parseFloat(row.original[uploadedColumns[i].accessorKey])));
+        features.push(uploadedTable.getRowModel().rows.map((row) => parseFloat(row.original[columns[i].accessorKey])));
       }
     }
 
-
-    console.log(formattedData);
-    console.log(labels);
-    console.log(predictions);
-    console.log(privledgedIndexs);
-    console.log(features);
-
     await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
-  
-    console.log("Data uploaded");
-    closeFile();
-    closeModal();
   }
 
   const DataPreviewSection = () => (
@@ -246,7 +187,7 @@ export default function DataUploadModal() {
       </ModalHeader>
       <ModalBody>
         <div className="flex w-full gap-2">
-          <Button onClick={uploadData}>
+          <Button onClick={() => setCurrentSection(1)}>
             Upload
           </Button>
           <Button variant="secondary" onClick={closeFile}>
@@ -373,7 +314,6 @@ export default function DataUploadModal() {
             <Table className="overflow-scroll">
               <TableHeader>
                 {uploadedTable.getHeaderGroups().map((headerGroup) => {
-                  console.log(headerGroup);
                   return (
                     <TableRow key={headerGroup.id}>
                       <TableHead>#</TableHead>
@@ -413,7 +353,7 @@ export default function DataUploadModal() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={uploadedColumns.length}
+                      colSpan={columns.length}
                       className="h-24 text-center"
                     >
                       No results.
@@ -441,7 +381,7 @@ export default function DataUploadModal() {
               Labels:
             </h3>
             <SelectComp
-              options={uploadedColumns.map((col) => col.accessorKey)}
+              options={columns.map((col) => col.accessorKey)}
               selection={formattedData.labels}
               setSelection={(selection: any) => setFormattedData({
                 ...formattedData,
@@ -454,7 +394,7 @@ export default function DataUploadModal() {
               Predictions:
             </h3>
             <SelectComp
-              options={uploadedColumns.map((col) => col.accessorKey)}
+              options={columns.map((col) => col.accessorKey)}
               selection={formattedData.predictions}
               setSelection={(selection: any) => setFormattedData({
                 ...formattedData,
@@ -467,7 +407,7 @@ export default function DataUploadModal() {
               Privledged:
             </h3>
             <SelectComp
-              options={uploadedColumns.map((col) => col.accessorKey)}
+              options={columns.map((col) => col.accessorKey)}
               selection={formattedData.privledged}
               setSelection={(selection: any) => setFormattedData({
                 ...formattedData,
@@ -481,7 +421,7 @@ export default function DataUploadModal() {
         <Button variant="secondary" onClick={() => setCurrentSection(0)}>Back</Button>
         <div className="flex gap-4">
           <Button variant="secondary" onClick={closeModal}>Cancel</Button>
-          <Button onClick={confirmDataUpload}>Confirm and Upload</Button>
+          <Button onClick={uploadData}>Confirm and Upload</Button>
         </div>
       </ModalFooter>
     </ModalContent>
