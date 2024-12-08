@@ -1,9 +1,12 @@
 import FileUpload from "../FileUpload";
 import { ModalContent, ModalHeader, ModalTitle, ModalBody, ModalFooter, Button, closeModal } from "../ui";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { DataUploadContext } from "./utils";
+import * as Switch from "@radix-ui/react-switch";
 
 export default function UploadDataFile() {
+  const [isCompleteDataset, setIsCompleteDataset] = useState(true);
+
   const { file, setFile, setCurrentStep }: {
     file: File | null,
     setFile: (file: File) => void,
@@ -11,11 +14,9 @@ export default function UploadDataFile() {
   } = useContext(DataUploadContext);
 
   const handleNextStep = () => {
-    if (file?.type.includes("csv")) {
-      setCurrentStep(2);
-    } else if (file?.type.includes("image")) {
-      setCurrentStep(1);
-    }
+    if (isCompleteDataset) setCurrentStep(3);
+
+    if (file?.type.includes("csv")) setCurrentStep(1);
   }
 
   return (
@@ -25,7 +26,25 @@ export default function UploadDataFile() {
       </ModalHeader>
       <ModalBody>
         <p>Upload your data to retrain the model.</p>
-        <FileUpload onFileChange={setFile} accept=".csv, image/*" />
+        <div className="flex items-center my-2">
+          <label
+            className="pr-[15px] text-[15px] leading-none"
+            htmlFor="airplane-mode"
+          >
+            Complete Dataset
+          </label>
+          <Switch.Root
+            className="relative h-[20px] w-[38px] cursor-default rounded-full bg-gray-300 data-[state=checked]:bg-black"
+            id="airplane-mode"
+            defaultChecked
+            onCheckedChange={(e) => setIsCompleteDataset(e)}
+          >
+            <Switch.Thumb
+              className="block size-[15px] translate-x-0.5 rounded-full bg-white transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[19px]"
+            />
+          </Switch.Root>
+        </div>
+        <FileUpload onFileChange={setFile} accept=".csv, image/*" multiple />
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={closeModal}>Cancel</Button>

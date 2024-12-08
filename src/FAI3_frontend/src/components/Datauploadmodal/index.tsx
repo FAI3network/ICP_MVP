@@ -1,50 +1,13 @@
-import {
-  Button,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalTitle,
-  ModalFooter,
-  closeModal,
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableBody,
-  Input
-} from "../ui";
-
-import FileUpload from "../FileUpload";
-
-import { useEffect, useState, forwardRef } from "react";
-
+import { Modal } from "../ui";
+import { useEffect, useState } from "react";
 import Papa from "papaparse";
-
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-
-import {
-  Trash2
-} from "lucide-react";
-
-import { FAI3_backend } from "../../../../declarations/FAI3_backend";
-
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useParams } from "react-router-dom";
-
-import * as Select from "@radix-ui/react-select";
-import { cn } from "../../utils";
-import { Check, ChevronDown } from "lucide-react";
-
 import ColumnSelectionSection from "./ColumnSelectionSection";
 import CSVTableView from "./CSVTableView";
 import ImageUploader from "./ImageUploader";
 import UploadDataFile from "./UploadDataFile";
-
+import CreateDataset from "./CreateDataset";
 import { DataUploadContext } from "./utils";
 
 export default function DataUploadModal() {
@@ -123,9 +86,9 @@ export default function DataUploadModal() {
 
   const steps = [
     <UploadDataFile />,
-    <ImageUploader />,
     <CSVTableView />,
-    <ColumnSelectionSection />
+    <ColumnSelectionSection />,
+    <CreateDataset />,
   ];
 
   return (

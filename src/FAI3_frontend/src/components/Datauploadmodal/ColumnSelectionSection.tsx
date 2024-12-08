@@ -97,5 +97,5 @@ export default function ColumnSelectionSection() {
         </div>
       </ModalFooter>
     </ModalContent>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Input } from "./ui";
 
-export default function FileUpload({ onFileChange, accept = "*/*" }: { accept?: string, onFileChange: (file: File) => void }) {
+export default function FileUpload({ onFileChange, accept = "*/*", multiple = false }: { accept?: string, onFileChange: (file: File) => void, multiple?: boolean }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -51,6 +51,7 @@ export default function FileUpload({ onFileChange, accept = "*/*" }: { accept?: 
           accept={accept}
           style={{ display: "none" }}
           onChange={handleFileSelect}
+          multiple={multiple}
         />
       </div>
   </div>
