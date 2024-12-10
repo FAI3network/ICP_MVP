@@ -126,7 +126,7 @@ fn add_dataset(
     features: Vec<Vec<f64>>,
     labels: Vec<bool>,
     predictions: Vec<bool>,
-    privilege_indices: Vec<usize>,
+    privilege_indices: Vec<u128>,
 ) {
     check_cycles_before_action();
 
@@ -169,11 +169,15 @@ fn add_dataset(
                 // Determine if the data point belongs to a privileged group
                 let mut privileged = false;
                 for &index in &privilege_indices {
-                    if index < feature_vector.len() && feature_vector[index] > 0.0 {                
+                    if (index as usize) < feature_vector.len() && feature_vector[index as usize] > 0.0 {                
                         // Assume that a positive value indicates belonging to a privileged group
                         privileged = true;
                         break;
                     }
+                    // if index == i {
+                    //     privileged = true;
+                    //     break;
+                    // }
                 }
 
                 let data_point = DataPoint {

@@ -77,8 +77,8 @@ export default function Model() {
       console.log(metrics);
     };
 
-    // fetchModel();
-    // fetchMetrics();
+    fetchModel();
+    fetchMetrics();
   }, [modelId]);
 
   return (

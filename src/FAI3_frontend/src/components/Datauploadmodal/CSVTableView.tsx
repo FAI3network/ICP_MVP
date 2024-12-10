@@ -21,11 +21,14 @@ export default function CSVTableView() {
       </ModalHeader>
       <ModalBody>
         <div className="flex w-full gap-2">
-          <Button onClick={() => setCurrentStep(currentStep + 1)}>
-            Upload
-          </Button>
           <Button variant="secondary" onClick={closeFile}>
             Use another file
+          </Button>
+          <Button className="bg-slate-600">
+            Add more data
+          </Button>
+          <Button onClick={() => setCurrentStep(currentStep + 1)}>
+            Next
           </Button>
           {/* <div className="flex w-full pt-2 text-red-700">
             {errorMessage}

@@ -5,9 +5,7 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useParams } from "react-router-dom";
 import ColumnSelectionSection from "./ColumnSelectionSection";
 import CSVTableView from "./CSVTableView";
-import ImageUploader from "./ImageUploader";
 import UploadDataFile from "./UploadDataFile";
-import CreateDataset from "./CreateDataset";
 import { DataUploadContext } from "./utils";
 
 export default function DataUploadModal() {
@@ -88,7 +86,6 @@ export default function DataUploadModal() {
     <UploadDataFile />,
     <CSVTableView />,
     <ColumnSelectionSection />,
-    <CreateDataset />,
   ];
 
   return (
