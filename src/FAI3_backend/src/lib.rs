@@ -85,6 +85,7 @@ pub struct Metrics {
     accuracy: Option<f32>,
     precision: Option<f32>,
     recall: Option<f32>,
+    timestamp: u64,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -399,6 +400,7 @@ fn calculate_statistical_parity_difference(model_id: u128) -> f32 {
             unprivileged_positive_count,
         ) = calculate_group_counts(&model.data_points);
 
+        // Handle empty group scenario
         if privileged_count == 0 || unprivileged_count == 0 {
             ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
         }
@@ -410,6 +412,10 @@ fn calculate_statistical_parity_difference(model_id: u128) -> f32 {
 
         let result: f32 = unprivileged_probability - privileged_probability;
         model.metrics.statistical_parity_difference = Some(result);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         result
     })
 }
@@ -454,6 +460,10 @@ fn calculate_disparate_impact(model_id: u128) -> f32 {
 
         let result: f32 = unprivileged_probability / privileged_probability;
         model.metrics.disparate_impact = Some(result);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         result
     })
 }
@@ -505,6 +515,10 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
         let result: f32 =
             ((unprivileged_fpr - privileged_fpr) + (unprivileged_tpr - privileged_tpr)) / 2.0;
         model.metrics.average_odds_difference = Some(result);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         result
     })
 }
@@ -542,6 +556,10 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
         let result = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result);
         model.metrics_history.push(model.metrics.clone());
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         result
     })
 }
@@ -565,6 +583,11 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
             .models
             .get_mut(&model_id)
             .expect("Model not found or not owned by user");
+        
+        // Update the timestamp again here if needed, or rely on the last calculated metric
+        model.metrics.timestamp = ic_cdk::api::time();
+        
+        // Push the updated metrics to the history
         model.metrics_history.push(model.metrics.clone());
     });
 
@@ -774,7 +797,12 @@ fn calculate_accuracy(model_id: u128) -> f32 {
         }
 
         let accuracy = (tp + tn) as f32 / total as f32;
+        
         model.metrics.accuracy = Some(accuracy);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         accuracy
     })
 }
@@ -804,7 +832,12 @@ fn calculate_precision(model_id: u128) -> f32 {
         }
 
         let precision = tp as f32 / denominator as f32;
+
         model.metrics.precision = Some(precision);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+
         precision
     })
 }
@@ -834,7 +867,12 @@ fn calculate_recall(model_id: u128) -> f32 {
         }
 
         let recall = tp as f32 / denominator as f32;
+
         model.metrics.recall = Some(recall);
+
+        // Update timestamp after calculation
+        model.metrics.timestamp = ic_cdk::api::time();
+        
         recall
     })
 }
