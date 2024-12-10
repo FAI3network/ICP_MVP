@@ -110,7 +110,7 @@ thread_local! {
 }
 
 // Operations
-
+/* 
 #[ic_cdk::update]
 fn add_dataset(
     model_id: u128,
@@ -181,7 +181,79 @@ fn add_dataset(
             }
         });
     });
+} */
+
+#[ic_cdk::update]
+fn add_dataset(
+    model_id: u128,
+    features: Vec<Vec<f64>>,
+    labels: Vec<bool>,
+    predictions: Vec<bool>,
+    privilege_indices: Vec<u64>, 
+) {
+    check_cycles_before_action();
+
+    // Verify that all columns have consistent lengths (unchanged)
+    let data_length = labels.len();
+    if predictions.len() != data_length {
+        ic_cdk::api::trap("Error: Lengths of labels and predictions must be equal.");
+    }
+    for feature_column in &features {
+        if feature_column.len() != data_length {
+            ic_cdk::api::trap("Error: All feature columns must have the same length as labels.");
+        }
+    }
+
+    let caller: Principal = ic_cdk::api::caller();
+    let timestamp: u64 = ic_cdk::api::time();
+
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users.get_mut(&caller).expect("User not found");
+
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+
+        if model.user_id != caller {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
+            let mut next_data_point_id = next_data_point_id.borrow_mut();
+            for i in 0..data_length {
+                let mut feature_vector = Vec::new();
+                for feature_column in &features {
+                    feature_vector.push(feature_column[i]);
+                }
+
+                // Determine privileged status using u64 and casting to usize
+                let mut privileged = false;
+                for &index in &privilege_indices {
+                    let idx = index as usize; 
+                    if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
+                        privileged = true;
+                        break;
+                    }
+                }
+
+                let data_point = DataPoint {
+                    data_point_id: *next_data_point_id,
+                    target: labels[i],
+                    privileged,
+                    predicted: predictions[i],
+                    features: feature_vector.clone(),
+                    timestamp,
+                };
+
+                model.data_points.push(data_point);
+                *next_data_point_id += 1;
+            }
+        });
+    });
 }
+
 
 #[ic_cdk::update]
 fn add_model(model_name: String) -> u128 {
@@ -439,14 +511,13 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
 
 #[ic_cdk::update]
 fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
-    calculate_all_metrics(model_id);
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users
             .get_mut(&ic_cdk::api::caller())
             .expect("User not found");
-        let model: &mut Model = user
+        let model = user
             .models
             .get_mut(&model_id)
             .expect("Model not found or not owned by user");
@@ -465,15 +536,10 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
             ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
         }
 
-        let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn) as f32;
-        let unprivileged_tpr: f32 =
-            unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
+        let privileged_tpr = privileged_tp as f32 / privileged_positive_total as f32;
+        let unprivileged_tpr = unprivileged_tp as f32 / unprivileged_positive_total as f32;
 
-        let result: f32 = unprivileged_tpr - privileged_tpr;    
-        let unprivileged_tpr: f32 =
-            unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
-
-        let result: f32 = unprivileged_tpr - privileged_tpr;
+        let result = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result);
         model.metrics_history.push(model.metrics.clone());
         result
