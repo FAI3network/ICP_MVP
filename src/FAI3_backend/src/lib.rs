@@ -327,10 +327,9 @@ fn calculate_statistical_parity_difference(model_id: u128) -> f32 {
             unprivileged_positive_count,
         ) = calculate_group_counts(&model.data_points);
 
-        assert!(
-            privileged_count > 0 && unprivileged_count > 0,
-            "No data for one of the groups"
-        );
+        if privileged_count == 0 || unprivileged_count == 0 {
+            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+        }
 
         let privileged_probability: f32 =
             privileged_positive_count as f32 / privileged_count as f32;
@@ -367,10 +366,9 @@ fn calculate_disparate_impact(model_id: u128) -> f32 {
             unprivileged_positive_count,
         ) = calculate_group_counts(&model.data_points);
 
-        assert!(
-            privileged_count > 0 && unprivileged_count > 0,
-            "No data for one of the groups"
-        );
+        if privileged_count == 0 || unprivileged_count == 0 {
+            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+        }
 
         let privileged_probability: f32 =
             privileged_positive_count as f32 / privileged_count as f32;
@@ -416,6 +414,15 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
             unprivileged_fn,
         ) = calculate_confusion_matrix(&model.data_points);
 
+        let privileged_positive_total = privileged_tp + privileged_fn;
+        let unprivileged_positive_total = unprivileged_tp + unprivileged_fn;
+        let privileged_negative_total = privileged_fp + privileged_tn;
+        let unprivileged_negative_total = unprivileged_fp + unprivileged_tn;
+
+        if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
+            ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
+        }
+
         let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn) as f32;
         let unprivileged_tpr: f32 =
             unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
@@ -450,6 +457,13 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
 
         let (privileged_tp, privileged_fn, unprivileged_tp, unprivileged_fn) =
             calculate_true_positive_false_negative(&model.data_points);
+
+        let privileged_positive_total = privileged_tp + privileged_fn;
+        let unprivileged_positive_total = unprivileged_tp + unprivileged_fn;
+
+        if privileged_positive_total == 0 || unprivileged_positive_total == 0 {
+            ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
+        }
 
         let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn) as f32;
         let unprivileged_tpr: f32 =
