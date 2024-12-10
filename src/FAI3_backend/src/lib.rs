@@ -289,6 +289,7 @@ fn add_model(model_name: String) -> u128 {
                         accuracy: None,
                         recall: None,
                         precision: None,
+                        timestamp: 0, 
                     },
                     metrics_history: Vec::new(),
                 },
