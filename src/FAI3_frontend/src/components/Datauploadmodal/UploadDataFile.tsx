@@ -6,14 +6,19 @@ import * as Switch from "@radix-ui/react-switch";
 
 export default function UploadDataFile() {
   const { file, setFile, setCurrentStep }: {
-    file: File | null,
-    setFile: (file: File) => void,
+    file: File | File[] | null,
+    setFile: (file: File | File[]) => void,
     setCurrentStep: (step: number) => void
   } = useContext(DataUploadContext);
 
   const handleNextStep = () => {
-    if (file?.type.includes("csv")) setCurrentStep(1);
+    if (Array.isArray(file)) {
+      if (file.length > 0 && file[0].type.includes("csv")) setCurrentStep(1);
+    } else if (file?.type.includes("csv")) {
+      setCurrentStep(1);
+    }
   }
+
 
   return (
     <ModalContent>
@@ -22,7 +27,7 @@ export default function UploadDataFile() {
       </ModalHeader>
       <ModalBody>
         <p>Upload your data to retrain the model.</p>
-        <FileUpload onFileChange={setFile} accept=".csv, image/*" multiple />
+        <FileUpload onFileChange={setFile} accept=".csv" multiple />
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={closeModal}>Cancel</Button>

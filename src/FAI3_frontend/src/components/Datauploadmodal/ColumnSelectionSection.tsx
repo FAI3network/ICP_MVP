@@ -38,6 +38,7 @@ export default function ColumnSelectionSection() {
     }
 
     await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
+    closeModal();
   }
 
   return (

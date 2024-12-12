@@ -203,7 +203,7 @@ fn add_dataset(
     features: Vec<Vec<f64>>,
     labels: Vec<bool>,
     predictions: Vec<bool>,
-    privilege_indices: Vec<u64>, 
+    privilege_indices: Vec<u128>, 
 ) {
     check_cycles_before_action();
 

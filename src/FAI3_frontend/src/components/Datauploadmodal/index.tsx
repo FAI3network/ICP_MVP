@@ -24,8 +24,9 @@ export default function DataUploadModal() {
   }
 
   useEffect(() => {
-    if (file?.type.includes("csv")) {
-      Papa.parse(file as File, {
+    if (file && !Array.isArray(file) && file.type.includes("csv") || file && Array.isArray(file) && file[0].type.includes("csv")) {
+      const readingFile = Array.isArray(file) ? file[0] : file;
+      Papa.parse(readingFile as File, {
         header: true,
         complete: (result: Papa.ParseResult<any>) => {
           //Do not accept filelds that are empty strings
@@ -35,6 +36,8 @@ export default function DataUploadModal() {
               delete element[""];
             });
           }
+
+          console.log(result.data);
 
           setData(result.data);
           createColumns(result.data);
