@@ -147,3 +147,11 @@ Verify that metrics integrate well with the rest of the codebase and can be trig
   - Pass Criteria:
 No unexpected changes in metric values for unchanged code or data, ensuring that future modifications do not break existing functionality.
 
+## Running Tests
+From your project directory, run:
+
+```bash
+cargo test
+```
+Cargo will compile the code (and tests) and run all tests in your project locally.
+
