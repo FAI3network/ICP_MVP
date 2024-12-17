@@ -213,7 +213,7 @@ fn calculate_recall_internal(data_points: &Vec<DataPoint>) -> f32 {
 mod test_accuracy {
     use candid::Principal;
 
-    use crate::{Metrics, Model};
+    use crate::{Metrics, Model, ModelDetails};
 
     use super::*;
  // Assuming this function exists
@@ -237,6 +237,12 @@ mod test_accuracy {
                 recall: None,
                 timestamp: 0,
             },
+            details: ModelDetails{
+                description: "Description".to_string(),
+                framework: "Framework".to_string(),
+                version: "Version".to_string(),
+                objective: "Objective".to_string(),
+            },
             metrics_history: vec![],
         };
 
@@ -258,7 +264,7 @@ mod test_accuracy {
 mod test_statistical_parity {
     use candid::Principal;
 
-    use crate::{Metrics, Model};
+    use crate::{Metrics, Model, ModelDetails};
 
     use super::*;
 
@@ -279,6 +285,12 @@ mod test_statistical_parity {
                 precision: None,
                 recall: None,
                 timestamp: 0,
+            },
+            details: ModelDetails{
+                description: "Description".to_string(),
+                framework: "Framework".to_string(),
+                version: "Version".to_string(),
+                objective: "Objective".to_string(),
             },
             metrics_history: vec![],
         };
