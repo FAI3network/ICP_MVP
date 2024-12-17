@@ -1,9 +1,12 @@
+mod tests;
+
 use candid::{CandidType, Deserialize, Principal};
-use ic_cdk::api::call::CallResult;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-/* #[ic_cdk::update]
+/* 
+
+#[ic_cdk::update]
 async fn add_example_data_points(model_id: u128) -> CallResult<()> {
     check_cycles_before_action();
 
@@ -28,7 +31,7 @@ async fn add_example_data_points(model_id: u128) -> CallResult<()> {
     }
 
     Ok(())
-} */
+} 
 
 fn get_random_bit(bytes: &[u8], index: &mut usize) -> bool {
     let byte_index = *index / 8;
@@ -42,6 +45,8 @@ fn get_random_bit(bytes: &[u8], index: &mut usize) -> bool {
 
     (bytes[byte_index] & (1 << bit_index)) != 0
 }
+
+*/
 
 // Cycles management
 
