@@ -7,6 +7,7 @@ import { Input } from './input';
 import { Checkbox } from './checkbox';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle, } from './chart';
 import { Modal, ModalContent, ModalTrigger, ModalHeader, ModalBody, ModalTitle, ModalFooter, openModal, closeModal } from './modal';
+import { Select } from './select';
 
 export {
   Button,
@@ -58,4 +59,5 @@ export {
   ModalFooter,
   openModal,
   closeModal,
+  Select,
 }

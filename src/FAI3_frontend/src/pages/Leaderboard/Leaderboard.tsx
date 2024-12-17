@@ -20,7 +20,7 @@ export default function Leaderboard() {
     //   "user_id": Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai"),
     //   "model_id": BigInt(1),
     //   "data_points": [],
-    // },
+    // }, 
   ]);
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +30,13 @@ export default function Leaderboard() {
 
   const fetchModels = async () => {
     setLoading(true);
-    const models = await FAI3_backend.get_all_models();
-    setModelsWithDetails(models);
-    console.log(models);
+    try {
+      const models = await FAI3_backend.get_all_models();
+      setModelsWithDetails(models);
+      console.log(models);
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
 

@@ -32,7 +32,7 @@ export const Modal = React.forwardRef(({ className, onClose = null, ...props }: 
     <ModalContext.Provider value={{ isOpen, open, close }}>
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black bg-opacity-50 p-4 w-full h-full",
+          "fixed inset-0 z-30 bg-black bg-opacity-50 p-4 w-full h-full",
           className
         )}
         style={{ display: isOpen ? "flex" : "none" }}
