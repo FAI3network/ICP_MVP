@@ -7,6 +7,7 @@ import ColumnSelectionSection from "./ColumnSelectionSection";
 import CSVTableView from "./CSVTableView";
 import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
+import ImageUploader from "./ImageUploader";
 
 export default function DataUploadModal() {
   const [file, setFile] = useState<File | null>(null);
@@ -14,6 +15,7 @@ export default function DataUploadModal() {
   const [columns, setColumns] = useState<any[]>([]);
   const [uploadedContent, setUploadedContent] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [additionalImages, setAdditionalImages] = useState<any[]>([]);
 
   const { modelId } = useParams();
 
@@ -89,10 +91,11 @@ export default function DataUploadModal() {
     <UploadDataFile />,
     <CSVTableView />,
     <ColumnSelectionSection />,
+    <ImageUploader />
   ];
 
   return (
-    <DataUploadContext.Provider value={{ modelId, file, setFile, currentStep, setCurrentStep, table, columns, data, closeFile }}>
+    <DataUploadContext.Provider value={{ modelId, file, setFile, currentStep, setCurrentStep, table, columns, data, closeFile, additionalImages, setAdditionalImages }}>
       <Modal onClose={closeFile}>
         {steps[currentStep]}
       </Modal>

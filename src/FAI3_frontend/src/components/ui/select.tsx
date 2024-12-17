@@ -6,7 +6,7 @@ import { cn } from "../../utils";
 export const Select = ({ options, selection, setSelection }: any) => (
   <RadixSelect.Root value={selection} onValueChange={(value: string) => setSelection(value)}>
     <RadixSelect.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
-      <RadixSelect.Value placeholder="Select a fruit…" />
+      <RadixSelect.Value placeholder="Select a column…" />
       <RadixSelect.Icon>
         <ChevronDown />
       </RadixSelect.Icon>
