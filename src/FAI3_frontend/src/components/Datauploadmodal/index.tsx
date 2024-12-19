@@ -9,7 +9,7 @@ import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal() {
+export default function DataUploadModal({ fetchModel }: { fetchModel: () => Promise<any> }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
@@ -90,7 +90,7 @@ export default function DataUploadModal() {
   const steps = [
     <UploadDataFile />,
     <CSVTableView />,
-    <ColumnSelectionSection />,
+    <ColumnSelectionSection fetchModel={fetchModel} />,
     <ImageUploader />
   ];
 

@@ -4,7 +4,7 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
 
-export default function ColumnSelectionSection() {
+export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () => Promise<any> }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -18,8 +18,11 @@ export default function ColumnSelectionSection() {
     predictions: "",
     privledged: ""
   })
+  const [loading, setLoading] = useState(false);
 
   const uploadData = async () => {
+    setLoading(true);
+
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
     const privledgedIndexs: bigint[] = []; //index of columns that are privledged
@@ -37,8 +40,21 @@ export default function ColumnSelectionSection() {
       }
     }
 
-    await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
+    await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs)
+    await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
+    await fetchModel();
+    setLoading(false);
     closeModal();
+  }
+
+  if (loading) {
+    return (
+      <ModalContent closeButton={false} className="h-1/4 w-1/4 flex justify-center items-center">
+        <ModalBody>
+          <h1 className="text-2xl font-semibold text-gray-800">Uploading Data...</h1>
+        </ModalBody>
+      </ModalContent>
+    )
   }
 
   return (

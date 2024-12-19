@@ -580,7 +580,6 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
 
         let result = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result);
-        model.metrics_history.push(model.metrics.clone());
 
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
