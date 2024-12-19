@@ -12,6 +12,10 @@ type Metrics = record {
   disparate_impact: opt float32;
   average_odds_difference: opt float32;
   equal_opportunity_difference: opt float32;
+  accuracy: opt float32;
+  precision: opt float32;
+  recall: opt float32;
+  timestamp: nat64;
 };
 
 type Model = record {
@@ -21,6 +25,7 @@ type Model = record {
   data_points: vec DataPoint;
   metrics: Metrics;
   details: ModelDetails;
+  metrics_history: vec Metrics;
 };
 
 type ModelDetails = record {

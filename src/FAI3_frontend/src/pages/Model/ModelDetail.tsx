@@ -112,6 +112,8 @@ export function ModelDetail({ model, metrics }: any) {
     }
   }
 
+  console.log(model, metrics);
+
   return (
     <div className="grid min-h-screen w-full bg-white">
       {model && metrics && (
@@ -173,15 +175,15 @@ export function ModelDetail({ model, metrics }: any) {
             </CardHeader>
             <CardContent className="grid grid-cols-3 gap-6">
               <div className="flex flex-col items-center gap-2">
-                <div className="text-4xl font-bold">0.92</div>
+                <div className="text-4xl font-bold">{Number(model.metrics.accuracy).toFixed(2)}</div>
                 <div className="text-muted-foreground">Accuracy</div>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="text-4xl font-bold">0.88</div>
+                <div className="text-4xl font-bold">{Number(model.metrics.precision).toFixed(2)}</div>
                 <div className="text-muted-foreground">Precision</div>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="text-4xl font-bold">0.94</div>
+                <div className="text-4xl font-bold">{Number(model.metrics.recall).toFixed(2)}</div>
                 <div className="text-muted-foreground">Recall</div>
               </div>
             </CardContent>
