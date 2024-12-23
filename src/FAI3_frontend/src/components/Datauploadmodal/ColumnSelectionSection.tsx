@@ -46,7 +46,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
     // await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
     await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
     console.log("using webapp")
-    // await webapp?.calculate_all_metrics(BigInt(modelId!));
+    await webapp?.calculate_all_metrics(BigInt(modelId!));
     await fetchModel();
     setLoading(false);
     closeModal();

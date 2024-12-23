@@ -4,7 +4,7 @@ use candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-/* 
+/*
 
 #[ic_cdk::update]
 async fn add_example_data_points(model_id: u128) -> CallResult<()> {
@@ -31,7 +31,7 @@ async fn add_example_data_points(model_id: u128) -> CallResult<()> {
     }
 
     Ok(())
-} 
+}
 
 fn get_random_bit(bytes: &[u8], index: &mut usize) -> bool {
     let byte_index = *index / 8;
@@ -109,7 +109,7 @@ pub struct ModelDetails {
     description: String,
     framework: String,
     version: String,
-    objective: String
+    objective: String,
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
@@ -119,13 +119,58 @@ pub struct User {
 }
 
 thread_local! {
+    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("2vxsx-fae").unwrap()]);
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
 }
 
+// Will use this once deployed, for now, we will already have the admin in the list
+// #[ic_cdk::init]
+// fn init() {
+// let deployer = ic_cdk::caller();
+// ADMINS.with(|admins| {
+//     admins.borrow_mut().push(deployer);
+// });
+// }
+
+#[ic_cdk::query]
+fn whoami() -> Principal {
+    ic_cdk::api::caller()
+}
+
+#[ic_cdk::query]
+fn is_admin() -> bool {
+    ADMINS.with(|admins| {
+        let admins = admins.borrow();
+        admins.contains(&ic_cdk::api::caller())
+    })
+}
+
+fn only_admin() {
+    if !is_admin() {
+        ic_cdk::api::trap("Unauthorized: You are not an admin");
+    }
+}
+
+#[ic_cdk::update]
+fn add_admin(admin: String) {
+    only_admin();
+    check_cycles_before_action();
+    ADMINS.with(|admins| {
+        admins
+            .borrow_mut()
+            .push(Principal::from_text(admin).unwrap());
+    });
+}
+
+#[ic_cdk::query]
+fn get_admins() -> Vec<Principal> {
+    ADMINS.with(|admins| admins.borrow().clone())
+}
+
 // Operations
-/* 
+/*
 #[ic_cdk::update]
 fn add_dataset(
     model_id: u128,
@@ -175,7 +220,7 @@ fn add_dataset(
                 // Determine if the data point belongs to a privileged group
                 let mut privileged = false;
                 for &index in &privilege_indices {
-                    if (index as usize) < feature_vector.len() && feature_vector[index as usize] > 0.0 {                
+                    if (index as usize) < feature_vector.len() && feature_vector[index as usize] > 0.0 {
                         // Assume that a positive value indicates belonging to a privileged group
                         privileged = true;
                         break;
@@ -208,7 +253,7 @@ fn add_dataset(
     features: Vec<Vec<f64>>,
     labels: Vec<bool>,
     predictions: Vec<bool>,
-    privilege_indices: Vec<u128>, 
+    privilege_indices: Vec<u128>,
 ) {
     check_cycles_before_action();
 
@@ -250,7 +295,7 @@ fn add_dataset(
                 // Determine privileged status using u64 and casting to usize
                 let mut privileged = false;
                 for &index in &privilege_indices {
-                    let idx = index as usize; 
+                    let idx = index as usize;
                     if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
                         privileged = true;
                         break;
@@ -273,9 +318,9 @@ fn add_dataset(
     });
 }
 
-
 #[ic_cdk::update]
 fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
+    only_admin();
     check_cycles_before_action();
 
     if model_name.trim().is_empty() {
@@ -307,7 +352,7 @@ fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
                         accuracy: None,
                         recall: None,
                         precision: None,
-                        timestamp: 0, 
+                        timestamp: 0,
                     },
                     details: ModelDetails {
                         description: model_details.description,
@@ -325,7 +370,13 @@ fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
 }
 
 #[ic_cdk::update]
-fn add_data_point(model_id: u128, target: bool, privileged: bool, predicted: bool, features: Vec<f64>) {
+fn add_data_point(
+    model_id: u128,
+    target: bool,
+    privileged: bool,
+    predicted: bool,
+    features: Vec<f64>,
+) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
@@ -607,10 +658,10 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
             .models
             .get_mut(&model_id)
             .expect("Model not found or not owned by user");
-        
+
         // Update the timestamp again here if needed, or rely on the last calculated metric
         model.metrics.timestamp = ic_cdk::api::time();
-        
+
         // Push the updated metrics to the history
         model.metrics_history.push(model.metrics.clone());
     });
@@ -625,7 +676,6 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
         recall,
     )
 }
-
 
 #[ic_cdk::update]
 fn test_function() -> bool {
@@ -753,9 +803,8 @@ fn calculate_confusion_matrix(
         unprivileged_fn,
     )
 }
- 
 
- fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
+fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
     let mut tp = 0;
     let mut tn = 0;
     let mut fp = 0;
@@ -821,7 +870,7 @@ fn calculate_accuracy(model_id: u128) -> f32 {
         }
 
         let accuracy = (tp + tn) as f32 / total as f32;
-        
+
         model.metrics.accuracy = Some(accuracy);
 
         // Update timestamp after calculation
@@ -896,7 +945,7 @@ fn calculate_recall(model_id: u128) -> f32 {
 
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
-        
+
         recall
     })
 }

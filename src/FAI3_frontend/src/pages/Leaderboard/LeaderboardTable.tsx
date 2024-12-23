@@ -54,6 +54,16 @@ export default function LeaderboardTable({ fetchModels }: any) {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { webapp, connect, connected } = useAuthClient();
   const { Models } = useDataContext();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (connected) {
+      (async () => {
+        const is_admin: boolean = await (webapp?.is_admin() as Promise<boolean>);
+        setIsAdmin(is_admin);
+      })();
+    }
+  }, [connected])
 
   const columns = [
     {
@@ -342,11 +352,13 @@ export default function LeaderboardTable({ fetchModels }: any) {
           </Modal>
 
           <div className="flex items-center justify-center py-4 mb-4 gap-3">
-            <Button onClick={() => {
-              connected ? openModal() : connect();
-            }}>
-              Add Model
-            </Button>
+            {
+              isAdmin && (
+                <Button onClick={openModal}>
+                  Add Model
+                </Button>
+              )
+            }
             <Input
               placeholder="Search your favorite model..."
               value={table.getColumn("name")?.getFilterValue() ?? ""}

@@ -26,7 +26,10 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
   const { address, webapp } = useAuthClient();
 
   useEffect(() => {
-    if (Object.keys(model).length === 0 || !address) return;
+    if (Object.keys(model).length === 0 || !address) {
+      setIsOwner(false)
+      return;
+    };
 
     console.log(model)
 
@@ -34,7 +37,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       setIsOwner(true)
       console.log("Owner")
     }
-  })
+  }, [model, address])
 
   const chartConfig = {
     SPD: {
@@ -93,9 +96,9 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     // await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
     console.log(BigInt(modelId!))
     await webapp?.calculate_all_metrics(BigInt(modelId!))
-    .catch((e: Error) => {
-      console.error(e.message);
-    })
+      .catch((e: Error) => {
+        console.error(e.message);
+      })
 
     await fetchModel();
     setLoading(false);
@@ -164,13 +167,13 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
               </CardContent>
             </Card>
             {
-              model.metrics?.timestamp != BigInt(0) && (
+              metrics.length > 0 && (
                 <TabChart chartData={metrics} />
               )
             }
           </div>
           {
-            model.metrics?.timestamp != BigInt(0) ? (
+            metrics.length > 0 ? (
               <>
                 <Card className="bg-[#fffaeb]">
                   <CardHeader>

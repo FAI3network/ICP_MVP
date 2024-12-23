@@ -40,7 +40,13 @@ type User = record {
   models: vec record { nat; Model };
 };
 
-service : {
+service : () -> {
+    // User management
+    "whoami": () -> (principal);
+    "is_admin": () -> (bool);
+    "add_admin": (text) -> ();
+    "get_admins": () -> (vec principal);
+
     // Model management
     "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();

@@ -25,7 +25,7 @@ export default function Navbar() {
             {
               webapp && authClient ? (
                 <>
-                  <p className="text-sm mx-2">
+                  <p className="text-sm mx-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(address)}>
                     {formatAddress(address)}
                   </p>
                   <Button onClick={disconnect}>Logout</Button>
