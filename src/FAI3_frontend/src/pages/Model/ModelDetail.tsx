@@ -8,23 +8,33 @@ import {
   Button,
   openModal,
 } from "../../components/ui";
-
 import {
   LineChartchart,
   TabChart
 } from "../../components/charts";
-
 import { DataUploadModal } from "../../components";
-
-import { useState } from "react";
-
+import { useState, useEffect, useContext } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
-
 import { useParams } from "react-router-dom";
+import { useAuthClient } from "../../utils";
+import { Principal } from "@dfinity/principal";
 
 export function ModelDetail({ model, metrics, fetchModel }: any) {
   const { modelId } = useParams();
   const [loading, setLoading] = useState(false);
+  const [isOwner, setIsOwner] = useState(false)
+  const { address, webapp } = useAuthClient();
+
+  useEffect(() => {
+    if (Object.keys(model).length === 0 || !address) return;
+
+    console.log(model)
+
+    if (Principal.fromUint8Array(model.user_id._arr).toString() == address) {
+      setIsOwner(true)
+      console.log("Owner")
+    }
+  })
 
   const chartConfig = {
     SPD: {
@@ -80,7 +90,13 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
 
   const calculateMetrics = async () => {
     setLoading(true);
-    await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
+    // await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
+    console.log(BigInt(modelId!))
+    await webapp?.calculate_all_metrics(BigInt(modelId!))
+    .catch((e: Error) => {
+      console.error(e.message);
+    })
+
     await fetchModel();
     setLoading(false);
   };
@@ -101,15 +117,22 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
               performance.
             </h3>
 
-            <div className="w-full flex">
-              <Button onClick={openModal}>
-                Upload Data
-              </Button>
-              <DataUploadModal fetchModel={fetchModel} />
-              <Button variant="secondary" className="ml-auto" onClick={calculateMetrics}>
-                Calculate Metrics
-              </Button>
-            </div>
+            {
+              isOwner && (
+                <>
+                  <div className="w-full flex">
+                    <Button onClick={openModal}>
+                      Upload Data
+                    </Button>
+                    <DataUploadModal fetchModel={fetchModel} />
+                    <Button variant="secondary" className="ml-auto" onClick={calculateMetrics}>
+                      Calculate Metrics
+                    </Button>
+                  </div>
+                </>
+              )
+            }
+
           </div>
           <div className="grid gap-8 lg:grid-cols-2 lg:h-[500px]">
             <Card className="bg-[#fffaeb]">

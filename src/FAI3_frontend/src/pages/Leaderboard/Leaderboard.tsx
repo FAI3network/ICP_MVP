@@ -4,25 +4,12 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { Model } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { Button } from "../../components/ui";
 import { Principal } from "@dfinity/principal";
+import { useAuthClient } from "../../utils";
 
 export default function Leaderboard() {
-  const [modelsWithDetails, setModelsWithDetails] = useState<
-    Model[]
-  >([
-    //   {
-    //   "metrics": {
-    //     "equal_opportunity_difference": [-0.128571428571428572],
-    //     "statistical_parity_difference": [0.735294117647058822],
-    //     "disparate_impact": [-0.111515151515151515],
-    //     "average_odds_difference": [-0.066666666666666667]
-    //   },
-    //   "model_name": "Credit Scoring Xgboost Model",
-    //   "user_id": Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai"),
-    //   "model_id": BigInt(1),
-    //   "data_points": [],
-    // }, 
-  ]);
+  const [modelsWithDetails, setModelsWithDetails] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
+  const { webapp, connected } = useAuthClient();
 
   useEffect(() => {
     fetchModels();
@@ -30,13 +17,11 @@ export default function Leaderboard() {
 
   const fetchModels = async () => {
     setLoading(true);
-    try {
-      const models = await FAI3_backend.get_all_models();
-      setModelsWithDetails(models);
-      console.log(models);
-    } catch (e) {
-      console.error(e);
-    }
+    // const models = await FAI3_backend.get_all_models();
+    const models: Model[] = connected ? await (webapp?.get_all_models() as Promise<Model[]>) : await FAI3_backend.get_all_models();
+    
+    setModelsWithDetails(models);
+    console.log(models);
     setLoading(false);
   };
 

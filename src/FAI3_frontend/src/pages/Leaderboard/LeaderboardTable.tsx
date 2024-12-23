@@ -42,6 +42,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DropdownMenuCheckboxes } from "../../components";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend"
+import { useAuthClient } from "../../utils";
 
 
 export default function LeaderboardTable({ models, fetchModels }: any) {
@@ -51,6 +52,7 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
   const [rowSelection, setRowSelection] = useState({});
   const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const { webapp, connect, connected } = useAuthClient();
 
   const columns = [
     {
@@ -228,7 +230,9 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
       return;
     }
 
-    const model = await FAI3_backend.add_model(newModel.name, newModel.details);
+    // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
+    console.log(webapp);
+    const model = await webapp?.add_model(newModel.name, newModel.details);
     console.log(model);
 
     if (model) {
@@ -337,7 +341,9 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
           </Modal>
 
           <div className="flex items-center justify-center py-4 mb-4 gap-3">
-            <Button onClick={openModal}>
+            <Button onClick={() => {
+              connected ? openModal() : connect();
+            }}>
               Add Model
             </Button>
             <Input

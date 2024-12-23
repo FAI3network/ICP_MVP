@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ModelDetail } from "./ModelDetail";
 import { useParams } from "react-router-dom";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend"
+import { useAuthClient } from "../../utils";
+import { Model as ModelType } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
 interface Metric {
   timestamp: string;
@@ -13,6 +15,7 @@ interface Metric {
 
 export default function Model() {
   const { modelId } = useParams();
+  const { webapp, connected } = useAuthClient();
 
   const [modelWithDetails, setModelWithDetails] = useState({
     // "name": "Credit Scoring Xgboost Model",
@@ -35,18 +38,19 @@ export default function Model() {
 
   const fetchModel = async () => {
     let id = BigInt(modelId || "");
-    const model = await FAI3_backend.get_model(id);
+    // const model = await FAI3_backend.get_model(id);
+    const model: ModelType = connected ? await (webapp?.get_model(id) as Promise<ModelType>) : await FAI3_backend.get_model(id);
+
+    console.log(model);
 
     setModelWithDetails(model);
 
-    const metricsHistory = model.metrics_history;
+    const metricsHistory = model?.metrics_history;
 
     if (!Array.isArray(metricsHistory)) {
       console.error("Invalid metrics response");
       return;
     }
-
-    console.log(metricsHistory);
 
     const metricsList: any[] = [];
 
@@ -64,8 +68,9 @@ export default function Model() {
 
     setMetrics(metricsList);
 
-    // console.log(model);
-    console.log(metricsList);
+    console.log(model);
+    console.log(model.user_id);
+    // console.log(metricsList);
   };
 
   useEffect(() => {
