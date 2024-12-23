@@ -1,10 +1,12 @@
 import { cn } from "./cn"
-import { authClientContext, useAuthClient } from "./context"
+import { AuthClientContext, useAuthClient, DataContext, useDataContext } from "./context"
 import { formatAddress } from "./formatter"
 
 export {
   cn,
-  authClientContext,
+  AuthClientContext,
   formatAddress,
-  useAuthClient
+  useAuthClient,
+  DataContext,
+  useDataContext,
 }

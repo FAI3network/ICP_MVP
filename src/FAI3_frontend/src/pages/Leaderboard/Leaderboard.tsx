@@ -4,23 +4,27 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { Model } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { Button } from "../../components/ui";
 import { Principal } from "@dfinity/principal";
-import { useAuthClient } from "../../utils";
+import { useAuthClient, useDataContext } from "../../utils";
 
 export default function Leaderboard() {
-  const [modelsWithDetails, setModelsWithDetails] = useState<Model[]>([]);
-  const [loading, setLoading] = useState(true);
   const { webapp, connected } = useAuthClient();
+  const { setModels, Models } = useDataContext();
+  const [loading, setLoading] = useState(Models.length === 0);
 
   useEffect(() => {
+    if (Models.length > 0) return;
+
     fetchModels();
   }, [])
 
   const fetchModels = async () => {
+    console.log("fetching")
     setLoading(true);
     // const models = await FAI3_backend.get_all_models();
+    console.log(connected);
     const models: Model[] = connected ? await (webapp?.get_all_models() as Promise<Model[]>) : await FAI3_backend.get_all_models();
     
-    setModelsWithDetails(models);
+    setModels(models);
     console.log(models);
     setLoading(false);
   };
@@ -39,7 +43,7 @@ export default function Leaderboard() {
       {loading ? (
         <div className="w-full text-center">Loading...</div>
       ) : (
-        <LeaderboardTable models={modelsWithDetails} fetchModels={fetchModels} />
+        <LeaderboardTable fetchModels={fetchModels} />
       )}
     </div>
   );

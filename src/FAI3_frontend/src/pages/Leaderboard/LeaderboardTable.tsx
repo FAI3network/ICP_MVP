@@ -42,10 +42,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DropdownMenuCheckboxes } from "../../components";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend"
-import { useAuthClient } from "../../utils";
+import { useAuthClient, useDataContext } from "../../utils";
 
 
-export default function LeaderboardTable({ models, fetchModels }: any) {
+export default function LeaderboardTable({ fetchModels }: any) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -53,6 +53,7 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
   const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { webapp, connect, connected } = useAuthClient();
+  const { Models } = useDataContext();
 
   const columns = [
     {
@@ -204,7 +205,7 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
   ];
 
   const table = useReactTable({
-    data: models,
+    data: Models,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -249,7 +250,7 @@ export default function LeaderboardTable({ models, fetchModels }: any) {
 
   return (
     <div className="w-full">
-      {models && (
+      {Models && (
         <>
           <Modal>
             <ModalContent className="w-1/3">
