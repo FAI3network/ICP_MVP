@@ -1,18 +1,24 @@
+// Uncomment or remove if you have a separate tests module.
 mod tests;
-
 
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
 use serde::{Deserialize, Serialize};
+
+
+use ic_cdk::api::management_canister::http_request::{
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
+};
+
+use ic_cdk_macros::*;
+
+use num_traits::cast::ToPrimitive; 
+
 use std::cell::RefCell;
 use std::collections::HashMap;
-use ic_cdk::api::management_canister::http_request::{
-    http_request, HttpHeader, HttpMethod, HttpRequestArg, HttpResponse,
-};
-use ic_cdk_macros::*;
-use ic_cdk::export::candid::Principal;
-use ic_cdk::api::call::RejectionCode;
 
-// Cycles management
+// ---------------------------------------------------------------------
+//                           Cycle Management
+// ---------------------------------------------------------------------
 
 const CYCLE_THRESHOLD: u64 = 1_000_000_000;
 
@@ -33,9 +39,11 @@ fn check_cycles_before_action() {
     stop_if_low_cycles();
 }
 
-// ---------- Data Structures ---------- //
+// ---------------------------------------------------------------------
+//                           Data Structures
+// ---------------------------------------------------------------------
 
-// For canister data structures, use Candid's versions: CandidType + CandidDeserialize
+// Use Candid for on-chain data
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
     data_point_id: u128,
@@ -83,87 +91,16 @@ pub struct User {
     models: HashMap<u128, Model>,
 }
 
-// ---------- Global State ---------- //
-
+// In-memory state
 thread_local! {
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
 }
 
-// ---------- Operations ---------- //
-
-#[ic_cdk::update]
-fn add_dataset(
-    model_id: u128,
-    features: Vec<Vec<f64>>,
-    labels: Vec<bool>,
-    predictions: Vec<bool>,
-    privilege_indices: Vec<u128>,
-) {
-    check_cycles_before_action();
-
-    // Verify that all columns have consistent lengths
-    let data_length = labels.len();
-    if predictions.len() != data_length {
-        ic_cdk::api::trap("Error: Lengths of labels and predictions must be equal.");
-    }
-    for feature_column in &features {
-        if feature_column.len() != data_length {
-            ic_cdk::api::trap("Error: All feature columns must have the same length as labels.");
-        }
-    }
-
-    let caller = ic_cdk::api::caller();
-    let timestamp = ic_cdk::api::time();
-
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users.get_mut(&caller).expect("User not found");
-
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
-            let mut next_data_point_id = next_data_point_id.borrow_mut();
-
-            for i in 0..data_length {
-                let mut feature_vector = Vec::new();
-                for feature_column in &features {
-                    feature_vector.push(feature_column[i]);
-                }
-
-                // Determine if the data point is privileged
-                let mut privileged = false;
-                for &index in &privilege_indices {
-                    let idx = index as usize;
-                    if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
-                        privileged = true;
-                        break;
-                    }
-                }
-
-                let data_point = DataPoint {
-                    data_point_id: *next_data_point_id,
-                    target: labels[i],
-                    privileged,
-                    predicted: predictions[i],
-                    features: feature_vector.clone(),
-                    timestamp,
-                };
-
-                model.data_points.push(data_point);
-                *next_data_point_id += 1;
-            }
-        });
-    });
-}
+// ---------------------------------------------------------------------
+//                     Model & DataPoint Operations
+// ---------------------------------------------------------------------
 
 #[ic_cdk::update]
 fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -196,8 +133,8 @@ fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
                         accuracy: None,
-                        recall: None,
                         precision: None,
+                        recall: None,
                         timestamp: 0,
                     },
                     details: model_details,
@@ -236,7 +173,6 @@ fn add_data_point(
 
         NEXT_DATA_POINT_ID.with(|next_data_point_id| {
             let data_point_id = *next_data_point_id.borrow();
-
             let data_point = DataPoint {
                 data_point_id,
                 target,
@@ -245,9 +181,77 @@ fn add_data_point(
                 features,
                 timestamp,
             };
-
             model.data_points.push(data_point);
             *next_data_point_id.borrow_mut() += 1;
+        });
+    });
+}
+
+#[ic_cdk::update]
+fn add_dataset(
+    model_id: u128,
+    features: Vec<Vec<f64>>,
+    labels: Vec<bool>,
+    predictions: Vec<bool>,
+    privilege_indices: Vec<u128>,
+) {
+    check_cycles_before_action();
+
+    let data_length = labels.len();
+    if predictions.len() != data_length {
+        ic_cdk::api::trap("Error: Lengths of labels and predictions must be equal.");
+    }
+    for feature_column in &features {
+        if feature_column.len() != data_length {
+            ic_cdk::api::trap("Error: Feature columns must match label length.");
+        }
+    }
+
+    let caller = ic_cdk::api::caller();
+    let timestamp = ic_cdk::api::time();
+
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users.get_mut(&caller).expect("User not found");
+
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
+        if model.user_id != caller {
+            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+        }
+
+        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
+            let mut next_data_point_id = next_data_point_id.borrow_mut();
+            for i in 0..data_length {
+                let mut feature_vector = Vec::new();
+                for feature_column in &features {
+                    feature_vector.push(feature_column[i]);
+                }
+
+                // Determine privileged
+                let mut privileged = false;
+                for &index in &privilege_indices {
+                    let idx = index as usize;
+                    if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
+                        privileged = true;
+                        break;
+                    }
+                }
+
+                let data_point = DataPoint {
+                    data_point_id: *next_data_point_id,
+                    target: labels[i],
+                    privileged,
+                    predicted: predictions[i],
+                    features: feature_vector.clone(),
+                    timestamp,
+                };
+
+                model.data_points.push(data_point);
+                *next_data_point_id += 1;
+            }
         });
     });
 }
@@ -293,7 +297,9 @@ fn delete_data_point(model_id: u128, data_point_id: u128) {
     });
 }
 
-// ---------- Metric Calculations ---------- //
+// ---------------------------------------------------------------------
+//                         Metrics Calculations
+// ---------------------------------------------------------------------
 
 #[ic_cdk::update]
 fn calculate_statistical_parity_difference(model_id: u128) -> f32 {
@@ -307,20 +313,20 @@ fn calculate_statistical_parity_difference(model_id: u128) -> f32 {
             .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (priv_count, unpriv_count, priv_pos, unpriv_pos) =
             calculate_group_counts(&model.data_points);
 
         if priv_count == 0 || unpriv_count == 0 {
-            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+            ic_cdk::api::trap("No data in one group");
         }
 
-        let privileged_prob = priv_pos as f32 / priv_count as f32;
-        let unprivileged_prob = unpriv_pos as f32 / unpriv_count as f32;
+        let p_prob = priv_pos as f32 / priv_count as f32;
+        let u_prob = unpriv_pos as f32 / unpriv_count as f32;
+        let result = u_prob - p_prob;
 
-        let result = unprivileged_prob - privileged_prob;
         model.metrics.statistical_parity_difference = Some(result);
         model.metrics.timestamp = ic_cdk::api::time();
         result
@@ -339,25 +345,24 @@ fn calculate_disparate_impact(model_id: u128) -> f32 {
             .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (priv_count, unpriv_count, priv_pos, unpriv_pos) =
             calculate_group_counts(&model.data_points);
 
         if priv_count == 0 || unpriv_count == 0 {
-            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+            ic_cdk::api::trap("No data in one group");
         }
 
-        let privileged_probability = priv_pos as f32 / priv_count as f32;
-        let unprivileged_probability = unpriv_pos as f32 / unpriv_count as f32;
+        let p_prob = priv_pos as f32 / priv_count as f32;
+        let u_prob = unpriv_pos as f32 / unpriv_count as f32;
 
-        assert!(
-            privileged_probability > 0.0,
-            "Privileged group has no positive outcomes"
-        );
+        if p_prob <= 0.0 {
+            ic_cdk::api::trap("Privileged group has no positive outcomes");
+        }
 
-        let result = unprivileged_probability / privileged_probability;
+        let result = u_prob / p_prob;
         model.metrics.disparate_impact = Some(result);
         model.metrics.timestamp = ic_cdk::api::time();
         result
@@ -376,27 +381,25 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
             .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
-        let (
-            p_tp, p_fp, p_tn, p_fn,
-            u_tp, u_fp, u_tn, u_fn
-        ) = calculate_confusion_matrix(&model.data_points);
+        let (p_tp, p_fp, p_tn, p_fn, u_tp, u_fp, u_tn, u_fn) =
+            calculate_confusion_matrix(&model.data_points);
 
-        let p_pos_total = p_tp + p_fn;
-        let u_pos_total = u_tp + u_fn;
-        let p_neg_total = p_fp + p_tn;
-        let u_neg_total = u_fp + u_tn;
+        let p_pos = p_tp + p_fn;
+        let u_pos = u_tp + u_fn;
+        let p_neg = p_fp + p_tn;
+        let u_neg = u_fp + u_tn;
 
-        if p_pos_total == 0 || u_pos_total == 0 || p_neg_total == 0 || u_neg_total == 0 {
-            ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
+        if p_pos == 0 || u_pos == 0 || p_neg == 0 || u_neg == 0 {
+            ic_cdk::api::trap("No data or no positives/negatives in one group");
         }
 
-        let p_tpr = p_tp as f32 / p_pos_total as f32;
-        let u_tpr = u_tp as f32 / u_pos_total as f32;
-        let p_fpr = p_fp as f32 / p_neg_total as f32;
-        let u_fpr = u_fp as f32 / u_neg_total as f32;
+        let p_tpr = p_tp as f32 / p_pos as f32;
+        let u_tpr = u_tp as f32 / u_pos as f32;
+        let p_fpr = p_fp as f32 / p_neg as f32;
+        let u_fpr = u_fp as f32 / u_neg as f32;
 
         let result = ((u_fpr - p_fpr) + (u_tpr - p_tpr)) / 2.0;
         model.metrics.average_odds_difference = Some(result);
@@ -417,22 +420,21 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
             .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (p_tp, p_fn, u_tp, u_fn) = calculate_true_positive_false_negative(&model.data_points);
+        let p_pos = p_tp + p_fn;
+        let u_pos = u_tp + u_fn;
 
-        let p_pos_total = p_tp + p_fn;
-        let u_pos_total = u_tp + u_fn;
-
-        if p_pos_total == 0 || u_pos_total == 0 {
-            ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
+        if p_pos == 0 || u_pos == 0 {
+            ic_cdk::api::trap("No positive data in one group");
         }
 
-        let p_tpr = p_tp as f32 / p_pos_total as f32;
-        let u_tpr = u_tp as f32 / u_pos_total as f32;
-
+        let p_tpr = p_tp as f32 / p_pos as f32;
+        let u_tpr = u_tp as f32 / u_pos as f32;
         let result = u_tpr - p_tpr;
+
         model.metrics.equal_opportunity_difference = Some(result);
         model.metrics_history.push(model.metrics.clone());
         model.metrics.timestamp = ic_cdk::api::time();
@@ -446,10 +448,13 @@ fn calculate_accuracy(model_id: u128) -> f32 {
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
-        let model = user.models.get_mut(&model_id).expect("Model not found or not owned by user");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&model.data_points);
@@ -471,16 +476,19 @@ fn calculate_precision(model_id: u128) -> f32 {
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
-        let model = user.models.get_mut(&model_id).expect("Model not found or not owned by user");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (tp, _, fp, _) = calculate_overall_confusion_matrix(&model.data_points);
         let denominator = tp + fp;
         if denominator == 0 {
-            ic_cdk::api::trap("No positive predictions to calculate precision");
+            ic_cdk::api::trap("No positive predictions for precision");
         }
 
         let precision = tp as f32 / denominator as f32;
@@ -496,16 +504,19 @@ fn calculate_recall(model_id: u128) -> f32 {
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
-        let model = user.models.get_mut(&model_id).expect("Model not found or not owned by user");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
 
         if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
+            ic_cdk::api::trap("Unauthorized");
         }
 
         let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&model.data_points);
         let denominator = tp + fn_;
         if denominator == 0 {
-            ic_cdk::api::trap("No actual positives to calculate recall");
+            ic_cdk::api::trap("No actual positives for recall");
         }
 
         let recall = tp as f32 / denominator as f32;
@@ -528,7 +539,10 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
     USERS.with(|users| {
         let mut users = users.borrow_mut();
         let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
-        let model = user.models.get_mut(&model_id).expect("Model not found or not owned by user");
+        let model = user
+            .models
+            .get_mut(&model_id)
+            .expect("Model not found or not owned by user");
         model.metrics.timestamp = ic_cdk::api::time();
         model.metrics_history.push(model.metrics.clone());
     });
@@ -536,7 +550,9 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
     (spd, di, aod, eod, acc, prec, rec)
 }
 
-// ---------- GETTERS ---------- //
+// ---------------------------------------------------------------------
+//                             GETTERS
+// ---------------------------------------------------------------------
 
 #[ic_cdk::update]
 fn test_function() -> bool {
@@ -547,8 +563,8 @@ fn test_function() -> bool {
 fn get_all_models() -> Vec<Model> {
     check_cycles_before_action();
     USERS.with(|users| {
+        let users = users.borrow();
         users
-            .borrow()
             .values()
             .flat_map(|user| user.models.values().cloned())
             .collect()
@@ -596,13 +612,15 @@ fn get_model(model_id: u128) -> Model {
     })
 }
 
-// ---------- HELPER FUNCTIONS ---------- //
+// ---------------------------------------------------------------------
+//                 Helper Functions for Metrics
+// ---------------------------------------------------------------------
 
 fn calculate_group_counts(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
-    let mut privileged_count = 0_i128;
-    let mut unprivileged_count = 0_i128;
-    let mut privileged_pos = 0_i128;
-    let mut unprivileged_pos = 0_i128;
+    let mut privileged_count = 0;
+    let mut unprivileged_count = 0;
+    let mut privileged_pos = 0;
+    let mut unprivileged_pos = 0;
 
     for point in data_points {
         if point.privileged {
@@ -618,7 +636,12 @@ fn calculate_group_counts(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i1
         }
     }
 
-    (privileged_count, unprivileged_count, privileged_pos, unprivileged_pos)
+    (
+        privileged_count,
+        unprivileged_count,
+        privileged_pos,
+        unprivileged_pos,
+    )
 }
 
 fn calculate_confusion_matrix(
@@ -677,9 +700,10 @@ fn calculate_true_positive_false_negative(
     (p_tp, p_fn, u_tp, u_fn)
 }
 
-// ---------- Hugging Face HTTPS Outcall ---------- //
+// ---------------------------------------------------------------------
+//               Hugging Face HTTPS Outcall (ic-cdk 0.16.x)
+// ---------------------------------------------------------------------
 
-// For Hugging Face requests, we use serde's Serialize/Deserialize
 #[derive(Serialize, Deserialize)]
 struct HuggingFaceRequest {
     inputs: String,
@@ -690,19 +714,17 @@ struct HuggingFaceResponse {
     generated_text: Option<String>,
 }
 
-// Example placeholders
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models/gpt2";
 const HUGGING_FACE_BEARER_TOKEN: &str = "hf_YourHuggingFaceAPITokenHere";
 
 #[update]
 async fn call_hugging_face(input_text: String) -> Result<String, String> {
-    let payload = HuggingFaceRequest {
-        inputs: input_text.clone(),
-    };
-
+    // 1) Prepare JSON payload
+    let payload = HuggingFaceRequest { inputs: input_text };
     let json_payload = serde_json::to_vec(&payload)
         .map_err(|e| format!("Failed to serialize payload: {}", e))?;
 
+    // 2) Prepare headers
     let headers = vec![
         HttpHeader {
             name: "Content-Type".to_string(),
@@ -710,44 +732,55 @@ async fn call_hugging_face(input_text: String) -> Result<String, String> {
         },
         HttpHeader {
             name: "Authorization".to_string(),
-            value: format!("Bearer {}", HUGGING_FACE_BEARER_TOKEN),
+            value: HUGGING_FACE_BEARER_TOKEN.to_string(),
         },
     ];
 
-    let request = HttpRequest {
+    // 3) Construct the argument
+    //    - Wrap json_payload in Some(...)
+    //    - Provide max_response_bytes (e.g., 2 MB)
+    let request_arg = CanisterHttpRequestArgument {
         url: HUGGING_FACE_ENDPOINT.to_string(),
         method: HttpMethod::POST,
         headers,
-        body: json_payload,
-        // We omit the transform, for a direct response
+        body: Some(json_payload),
+        max_response_bytes: Some(2_000_000),
         transform: None,
     };
 
-    let response: HttpResponse = http_request(request)
+    // 4) Make the outcall. The second param is cycles to spend (0 if none).
+    let (response_tuple,): (HttpResponse,) = http_request(request_arg, 0)
         .await
-        .map_err(|(code, msg)| format!("HTTP request failed. Code: {}. Msg: {}", code, msg))?;
+        .map_err(|(code, msg)| format!("HTTP request failed. Code: {:?}, Msg: {}", code, msg))?;
 
-    if response.status_code != 200 {
+    let response = response_tuple;
+
+    // 5) Convert candid::Nat to a standard integer
+    //    so we can compare with 200
+    let status_u64: u64 = response.status.0.to_u64().unwrap_or(0);
+
+    if status_u64 != 200 {
         return Err(format!(
-            "Hugging Face API returned status {}: {}",
-            response.status_code,
-            String::from_utf8_lossy(&response.body)
+            "Hugging Face returned status {}: {}",
+            status_u64,
+            String::from_utf8_lossy(&response.body),
         ));
     }
 
-    let parsed: serde_json::Value = serde_json::from_slice(&response.body)
-        .map_err(|e| format!("Failed to parse JSON response: {}", e))?;
+    // 6) Parse JSON
+    let json_val: serde_json::Value =
+        serde_json::from_slice(&response.body).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    let hf_response: HuggingFaceResponse = serde_json::from_value(json_val.clone())
+        .map_err(|_| format!("Unexpected JSON format: {}", json_val))?;
 
-    let hugging_face_resp: HuggingFaceResponse = serde_json::from_value(parsed.clone())
-        .map_err(|_| format!("Unexpected response format: {}", parsed))?;
-
-    let text = hugging_face_resp
+    let text = hf_response
         .generated_text
         .unwrap_or_else(|| "No generated_text field found.".to_string());
 
     Ok(text)
 }
 
+/// Simple test query
 #[query]
 fn ping() -> String {
     "Canister is alive!".to_string()
