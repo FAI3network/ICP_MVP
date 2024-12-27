@@ -36,11 +36,10 @@ import {
   ModalFooter,
   openModal,
   closeModal,
-
 } from "../../components/ui";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { DropdownMenuCheckboxes } from "../../components";
+import { DropdownMenuCheckboxes, AddModelModal } from "../../components";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { useAuthClient, useDataContext } from "../../utils";
 
@@ -50,20 +49,8 @@ export default function LeaderboardTable({ fetchModels }: any) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const { webapp, connect, connected } = useAuthClient();
+  const { webapp, connected, isAdmin } = useAuthClient();
   const { Models } = useDataContext();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (connected) {
-      (async () => {
-        const is_admin: boolean = await (webapp?.is_admin() as Promise<boolean>);
-        setIsAdmin(is_admin);
-      })();
-    }
-  }, [connected])
 
   const columns = [
     {
@@ -233,123 +220,11 @@ export default function LeaderboardTable({ fetchModels }: any) {
     },
   });
 
-  const uploadModel = async () => {
-    setErrorMessage("");
-
-    if (newModel.name === "") {
-      setErrorMessage("Please enter a model name.");
-      return;
-    }
-
-    // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
-    console.log(webapp);
-    const model = await webapp?.add_model(newModel.name, newModel.details);
-    console.log(model);
-
-    if (model) {
-      fetchModels();
-      closeModal();
-      setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
-    }
-  }
-
-  const clearModelForm = () => {
-    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
-    closeModal();
-  }
-
   return (
     <div className="w-full">
       {Models && (
         <>
-          <Modal>
-            <ModalContent className="w-1/3">
-              <ModalHeader>
-                <ModalTitle>
-                  Add Model
-                </ModalTitle>
-              </ModalHeader>
-              <ModalBody className="my-4">
-                <h3 className="text-lg font-bold mb-4">
-                  Model Information
-                </h3>
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Model Name
-                  </h4>
-                  <Input
-                    placeholder="Model Name"
-                    className="mb-4"
-                    value={newModel.name}
-                    onChange={(event: any) => setNewModel({ ...newModel, name: event.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Model Description
-                  </h4>
-                  <Input
-                    placeholder="description"
-                    className="mb-4"
-                    value={newModel.details.description}
-                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, description: event.target.value } })}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Model Framework
-                  </h4>
-                  <Input
-                    placeholder="framework"
-                    className="mb-4"
-                    value={newModel.details.framework}
-                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, framework: event.target.value } })}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Model Version
-                  </h4>
-                  <Input
-                    placeholder="version"
-                    className="mb-4"
-                    value={newModel.details.version}
-                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, version: event.target.value } })}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Model Objective
-                  </h4>
-                  <Input
-                    placeholder="objective"
-                    className="mb-4"
-                    value={newModel.details.objective}
-                    onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, objective: event.target.value } })}
-                  />
-                </div>
-
-
-              </ModalBody>
-              <ModalFooter className="flex-col">
-                <div className="text-red-500 text-sm w-full text-center">
-                  {errorMessage}
-                </div>
-                <div className="flex w-full justify-end gap-2">
-                  <Button onClick={clearModelForm}>
-                    Cancel
-                  </Button>
-                  <Button onClick={uploadModel}>
-                    Add
-                  </Button>
-                </div>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+          <AddModelModal fetchModels={fetchModels} />
 
           <div className="flex items-center justify-center py-4 mb-4 gap-3">
             {

@@ -2,13 +2,19 @@ import { createContext, useContext } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { ActorSubclass, ActorMethod } from "@dfinity/agent";
 
+interface Connect {
+  alreadyConnected?: boolean;
+}
+
 interface AuthClientContext {
   authClient: AuthClient | undefined;
   address: string;
-  connect: () => void;
+  connect: (options: Connect) => void;
   disconnect: () => void;
   webapp: ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> | undefined;
   connected: boolean;
+  isAdmin: boolean;
+  connecting: boolean;
 }
 
 export const AuthClientContext = createContext<AuthClientContext | undefined>(undefined);
