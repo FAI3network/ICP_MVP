@@ -8,5 +8,5 @@ export {
   formatAddress,
   useAuthClient,
   DataContext,
-  useDataContext,
+  useDataContext
 }
