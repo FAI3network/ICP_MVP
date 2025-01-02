@@ -715,7 +715,7 @@ struct HuggingFaceResponse {
 }
 
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models/gpt2";
-const HUGGING_FACE_BEARER_TOKEN: &str = "hf_YourHuggingFaceAPITokenHere";
+const HUGGING_FACE_BEARER_TOKEN: &str = "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";
 
 #[update]
 async fn call_hugging_face(input_text: String) -> Result<String, String> {
