@@ -80,7 +80,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       canisterId: canisterId,
     });
 
-    const is_admin: boolean = await (webapp?.is_admin() as Promise<boolean>);
+    const is_admin: boolean | undefined = await (webapp?.is_admin() as Promise<boolean>).catch((err) => {
+      console.error(err);
+      return undefined;
+    });
+
+    if (is_admin === undefined) {
+      disconnect();
+      return;
+    }
+
     setIsAdmin(is_admin);
 
     setWebApp(webapp);

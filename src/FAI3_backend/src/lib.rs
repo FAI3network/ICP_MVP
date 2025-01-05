@@ -119,20 +119,20 @@ pub struct User {
 }
 
 thread_local! {
-    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("2vxsx-fae").unwrap()]);
+    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
 }
 
 // Will use this once deployed, for now, we will already have the admin in the list
-// #[ic_cdk::init]
-// fn init() {
-// let deployer = ic_cdk::caller();
-// ADMINS.with(|admins| {
-//     admins.borrow_mut().push(deployer);
-// });
-// }
+#[ic_cdk::init]
+fn init() {
+let deployer = ic_cdk::caller();
+ADMINS.with(|admins| {
+    admins.borrow_mut().push(deployer);
+});
+}
 
 #[ic_cdk::query]
 fn whoami() -> Principal {
