@@ -2,6 +2,7 @@
 mod tests;
 
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
+use ic_cdk::api::call::{msg_cycles_accept, msg_cycles_available};
 use serde::{Deserialize, Serialize};
 
 
@@ -37,6 +38,21 @@ fn stop_if_low_cycles() {
 
 fn check_cycles_before_action() {
     stop_if_low_cycles();
+}
+
+/// Accepts whatever cycles were sent with this call and returns how many were accepted.
+#[update]
+fn add_funds() -> u64 {
+    // How many cycles the caller attached to *this* call
+    let available = msg_cycles_available();
+    if available > 0 {
+        // Accept them all into our canister's balance
+        let accepted = msg_cycles_accept(available);
+        ic_cdk::println!("Accepted {} cycles into the canister", accepted);
+        accepted
+    } else {
+        0
+    }
 }
 
 // ---------------------------------------------------------------------
@@ -96,6 +112,11 @@ thread_local! {
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct HuggingFaceResponseItem {
+    generated_text: Option<String>,
 }
 
 // ---------------------------------------------------------------------
@@ -732,7 +753,7 @@ async fn call_hugging_face(input_text: String) -> Result<String, String> {
         },
         HttpHeader {
             name: "Authorization".to_string(),
-            value: HUGGING_FACE_BEARER_TOKEN.to_string(),
+            value: format!("Bearer {}", HUGGING_FACE_BEARER_TOKEN),
         },
     ];
 
@@ -749,16 +770,14 @@ async fn call_hugging_face(input_text: String) -> Result<String, String> {
     };
 
     // 4) Make the outcall. The second param is cycles to spend (0 if none).
-    let (response_tuple,): (HttpResponse,) = http_request(request_arg, 0)
+    let (response_tuple,): (HttpResponse,) = http_request(request_arg, 20000000000)
         .await
         .map_err(|(code, msg)| format!("HTTP request failed. Code: {:?}, Msg: {}", code, msg))?;
 
     let response = response_tuple;
 
-    // 5) Convert candid::Nat to a standard integer
-    //    so we can compare with 200
+    // Convert the `Nat` status code to u64
     let status_u64: u64 = response.status.0.to_u64().unwrap_or(0);
-
     if status_u64 != 200 {
         return Err(format!(
             "Hugging Face returned status {}: {}",
@@ -767,16 +786,21 @@ async fn call_hugging_face(input_text: String) -> Result<String, String> {
         ));
     }
 
-    // 6) Parse JSON
-    let json_val: serde_json::Value =
-        serde_json::from_slice(&response.body).map_err(|e| format!("Failed to parse JSON: {}", e))?;
-    let hf_response: HuggingFaceResponse = serde_json::from_value(json_val.clone())
-        .map_err(|_| format!("Unexpected JSON format: {}", json_val))?;
+    // 1) Parse raw bytes into a `serde_json::Value`
+    let json_val: serde_json::Value = serde_json::from_slice(&response.body)
+        .map_err(|e| e.to_string())?;
 
-    let text = hf_response
-        .generated_text
-        .unwrap_or_else(|| "No generated_text field found.".to_string());
+    // 2) Now parse that `json_val` into a vector of your items
+    let hf_response: Vec<HuggingFaceResponseItem> = serde_json::from_value(json_val)
+        .map_err(|e| e.to_string())?;
 
+    // 3) Extract the text from the first item, or default
+    let text: String = hf_response
+        .get(0)
+        .and_then(|item| item.generated_text.clone())
+        .unwrap_or_else(|| "No generated_text".to_string());
+
+    // 4) Return a `String` in `Ok(...)`
     Ok(text)
 }
 
