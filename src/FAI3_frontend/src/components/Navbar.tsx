@@ -8,7 +8,8 @@ import { useAuthClient, formatAddress } from "../utils";
 export default function Navbar() {
   const { authClient, address, webapp, connect, disconnect, connecting } = useAuthClient();
 
-  const indicateCopied = () => {
+  const copyAddress = async () => {
+    await navigator.clipboard.writeText(address);
     const tooltip = document.getElementById("tooltip");
     if (tooltip) {
       tooltip.style.opacity = "1";
@@ -42,10 +43,7 @@ export default function Navbar() {
                   webapp && authClient ? (
                     <>
                       <div className="relative group">
-                        <p className="text-sm mx-2 cursor-pointer" onClick={() => {
-                          navigator.clipboard.writeText(address);
-                          indicateCopied();
-                        }}>
+                        <p className="text-sm mx-2 cursor-pointer" onClick={copyAddress}>
                           {formatAddress(address)}
                         </p>
                         <span id="tooltip" className="absolute left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 transition-opacity duration-300">
