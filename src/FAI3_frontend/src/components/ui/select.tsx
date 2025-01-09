@@ -38,7 +38,7 @@ export const SelectItem = forwardRef(
 
     return (
       <RadixSelect.Item
-        className={cn("text-sm leading-none rounded flex items-center h-6 px-6 py-1 relative select-none", className)}
+        className={cn("text-sm leading-none rounded flex items-center h-6 px-6 py-1 relative select-none cursor-pointer hover:bg-slate-200", className)}
         {...props}
         ref={forwardedRef}
       >
