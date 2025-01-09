@@ -1,6 +1,18 @@
 mod tests;
 
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
+use ic_cdk::api::call::{msg_cycles_accept, msg_cycles_available};
+use serde::{Deserialize, Serialize};
+
+
+use ic_cdk::api::management_canister::http_request::{
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
+};
+
+use ic_cdk_macros::*;
+
+use num_traits::cast::ToPrimitive; 
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -27,7 +39,7 @@ fn check_cycles_before_action() {
 
 // Structs
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
     data_point_id: u128,
     target: bool,
@@ -37,7 +49,7 @@ pub struct DataPoint {
     timestamp: u64,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Metrics {
     statistical_parity_difference: Option<f32>,
     disparate_impact: Option<f32>,
@@ -49,7 +61,7 @@ pub struct Metrics {
     timestamp: u64,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
     model_id: u128,
     model_name: String,
@@ -60,7 +72,7 @@ pub struct Model {
     metrics_history: Vec<Metrics>,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {
     description: String,
     framework: String,
@@ -68,8 +80,8 @@ pub struct ModelDetails {
     objective: String,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+// #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct User {
     user_id: Principal,
     models: HashMap<u128, Model>,
@@ -82,60 +94,51 @@ thread_local! {
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
 }
 
-// Operations
-/* 
+// Admin functions
+#[ic_cdk::init]
+fn init() {
+let deployer = ic_cdk::caller();
+ADMINS.with(|admins| {
+    admins.borrow_mut().push(deployer);
+});
+}
+
+#[ic_cdk::query]
+fn whoami() -> Principal {
+    ic_cdk::api::caller()
+}
+
+#[ic_cdk::query]
+fn is_admin() -> bool {
+    ADMINS.with(|admins| {
+        let admins = admins.borrow();
+        admins.contains(&ic_cdk::api::caller())
+    })
+}
+
+fn only_admin() {
+    if !is_admin() {
+        ic_cdk::api::trap("Unauthorized: You are not an admin");
+    }
+}
+
 #[ic_cdk::update]
-fn add_dataset(
-    model_id: u128,
-    features: Vec<Vec<f64>>,
-    labels: Vec<bool>,
-    predictions: Vec<bool>,
-    privilege_indices: Vec<u128>,
-) {
+fn add_admin(admin: String) {
+    only_admin();
     check_cycles_before_action();
-
-    // Verify that all columns have consistent lengths
-    let data_length = labels.len();
-    if predictions.len() != data_length {
-        ic_cdk::api::trap("Error: Lengths of labels and predictions must be equal.");
-    }
-    for feature_column in &features {
-        if feature_column.len() != data_length {
-            ic_cdk::api::trap("Error: All feature columns must have the same length as labels.");
-        }
-    }
-
-    let caller: Principal = ic_cdk::api::caller();
-    let timestamp: u64 = ic_cdk::api::time();
-
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users.get_mut(&caller).expect("User not found");
-
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
-            let data_point_id = *next_data_point_id.borrow();
-            let data_point = DataPoint {
-                data_point_id,
-                target,
-                privileged,
-                predicted,
-                features,
-                timestamp,
-            };
-            model.data_points.push(data_point);
-            *next_data_point_id.borrow_mut() += 1;
-        });
+    ADMINS.with(|admins| {
+        admins
+            .borrow_mut()
+            .push(Principal::from_text(admin).unwrap());
     });
-} */
+}
+
+#[ic_cdk::query]
+fn get_admins() -> Vec<Principal> {
+    ADMINS.with(|admins| admins.borrow().clone())
+}
+
+// Operations
 
 #[ic_cdk::update]
 fn add_dataset(
@@ -636,16 +639,6 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
         model.metrics_history.push(model.metrics.clone());
     });
 
-    (
-        statistical_parity_difference,
-        disparate_impact,
-        average_odds_difference,
-        equal_opportunity_difference,
-        accuracy,
-        precision,
-        recall,
-    )
-}
     (spd, di, aod, eod, acc, prec, rec)
 }
 
@@ -781,11 +774,6 @@ fn calculate_confusion_matrix(
 }
 
 fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
-    let mut tp = 0;
-    let mut tn = 0;
-    let mut fp = 0;
-    let mut fn_ = 0;
-fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
     let (mut tp, mut tn, mut fp, mut fn_) = (0, 0, 0, 0);
 
     for point in data_points {
@@ -799,6 +787,7 @@ fn calculate_overall_confusion_matrix(data_points: &Vec<DataPoint>) -> (i128, i1
 
     (tp, tn, fp, fn_)
 }
+
 fn calculate_true_positive_false_negative(
     data_points: &Vec<DataPoint>,
 ) -> (i128, i128, i128, i128) {
@@ -821,112 +810,6 @@ fn calculate_true_positive_false_negative(
         unprivileged_tp,
         unprivileged_fn,
     )
-}
-
-#[ic_cdk::update]
-fn calculate_accuracy(model_id: u128) -> f32 {
-    check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&model.data_points);
-
-        let total = tp + tn + fp + fn_;
-        if total == 0 {
-            ic_cdk::api::trap("No data points to calculate accuracy");
-        }
-
-        let accuracy = (tp + tn) as f32 / total as f32;
-
-        model.metrics.accuracy = Some(accuracy);
-
-        // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
-
-        accuracy
-    })
-}
-
-#[ic_cdk::update]
-fn calculate_precision(model_id: u128) -> f32 {
-    check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        let (tp, _, fp, _) = calculate_overall_confusion_matrix(&model.data_points);
-
-        let denominator = tp + fp;
-        if denominator == 0 {
-            ic_cdk::api::trap("No positive predictions to calculate precision");
-        }
-
-        let precision = tp as f32 / denominator as f32;
-
-        model.metrics.precision = Some(precision);
-
-        // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
-
-        precision
-    })
-}
-
-#[ic_cdk::update]
-fn calculate_recall(model_id: u128) -> f32 {
-    check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
-
-        let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&model.data_points);
-
-        let denominator = tp + fn_;
-        if denominator == 0 {
-            ic_cdk::api::trap("No actual positives to calculate recall");
-        }
-
-        let recall = tp as f32 / denominator as f32;
-
-        model.metrics.recall = Some(recall);
-
-        // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
-
-        recall
-    })
-    (p_tp, p_fn, u_tp, u_fn)
 }
 
 // ---------------------------------------------------------------------
