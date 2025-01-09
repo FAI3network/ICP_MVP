@@ -128,10 +128,10 @@ thread_local! {
 // Will use this once deployed, for now, we will already have the admin in the list
 #[ic_cdk::init]
 fn init() {
-let deployer = ic_cdk::caller();
-ADMINS.with(|admins| {
-    admins.borrow_mut().push(deployer);
-});
+    let deployer = ic_cdk::caller();
+    ADMINS.with(|admins| {
+        admins.borrow_mut().push(deployer);
+    });
 }
 
 #[ic_cdk::query]
