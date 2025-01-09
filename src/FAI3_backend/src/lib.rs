@@ -2,9 +2,7 @@ mod tests;
 
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
 use ic_cdk::api::call::{msg_cycles_accept, msg_cycles_available};
-use ic_cdk::api::call::{msg_cycles_accept, msg_cycles_available};
 use serde::{Deserialize, Serialize};
-
 
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
@@ -12,7 +10,7 @@ use ic_cdk::api::management_canister::http_request::{
 
 use ic_cdk_macros::*;
 
-use num_traits::cast::ToPrimitive; 
+use num_traits::cast::ToPrimitive;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -122,49 +120,31 @@ struct HuggingFaceResponseItem {
 //                     Model & DataPoint Operations
 // ---------------------------------------------------------------------
 
-#[ic_cdk::update]
-fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
-    check_cycles_before_action();
+#[ic_cdk::init]
+fn init() {
+    let deployer = ic_cdk::caller();
+    ADMINS.with(|admins| {
+        admins.borrow_mut().push(deployer);
+    });
+}
 
-    if model_name.trim().is_empty() {
-        ic_cdk::api::trap("Error: Model name cannot be empty or null.");
-    }
+#[ic_cdk::query]
+fn whoami() -> Principal {
+    ic_cdk::api::caller()
+}
 
-    let caller = ic_cdk::api::caller();
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users.entry(caller).or_insert(User {
-            user_id: caller,
-            models: HashMap::new(),
-        });
-
-        NEXT_MODEL_ID.with(|next_model_id| {
-            let model_id = *next_model_id.borrow();
-            user.models.insert(
-                model_id,
-                Model {
-                    model_id,
-                    model_name: model_name.clone(),
-                    user_id: caller,
-                    data_points: Vec::new(),
-                    metrics: Metrics {
-                        statistical_parity_difference: None,
-                        disparate_impact: None,
-                        average_odds_difference: None,
-                        equal_opportunity_difference: None,
-                        accuracy: None,
-                        precision: None,
-                        recall: None,
-                        timestamp: 0,
-                    },
-                    details: model_details,
-                    metrics_history: Vec::new(),
-                },
-            );
-            *next_model_id.borrow_mut() += 1;
-            model_id
-        })
+#[ic_cdk::query]
+fn is_admin() -> bool {
+    ADMINS.with(|admins| {
+        let admins = admins.borrow();
+        admins.contains(&ic_cdk::api::caller())
     })
+}
+
+fn only_admin() {
+    if !is_admin() {
+        ic_cdk::api::trap("Unauthorized: You are not an admin");
+    }
 }
 
 #[ic_cdk::update]
@@ -580,7 +560,9 @@ fn calculate_accuracy(model_id: u128) -> f32 {
     check_cycles_before_action();
     USERS.with(|users| {
         let mut users = users.borrow_mut();
-        let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
         let model = user
             .models
             .get_mut(&model_id)
@@ -608,7 +590,9 @@ fn calculate_precision(model_id: u128) -> f32 {
     check_cycles_before_action();
     USERS.with(|users| {
         let mut users = users.borrow_mut();
-        let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
         let model = user
             .models
             .get_mut(&model_id)
@@ -636,7 +620,9 @@ fn calculate_recall(model_id: u128) -> f32 {
     check_cycles_before_action();
     USERS.with(|users| {
         let mut users = users.borrow_mut();
-        let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
         let model = user
             .models
             .get_mut(&model_id)
@@ -675,7 +661,9 @@ fn calculate_all_metrics(model_id: u128) -> (f32, f32, f32, f32, f32, f32, f32) 
 
     USERS.with(|users| {
         let mut users = users.borrow_mut();
-        let user = users.get_mut(&ic_cdk::api::caller()).expect("User not found");
+        let user = users
+            .get_mut(&ic_cdk::api::caller())
+            .expect("User not found");
         let model = user
             .models
             .get_mut(&model_id)
@@ -878,8 +866,8 @@ const HUGGING_FACE_BEARER_TOKEN: &str = "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";
 async fn call_hugging_face(input_text: String) -> Result<String, String> {
     // 1) Prepare JSON payload
     let payload = HuggingFaceRequest { inputs: input_text };
-    let json_payload = serde_json::to_vec(&payload)
-        .map_err(|e| format!("Failed to serialize payload: {}", e))?;
+    let json_payload =
+        serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
 
     // 2) Prepare headers
     let headers = vec![
@@ -923,12 +911,12 @@ async fn call_hugging_face(input_text: String) -> Result<String, String> {
     }
 
     // 1) Parse raw bytes into a `serde_json::Value`
-    let json_val: serde_json::Value = serde_json::from_slice(&response.body)
-        .map_err(|e| e.to_string())?;
+    let json_val: serde_json::Value =
+        serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
 
     // 2) Now parse that `json_val` into a vector of your items
-    let hf_response: Vec<HuggingFaceResponseItem> = serde_json::from_value(json_val)
-        .map_err(|e| e.to_string())?;
+    let hf_response: Vec<HuggingFaceResponseItem> =
+        serde_json::from_value(json_val).map_err(|e| e.to_string())?;
 
     // 3) Extract the text from the first item, or default
     let text: String = hf_response
