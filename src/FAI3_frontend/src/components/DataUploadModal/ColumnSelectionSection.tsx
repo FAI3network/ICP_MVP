@@ -107,6 +107,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
                 ...columnLabels,
                 privledged: selection
               })}
+              multiple
             />
           </div>
         </div>
