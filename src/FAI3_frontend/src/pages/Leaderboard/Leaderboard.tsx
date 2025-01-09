@@ -22,8 +22,14 @@ export default function Leaderboard() {
     setLoading(true);
     // const models = await FAI3_backend.get_all_models();
     console.log(connected);
-    const models: Model[] = connected ? await (webapp?.get_all_models() as Promise<Model[]>) : await FAI3_backend.get_all_models();
-    
+    const models: Model[] = connected ?
+      await (webapp?.get_all_models() as Promise<Model[]>)
+      :
+      await FAI3_backend.get_all_models().catch((err) => {
+        console.error(err);
+        return [];
+      });
+
     setModels(models);
     console.log(models);
     setLoading(false);

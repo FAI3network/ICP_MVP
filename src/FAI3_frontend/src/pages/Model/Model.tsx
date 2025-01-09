@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { ModelDetail } from "./ModelDetail";
 import { useParams } from "react-router-dom";
-import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { useAuthClient } from "../../utils";
 import { Model as ModelType } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 
 interface Metric {
   timestamp: string;
@@ -17,23 +17,7 @@ export default function Model() {
   const { modelId } = useParams();
   const { webapp, connected } = useAuthClient();
 
-  const [modelWithDetails, setModelWithDetails] = useState({
-    // "name": "Credit Scoring Xgboost Model",
-    // "description": "An Xgboost-based machine learning model for credit scoring applications.",
-    // "imageURL": "https://example.com/credit_scoring_xgboost.png",
-    // "framework": "Xgboost",
-    // "version": "1.0",
-    // "hyperparameters": {
-    //     "max_depth": 5,
-    //     "learning_rate": 0.05,
-    //     "n_estimators": 200,
-    //     "objective": "binary:logistic"
-    // },
-    // "trained_on": "https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data",
-    // "deployed_with": "Kubernetes cluster",
-    // "created_by": "FinanceMLCo",
-    // "date_created": "2023-10-15"
-  });
+  const [modelWithDetails, setModelWithDetails] = useState({});
   const [metrics, setMetrics] = useState([] as Metric[]);
 
   const fetchModel = async () => {
@@ -79,6 +63,11 @@ export default function Model() {
       return;
     }
     //TODO: exception if id doesnt exist
+    // (async () => {
+    //   const { model, metricsList } = await fetchModel(BigInt(modelId || ""));
+    //   setModelWithDetails(model);
+    //   setMetrics(metricsList);
+    // })()
 
     fetchModel();
   }, [modelId]);
@@ -86,7 +75,7 @@ export default function Model() {
 
   return (
     <div>
-      {modelWithDetails ? (
+      {modelWithDetails && Object.keys(modelWithDetails).length > 0 ? (
         <div>
           {/* {console.log(modelWithDetails.data.name, metrics)} */}
           <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />

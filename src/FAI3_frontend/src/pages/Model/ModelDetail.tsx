@@ -91,19 +91,6 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     },
   };
 
-  const calculateMetrics = async () => {
-    setLoading(true);
-    // await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
-    console.log(BigInt(modelId!))
-    await webapp?.calculate_all_metrics(BigInt(modelId!))
-      .catch((e: Error) => {
-        console.error(e.message);
-      })
-
-    await fetchModel();
-    setLoading(false);
-  };
-
   return (
     <div className="grid min-h-screen w-full bg-white">
       {
@@ -128,9 +115,6 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                       Upload Data
                     </Button>
                     <DataUploadModal fetchModel={fetchModel} />
-                    <Button variant="secondary" className="ml-auto" onClick={calculateMetrics}>
-                      Calculate Metrics
-                    </Button>
                   </div>
                 </>
               )

@@ -10,13 +10,29 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [address, setAddress] = useState<string>("");
   const [authClient, setAuthClient] = useState<AuthClient | undefined>(undefined);
   const [connected, setConnected] = useState(false);
+  const [connecting, setConnecting] = useState(true);
   const [Models, setModels] = useState<Model[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
-      setAuthClient(await AuthClient.create());
+      if (!authClient) {
+        setAuthClient(await AuthClient.create());
+      }
     })();
   }, [])
+
+  useEffect(() => {
+    if (authClient) {
+      (async () => {
+        if (await authClient.isAuthenticated()) {
+          connect({ alreadyConnected: true });
+          return;
+        }
+        setConnecting(false);
+      })();
+    }
+  }, [authClient])
 
   let iiUrl: string;
   if (process.env.DFX_NETWORK === "local") {
@@ -27,20 +43,26 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     iiUrl = `https://${process.env.CANISTER_ID_INTERNET_IDENTITY}.dfinity.network`;
   }
 
-  const connect = async () => {
+  const connect = async ({ alreadyConnected = false }) => {
     if (!authClient) return;
+    setConnecting(true);
 
-    await new Promise((resolve, reject) => {
-      authClient.login({
-        identityProvider: iiUrl,
-        onSuccess: resolve,
-        onError: reject,
+    if (!alreadyConnected) {
+      await new Promise((resolve, reject) => {
+        authClient.login({
+          identityProvider: iiUrl,
+          onSuccess: resolve,
+          onError: reject,
+          maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000)
+        });
+      }).catch((err) => {
+        console.error(err);
+        setConnecting(false);
+        return;
       });
-    }).then(() => {
-      console.log("Logged in!");
-      setAddress(authClient.getIdentity().getPrincipal().toText());
-    })
+    }
 
+    setAddress(authClient.getIdentity().getPrincipal().toText());
     const identity = authClient.getIdentity();
     // const agent = await HttpAgent.create({
     //   identity,
@@ -58,8 +80,21 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       canisterId: canisterId,
     });
 
+    const is_admin: boolean | undefined = await (webapp?.is_admin() as Promise<boolean>).catch((err) => {
+      console.error(err);
+      return undefined;
+    });
+
+    if (is_admin === undefined) {
+      disconnect();
+      return;
+    }
+
+    setIsAdmin(is_admin);
+
     setWebApp(webapp);
     setConnected(true);
+    setConnecting(false);
   }
 
   const disconnect = () => {
@@ -73,7 +108,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <DataContext.Provider value={{ Models, setModels }}>
-      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected }}>
+      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
         {children}
       </AuthClientContext.Provider>
     </DataContext.Provider>
