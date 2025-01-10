@@ -30,20 +30,20 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
     const privledgedIndexs: bigint[] = []; //index of columns that are privledged
     let features: number[][] = [];
 
+    const privledgedLabels = columnLabels.privledged.split(", ");
+
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
         labels = table.getRowModel().rows.map((row) => (row.original[columnLabels.labels] == 1 ? true : false));
       } else if (columns[i].accessorKey === columnLabels.predictions) {
         predictions = table.getRowModel().rows.map((row) => (row.original[columnLabels.predictions] == 1 ? true : false));
-      } else if (columns[i].accessorKey === columnLabels.privledged) {
+      } else if (privledgedLabels.includes(columns[i].accessorKey)) {
         privledgedIndexs.push(BigInt(i));
       } else {
         features.push(table.getRowModel().rows.map((row) => parseFloat(row.original[columns[i].accessorKey])));
       }
     }
 
-    // await FAI3_backend.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs)
-    // await FAI3_backend.calculate_all_metrics(BigInt(modelId!));
     await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
     console.log("using webapp")
     await webapp?.calculate_all_metrics(BigInt(modelId!));
@@ -107,6 +107,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
                 ...columnLabels,
                 privledged: selection
               })}
+              multiple
             />
           </div>
         </div>
