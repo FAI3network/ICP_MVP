@@ -28,15 +28,12 @@ export const Select = ({ options, selection, setSelection, multiple = false }: a
     }
   }, [multipleSelection]);
 
-  useEffect(() => {
-    console.log(selection);
-  }, [selection]);
-
   return (
     <RadixSelect.Root onValueChange={(value: string) => handleSelection(value)}>
       <RadixSelect.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
         <RadixSelect.Value placeholder="Select a column…" >
-          {selection}
+          {selection.length > 32 ? selection.slice(0, 24) + "..." : selection}
+          {selection.length == 0 && "Select a column..."}
         </RadixSelect.Value>
         <RadixSelect.Icon>
           <ChevronDown />
@@ -50,9 +47,13 @@ export const Select = ({ options, selection, setSelection, multiple = false }: a
           <RadixSelect.Viewport className="p-1">
             <RadixSelect.Group>
               {
-                options.map((option: any) => (
-                  <SelectItem key={option} value={option} multiple slections={multipleSelection} >{option}</SelectItem>
-                ))
+                options.map((option: any) => {
+                  const isSelected = multiple ? multipleSelection.includes(option) : selection === option;
+
+                  return (
+                    <SelectItem key={option} value={option} selected={isSelected} >{option}</SelectItem>
+                  )
+                })
               }
             </RadixSelect.Group>
           </RadixSelect.Viewport>
@@ -66,8 +67,7 @@ export const Select = ({ options, selection, setSelection, multiple = false }: a
 }
 
 export const SelectItem = forwardRef(
-  ({ children, className, multiple,
-     selections = [], ...props }: any, forwardedRef) => {
+  ({ children, className, selected, ...props }: any, forwardedRef) => {
 
     return (
       <RadixSelect.Item
@@ -77,15 +77,16 @@ export const SelectItem = forwardRef(
       >
         <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
         {
-          multiple && selections.includes(children) ? (
+          selected && (
             <div className="absolute left-0 w-6 flex items-center justify-center">
               <Check />
             </div>
-          ) : (
-            <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
-              <Check />
-            </RadixSelect.ItemIndicator>
-          )
+          ) 
+          // : (
+          //   <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
+          //     <Check />
+          //   </RadixSelect.ItemIndicator>
+          // )
         }
         {/* <div className="absolute left-0 w-6 flex items-center justify-center">
           <Check />
