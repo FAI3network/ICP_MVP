@@ -4,6 +4,7 @@ import { HttpAgent, Actor, ActorSubclass, ActorMethod } from '@dfinity/agent';
 import { idlFactory, canisterId } from '../../../declarations/FAI3_backend';
 import { useEffect, useState } from 'react';
 import { Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
+import { FAI3_backend } from '../../../declarations/FAI3_backend';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [webapp, setWebApp] = useState<ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> | undefined>();
@@ -106,8 +107,23 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     setConnected(false);
   }
 
+  const fetchModels = async () => {
+    console.log("fetching")
+    console.log(connected);
+    const models: Model[] = connected ?
+      await (webapp?.get_all_models() as Promise<Model[]>)
+      :
+      await FAI3_backend.get_all_models().catch((err) => {
+        console.error(err);
+        return [];
+      });
+
+    setModels(models);
+    console.log(models);
+  };
+
   return (
-    <DataContext.Provider value={{ Models, setModels }}>
+    <DataContext.Provider value={{ Models, setModels, fetchModels }}>
       <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
         {children}
       </AuthClientContext.Provider>

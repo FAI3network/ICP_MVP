@@ -8,32 +8,18 @@ import { useAuthClient, useDataContext } from "../../utils";
 
 export default function Leaderboard() {
   const { webapp, connected } = useAuthClient();
-  const { setModels, Models } = useDataContext();
+  const { setModels, Models, fetchModels } = useDataContext();
   const [loading, setLoading] = useState(Models.length === 0);
 
   useEffect(() => {
     if (Models.length > 0) return;
 
-    fetchModels();
+    (async () => {
+      setLoading(true);
+      await fetchModels();
+      setLoading(false);
+    })();
   }, [])
-
-  const fetchModels = async () => {
-    console.log("fetching")
-    setLoading(true);
-    // const models = await FAI3_backend.get_all_models();
-    console.log(connected);
-    const models: Model[] = connected ?
-      await (webapp?.get_all_models() as Promise<Model[]>)
-      :
-      await FAI3_backend.get_all_models().catch((err) => {
-        console.error(err);
-        return [];
-      });
-
-    setModels(models);
-    console.log(models);
-    setLoading(false);
-  };
 
   return (
     <div className="mx-20">

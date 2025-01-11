@@ -1,12 +1,13 @@
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "../ui";
 import { useState } from "react";
-import { useAuthClient } from "../../utils";
+import { useAuthClient, useDataContext } from "../../utils";
 
-export default function AddModelModal({ fetchModels }: any) {
-  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
+export default function AddModelModal() {
+  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
+  const { fetchModels } = useDataContext();
 
   const uploadModel = async () => {
     setErrorMessage("");
@@ -20,6 +21,7 @@ export default function AddModelModal({ fetchModels }: any) {
 
     // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
     console.log(webapp);
+    console.log(newModel);
     const model = await webapp?.add_model(newModel.name, newModel.details);
     console.log(model);
 
@@ -34,7 +36,7 @@ export default function AddModelModal({ fetchModels }: any) {
   }
 
   const clearModelForm = () => {
-    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "" } });
+    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
     closeModal();
   }
 
@@ -116,6 +118,17 @@ export default function AddModelModal({ fetchModels }: any) {
                 />
               </div>
 
+              <div>
+                <h4 className="text-sm font-bold mb-2">
+                  Model URL
+                </h4>
+                <Input
+                  placeholder="url"
+                  className="mb-4"
+                  value={newModel.details.url}
+                  onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, url: event.target.value } })}
+                />
+              </div>
 
             </ModalBody>
             <ModalFooter className="flex-col">
