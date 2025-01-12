@@ -95,6 +95,7 @@ pub struct ModelDetails {
     framework: String,
     version: String,
     objective: String,
+    url: String,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -277,6 +278,7 @@ fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
                         framework: model_details.framework,
                         version: model_details.version,
                         objective: model_details.objective,
+                        url: model_details.url,
                     },
                     metrics_history: Vec::new(),
                 },

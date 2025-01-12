@@ -33,6 +33,7 @@ type ModelDetails = record {
   framework: text;
   version: text;
   objective: text;
+  url: text;
 };
 
 type User = record {

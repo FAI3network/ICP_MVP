@@ -3,7 +3,7 @@ import { useState, useContext } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
-import { useAuthClient } from "../../utils";
+import { useAuthClient, useDataContext } from "../../utils";
 
 export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () => Promise<any> }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
@@ -14,6 +14,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
     setCurrentStep: (step: number) => void
   } = useContext(DataUploadContext);
   const { webapp } = useAuthClient();
+  const { fetchModels } = useDataContext();
 
   const [columnLabels, setColumnLabels] = useState<any>({
     labels: "",
@@ -48,6 +49,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
     console.log("using webapp")
     await webapp?.calculate_all_metrics(BigInt(modelId!));
     await fetchModel();
+    await fetchModels();
     setLoading(false);
     closeModal();
   }
