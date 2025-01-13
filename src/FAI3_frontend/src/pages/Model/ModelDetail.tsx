@@ -147,6 +147,10 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <strong>Objective:</strong>{" "}
                     {model.details?.objective}
                   </p>
+                  <p>
+                    <strong>URL:</strong>{" "}
+                    {model.details?.url}
+                  </p>
                 </div>
               </CardContent>
             </Card>

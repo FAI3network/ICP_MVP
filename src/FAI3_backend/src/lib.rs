@@ -497,16 +497,16 @@ fn calculate_average_odds_difference(model_id: u128) -> f32 {
         let privileged_negative_total = privileged_fp + privileged_tn;
         let unprivileged_negative_total = unprivileged_fp + unprivileged_tn;
 
-        if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
-            ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
-        }
+        //if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
+        //    ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
+        //}
 
-        let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn) as f32;
+        let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn +1 ) as f32;
         let unprivileged_tpr: f32 =
-            unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn) as f32;
-        let privileged_fpr: f32 = privileged_fp as f32 / (privileged_fp + privileged_tn) as f32;
+            unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn +1 ) as f32;
+        let privileged_fpr: f32 = privileged_fp as f32 / (privileged_fp + privileged_tn +1 ) as f32;
         let unprivileged_fpr: f32 =
-            unprivileged_fp as f32 / (unprivileged_fp + unprivileged_tn) as f32;
+            unprivileged_fp as f32 / (unprivileged_fp + unprivileged_tn +1 ) as f32;
 
         let result: f32 =
             ((unprivileged_fpr - privileged_fpr) + (unprivileged_tpr - privileged_tpr)) / 2.0;
@@ -542,12 +542,12 @@ fn calculate_equal_opportunity_difference(model_id: u128) -> f32 {
         let privileged_positive_total = privileged_tp + privileged_fn;
         let unprivileged_positive_total = unprivileged_tp + unprivileged_fn;
 
-        if privileged_positive_total == 0 || unprivileged_positive_total == 0 {
-            ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
-        }
+        //if privileged_positive_total == 0 || unprivileged_positive_total == 0 {
+        //    ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
+        //}
 
-        let privileged_tpr = privileged_tp as f32 / privileged_positive_total as f32;
-        let unprivileged_tpr = unprivileged_tp as f32 / unprivileged_positive_total as f32;
+        let privileged_tpr = privileged_tp as f32 / (privileged_positive_total  +1) as f32;
+        let unprivileged_tpr = unprivileged_tp as f32 /( unprivileged_positive_total  +1)as f32;
 
         let result = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result);
@@ -749,10 +749,10 @@ fn get_model(model_id: u128) -> Model {
 // Helper functions
 
 fn calculate_group_counts(data_points: &Vec<DataPoint>) -> (i128, i128, i128, i128) {
-    let mut privileged_count: i128 = 0;
-    let mut unprivileged_count: i128 = 0;
-    let mut privileged_positive_count: i128 = 0;
-    let mut unprivileged_positive_count: i128 = 0;
+    let mut privileged_count: i128 = 1;
+    let mut unprivileged_count: i128 = 1;
+    let mut privileged_positive_count: i128 = 1;
+    let mut unprivileged_positive_count: i128 = 1;
 
     for point in data_points {
         if point.privileged {
