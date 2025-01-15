@@ -2,7 +2,7 @@ import { StrictMode, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.scss';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Leaderboard, Model } from './pages';
+import { Leaderboard, Model, Whoami } from './pages';
 import { Layout, Providers } from './components';
 import { IDL as IDLType } from "@dfinity/candid";
 import { AuthClientContext, DataContext } from './utils';
@@ -18,6 +18,7 @@ function App() {
           <Route path="/" element={<Layout />} >
             <Route index element={<Leaderboard />} />
             <Route path="model/:modelId" element={<Model />} />
+            <Route path="whoami" element={<Whoami />} />
           </Route>
         </Routes>
       </Router>
