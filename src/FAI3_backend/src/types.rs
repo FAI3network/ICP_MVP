@@ -7,18 +7,19 @@ use std::collections::HashMap;
 pub struct DataPoint {
     pub(crate) data_point_id: u128,
     pub(crate) target: bool,
-    pub(crate) privileged: bool,
+    pub(crate) privileged_map: HashMap<String, u128>,
     pub(crate) predicted: bool,
     pub(crate) features: Vec<f64>,
     pub(crate) timestamp: u64,
 }
 
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Metrics {
-    pub(crate) statistical_parity_difference: Option<f32>,
-    pub(crate) disparate_impact: Option<f32>,
-    pub(crate) average_odds_difference: Option<f32>,
-    pub(crate) equal_opportunity_difference: Option<f32>,
+    pub(crate) statistical_parity_difference: Option<HashMap<String, f32>>,
+    pub(crate) disparate_impact: Option<HashMap<String, f32>>,
+    pub(crate) average_odds_difference: Option<HashMap<String, f32>>,
+    pub(crate) equal_opportunity_difference: Option<HashMap<String, f32>>,
     pub(crate) accuracy: Option<f32>,
     pub(crate) precision: Option<f32>,
     pub(crate) recall: Option<f32>,

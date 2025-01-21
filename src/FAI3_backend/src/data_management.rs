@@ -10,6 +10,7 @@ pub fn add_dataset(
     labels: Vec<bool>,
     predictions: Vec<bool>,
     privilege_indices: Vec<u128>,
+    privileged_labels: Vec<String>
 ) {
     check_cycles_before_action();
 
@@ -26,6 +27,10 @@ pub fn add_dataset(
 
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
+
+    let privileged_map: HashMap<String, u128> = privileged_labels.iter().enumerate().map(|(i, label)| {
+        (label.clone(), privilege_indices[i])
+    }).collect();
 
     USERS.with(|users| {
         let mut users = users.borrow_mut();
@@ -49,19 +54,19 @@ pub fn add_dataset(
                 }
 
                 // Determine privileged status using u64 and casting to usize
-                let mut privileged = false;
-                for &index in &privilege_indices {
-                    let idx = index as usize;
-                    if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
-                        privileged = true;
-                        break;
-                    }
-                }
+                // let mut privileged = false;
+                // for &index in &privilege_indices {
+                //     let idx = index as usize;
+                //     if idx < feature_vector.len() && feature_vector[idx] > 0.0 {
+                //         privileged = true;
+                //         break;
+                //     }
+                // }
 
                 let data_point = DataPoint {
                     data_point_id: *next_data_point_id,
                     target: labels[i],
-                    privileged,
+                    privileged_map: privileged_map.clone(),
                     predicted: predictions[i],
                     features: feature_vector.clone(),
                     timestamp,
@@ -78,13 +83,18 @@ pub fn add_dataset(
 pub fn add_data_point(
     model_id: u128,
     target: bool,
-    privileged: bool,
+    privilege_indices: Vec<u128>,
+    privileged_labels: Vec<String>,
     predicted: bool,
     features: Vec<f64>,
 ) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
+
+    let privileged_map: HashMap<String, u128> = privileged_labels.iter().enumerate().map(|(i, label)| {
+        (label.clone(), privilege_indices[i])
+    }).collect();
 
     USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
         let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
@@ -104,7 +114,7 @@ pub fn add_data_point(
             let data_point: DataPoint = DataPoint {
                 data_point_id,
                 target,
-                privileged,
+                privileged_map: privileged_map.clone(),
                 predicted,
                 features,
                 timestamp,

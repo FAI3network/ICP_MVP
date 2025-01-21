@@ -45,7 +45,7 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
       }
     }
 
-    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs);
+    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs, privledgedLabels);
     console.log("using webapp")
     await webapp?.calculate_all_metrics(BigInt(modelId!));
     await fetchModel();

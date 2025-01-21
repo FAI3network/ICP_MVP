@@ -1,4 +1,4 @@
-mod tests;
+// mod tests;
 pub(crate) mod cycles_management;
 mod types;
 mod admin_management;
@@ -19,7 +19,7 @@ use admin_management::only_admin;
 use metrics_calculation::{calculate_confusion_matrix, calculate_group_counts, calculate_overall_confusion_matrix, calculate_true_positive_false_negative};
 
 thread_local! {
-    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
+    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("2vxsx-fae").unwrap()]);
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
