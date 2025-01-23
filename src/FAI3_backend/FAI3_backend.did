@@ -7,11 +7,19 @@ type DataPoint = record {
   timestamp: nat64;
 };
 
+type AverageMetrics = record {
+  statistical_parity_difference: opt float32;
+  disparate_impact: opt float32;
+  average_odds_difference: opt float32;
+  equal_opportunity_difference: opt float32;
+};
+
 type Metrics = record {
   statistical_parity_difference: opt vec record { text; float32 };
   disparate_impact: opt vec record { text; float32 };
   average_odds_difference: opt vec record { text; float32 };
   equal_opportunity_difference: opt vec record { text; float32 };
+  average_metrics: AverageMetrics;
   accuracy: opt float32;
   precision: opt float32;
   recall: opt float32;

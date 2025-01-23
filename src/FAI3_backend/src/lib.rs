@@ -14,7 +14,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use cycles_management::check_cycles_before_action;
-use types::{DataPoint, Metrics, Model, ModelDetails, User};
+use types::{DataPoint, Metrics, Model, ModelDetails, User, AverageMetrics};
 use admin_management::only_admin;
 use metrics_calculation::{calculate_confusion_matrix, calculate_group_counts, calculate_overall_confusion_matrix, calculate_true_positive_false_negative};
 

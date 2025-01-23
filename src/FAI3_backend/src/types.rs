@@ -13,6 +13,13 @@ pub struct DataPoint {
     pub(crate) timestamp: u64,
 }
 
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct AverageMetrics {
+    pub statistical_parity_difference: Option<f32>,
+    pub(crate) disparate_impact: Option<f32>,
+    pub average_odds_difference: Option<f32>,
+    pub(crate) equal_opportunity_difference: Option<f32>,
+}
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Metrics {
@@ -20,6 +27,7 @@ pub struct Metrics {
     pub(crate) disparate_impact: Option<HashMap<String, f32>>,
     pub(crate) average_odds_difference: Option<HashMap<String, f32>>,
     pub(crate) equal_opportunity_difference: Option<HashMap<String, f32>>,
+    pub(crate) average_metrics: AverageMetrics,
     pub(crate) accuracy: Option<f32>,
     pub(crate) precision: Option<f32>,
     pub(crate) recall: Option<f32>,

@@ -1,4 +1,4 @@
-use crate::{check_cycles_before_action, DataPoint, Model, User, USERS};
+use crate::{check_cycles_before_action, DataPoint, Model, User, USERS, AverageMetrics};
 use candid::Principal;
 
 use std::cell::RefCell;
@@ -58,7 +58,14 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap
 
             result.insert(key.clone(), diff);
         }
-        
+
+        let sum: f32 = result.values().sum();
+        let length: f32 = result.len() as f32;
+
+        let average: f32 = sum / length;
+
+        model.metrics.average_metrics.statistical_parity_difference = Some(average);
+
         model.metrics.statistical_parity_difference = Some(result.clone());
 
         // Update timestamp after calculation
@@ -122,18 +129,13 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32>
             result.insert(key.clone(), diff);
         }
         
+        let sum: f32 = result.values().sum();
+        let length: f32 = result.len() as f32;
 
-        // let privileged_probability: f32 =
-        //     privileged_positive_count as f32 / privileged_count as f32;
-        // let unprivileged_probability: f32 =
-        //     unprivileged_positive_count as f32 / unprivileged_count as f32;
+        let average: f32 = sum / length;
 
-        // assert!(
-        //     privileged_probability > 0.0,
-        //     "Privileged group has no positive outcomes"
-        // );
-
-        // let result: f32 = unprivileged_probability / privileged_probability;
+        model.metrics.average_metrics.disparate_impact = Some(average);
+      
         model.metrics.disparate_impact = Some(result.clone());
 
         // Update timestamp after calculation
@@ -192,24 +194,13 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<Strin
             result.insert(key.clone(), diff);
         }
 
-        // let privileged_positive_total = privileged_tp + privileged_fn;
-        // let unprivileged_positive_total = unprivileged_tp + unprivileged_fn;
-        // let privileged_negative_total = privileged_fp + privileged_tn;
-        // let unprivileged_negative_total = unprivileged_fp + unprivileged_tn;
+        let sum: f32 = result.values().sum();
+        let length: f32 = result.len() as f32;
 
-        //if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
-        //    ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
-        //}
+        let average: f32 = sum / length;
 
-        // let privileged_tpr: f32 = privileged_tp as f32 / (privileged_tp + privileged_fn + 1) as f32;
-        // let unprivileged_tpr: f32 =
-        //     unprivileged_tp as f32 / (unprivileged_tp + unprivileged_fn + 1) as f32;
-        // let privileged_fpr: f32 = privileged_fp as f32 / (privileged_fp + privileged_tn + 1) as f32;
-        // let unprivileged_fpr: f32 =
-        //     unprivileged_fp as f32 / (unprivileged_fp + unprivileged_tn + 1) as f32;
+        model.metrics.average_metrics.average_odds_difference = Some(average);
 
-        // let result: f32 =
-        //     ((unprivileged_fpr - privileged_fpr) + (unprivileged_tpr - privileged_tpr)) / 2.0;
         model.metrics.average_odds_difference = Some(result.clone());
 
         // Update timestamp after calculation
@@ -275,6 +266,13 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> HashMap<
             let diff = prob_pred_label_unprivileged - prob_pred_label_privileged;
             result.insert(key.clone(), diff);
         }
+
+        let sum: f32 = result.values().sum();
+        let length: f32 = result.len() as f32;
+
+        let average: f32 = sum / length;
+
+        model.metrics.average_metrics.equal_opportunity_difference = Some(average);
 
         model.metrics.equal_opportunity_difference = Some(result.clone());
         model.metrics.timestamp = ic_cdk::api::time();

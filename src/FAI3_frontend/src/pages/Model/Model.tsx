@@ -46,7 +46,13 @@ export default function Model() {
         SPD: metric.statistical_parity_difference[0],
         DI: metric.disparate_impact[0],
         AOD: metric.average_odds_difference[0],
-        EOD: metric.equal_opportunity_difference[0]
+        EOD: metric.equal_opportunity_difference[0],
+        average: {
+          SPD: metric.average_metrics.statistical_parity_difference[0],
+          DI: metric.average_metrics.disparate_impact[0],
+          AOD: metric.average_metrics.average_odds_difference[0],
+          EOD: metric.average_metrics.equal_opportunity_difference[0]
+        }
       });
     }
 

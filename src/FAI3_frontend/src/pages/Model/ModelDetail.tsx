@@ -32,6 +32,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     };
 
     console.log(model)
+    console.log(metrics)
 
     if (Principal.fromUint8Array(model.user_id._arr).toString() == address) {
       setIsOwner(true)
@@ -90,6 +91,10 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       fairRange: [-0.1, 0.1],
     },
   };
+
+  const getAverageValues = () => {
+    
+  }
 
   return (
     <div className="grid min-h-screen w-full bg-white">

@@ -1,4 +1,4 @@
-use crate::{check_cycles_before_action, only_admin, USERS, NEXT_MODEL_ID, Model, ModelDetails, User, Metrics, DataPoint};
+use crate::{check_cycles_before_action, only_admin, USERS, NEXT_MODEL_ID, Model, ModelDetails, User, Metrics, DataPoint, AverageMetrics};
 use candid::Principal;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -34,6 +34,12 @@ pub fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
                         disparate_impact: None,
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
+                        average_metrics: AverageMetrics {
+                            statistical_parity_difference: None,
+                            disparate_impact: None,
+                            average_odds_difference: None,
+                            equal_opportunity_difference: None,
+                        },
                         accuracy: None,
                         recall: None,
                         precision: None,
