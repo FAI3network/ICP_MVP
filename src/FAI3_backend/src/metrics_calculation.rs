@@ -463,7 +463,7 @@ pub(crate) fn calculate_confusion_matrix(
     data_points: &Vec<DataPoint>,
 ) -> (HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>) {
     let (mut privileged_tp, mut privileged_fp, mut privileged_tn, mut privileged_fn) = (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
-    let (unprivileged_tp, unprivileged_fp, unprivileged_tn, unprivileged_fn) =
+    let (mut unprivileged_tp, mut unprivileged_fp, mut unprivileged_tn, mut unprivileged_fn) =
         (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
 
     for point in data_points {
@@ -472,34 +472,58 @@ pub(crate) fn calculate_confusion_matrix(
             let vairable_name = entry.0;
             let variable_index = entry.1;
 
-            if features_list[*variable_index as usize] <= 0.0 {
-                continue;
-            }
-
             match (point.target, point.predicted) {
                 (true, true) => {
-                    privileged_tp
+                    if features_list[*variable_index as usize] > 0.0 {
+                        privileged_tp
                         .entry(vairable_name.clone())
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
+                    } else {
+                        unprivileged_tp
+                        .entry(vairable_name.clone())
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    }
                 }
                 (true, false) => {
-                    privileged_fn
+                    if features_list[*variable_index as usize] > 0.0 {
+                        privileged_fn
                         .entry(vairable_name.clone())
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
+                    } else {
+                        unprivileged_fn
+                        .entry(vairable_name.clone())
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    }
                 }
                 (false, true) => {
-                    privileged_fp
+                    if features_list[*variable_index as usize] > 0.0 {
+                        privileged_fp
                         .entry(vairable_name.clone())
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
+                    } else {
+                        unprivileged_fp
+                        .entry(vairable_name.clone())
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    }
                 }
                 (false, false) => {
-                    privileged_tn
+                    if features_list[*variable_index as usize] > 0.0 {
+                        privileged_tn
                         .entry(vairable_name.clone())
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
+                    } else {
+                        unprivileged_tn
+                        .entry(vairable_name.clone())
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    }
                 }
             }
         }
