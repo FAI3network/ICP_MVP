@@ -2,7 +2,7 @@ use crate::{check_cycles_before_action, DataPoint, Model, User, USERS};
 use candid::Principal;
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 #[ic_cdk::update]
@@ -36,33 +36,35 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap
 
         let mut result = HashMap::new();
 
-        for (key, _) in &privileged_count {
-            // let privileged_probability: f32 = *privileged_positive_count.get(key).unwrap_or(&0) as f32 / *privileged_count.get(key).unwrap_or(&0) as f32;
-            // let unprivileged_probability: f32 = *unprivileged_positive_count.get(key).unwrap_or(&0) as f32 / *unprivileged_count.get(key).unwrap_or(&0) as f32;
+        let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
 
-            // let diff = unprivileged_probability - privileged_probability;
+        for key in all_keys {
+            let privileged_total = *privileged_count.get(key).unwrap_or(&0) as f32;
+            let unprivileged_total = *unprivileged_count.get(key).unwrap_or(&0) as f32;
 
-            let positives = *unprivileged_positive_count.get(key).unwrap_or(&0) as f32 / *privileged_positive_count.get(key).unwrap_or(&0) as f32;
-            let instances = *unprivileged_count.get(key).unwrap_or(&0) as f32 / *privileged_count.get(key).unwrap_or(&0) as f32;
+            let privileged_positives = *privileged_positive_count.get(key).unwrap_or(&0) as f32;
+            let unprivileged_positives = *unprivileged_positive_count.get(key).unwrap_or(&0) as f32;
 
-            let diff = positives - instances;
+            // Avoid division by zero
+            if privileged_total == 0.0 || unprivileged_total == 0.0 {
+                // result.insert(key.clone(), None); // Skip SPD for this variable
+                continue;
+            }
+
+            let privileged_probability = privileged_positives / privileged_total;
+            let unprivileged_probability = unprivileged_positives / unprivileged_total;
+
+            let diff = unprivileged_probability - privileged_probability;
 
             result.insert(key.clone(), diff);
         }
-
-        // let privileged_probability: f32 =
-        //     privileged_positive_count as f32 / privileged_count as f32;
-        // let unprivileged_probability: f32 =
-        //     unprivileged_positive_count as f32 / unprivileged_count as f32;
-
-        // let result: f32 = unprivileged_probability - privileged_probability;
         
         model.metrics.statistical_parity_difference = Some(result.clone());
 
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
 
-        result.clone()
+        result
     })
 }
 
@@ -96,16 +98,30 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32>
 
         let mut result = HashMap::new();
 
-        for (key, _) in &privileged_count {
-            let privileged_probability: f32 =
-                *privileged_positive_count.get(key).unwrap_or(&0) as f32 / *privileged_count.get(key).unwrap_or(&0) as f32;
-            let unprivileged_probability: f32 =
-                *unprivileged_positive_count.get(key).unwrap_or(&0) as f32 / *unprivileged_count.get(key).unwrap_or(&0) as f32;
+
+        let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
+
+        for key in all_keys {
+            let privileged_total = *privileged_count.get(key).unwrap_or(&0) as f32;
+            let unprivileged_total = *unprivileged_count.get(key).unwrap_or(&0) as f32;
+
+            let privileged_positives = *privileged_positive_count.get(key).unwrap_or(&0) as f32;
+            let unprivileged_positives = *unprivileged_positive_count.get(key).unwrap_or(&0) as f32;
+
+            // Avoid division by zero
+            if privileged_total == 0.0 || unprivileged_total == 0.0 {
+                // result.insert(key.clone(), None); // Skip SPD for this variable
+                continue;
+            }
+
+            let privileged_probability = privileged_positives / privileged_total;
+            let unprivileged_probability = unprivileged_positives / unprivileged_total;
 
             let diff = unprivileged_probability / privileged_probability;
+
             result.insert(key.clone(), diff);
         }
-
+        
 
         // let privileged_probability: f32 =
         //     privileged_positive_count as f32 / privileged_count as f32;
@@ -172,7 +188,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<Strin
             let privileged_fpr: f32 = *privileged_fp.get(key).unwrap_or(&0) as f32 / (privileged_negative_total + 1) as f32;
             let unprivileged_fpr: f32 = *unprivileged_fp.get(key).unwrap_or(&0) as f32 / (unprivileged_negative_total + 1) as f32;
 
-            let diff = ((unprivileged_fpr - privileged_fpr) + (unprivileged_tpr - privileged_tpr)) / 2.0;
+            let diff = ((unprivileged_fpr - privileged_fpr).abs() + (unprivileged_tpr - privileged_tpr).abs()) / 2.0;
             result.insert(key.clone(), diff);
         }
 
@@ -220,37 +236,46 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> HashMap<
             ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
         }
 
-        let (privileged_tp, privileged_fn, unprivileged_tp, unprivileged_fn) =
-            calculate_true_positive_false_negative(&model.data_points);
+        let mut count_pred_label_unprivileged = HashMap::new();
+        let mut count_pred_label_privileged = HashMap::new();
+        let mut count_label_unprivileged = HashMap::new();
+        let mut count_label_privileged = HashMap::new();
+
+        for point in &model.data_points {
+            for entry in point.privileged_map.iter() {
+                let vairable_name = entry.0;
+                let variable_index = entry.1;
+
+                if point.features[*variable_index as usize] > 0.0 {
+                    if point.target {
+                        count_label_privileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        if point.predicted {
+                            count_pred_label_privileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        }
+                    }
+                } else {
+                    if point.target {
+                        count_label_unprivileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        if point.predicted {
+                            count_pred_label_unprivileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        }
+                    }
+                }
+            }
+        }
 
         let mut result = HashMap::new();
 
-        for (key, _) in &privileged_tp {
-            let privileged_positive_total = *privileged_tp.get(key).unwrap_or(&0) + *privileged_fn.get(key).unwrap_or(&0);
-            let unprivileged_positive_total = *unprivileged_tp.get(key).unwrap_or(&0) + *unprivileged_fn.get(key).unwrap_or(&0);
+        let all_keys: HashSet<&String> = count_label_privileged.keys().chain(count_label_unprivileged.keys()).collect();
 
-            if privileged_positive_total == 0 || unprivileged_positive_total == 0 {
-                ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
-            }
+        for key in all_keys {
+            let prob_pred_label_unprivileged = *count_pred_label_unprivileged.get(key).unwrap_or(&0.0) / *count_label_unprivileged.get(key).unwrap_or(&0.0);
+            let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0) / *count_label_privileged.get(key).unwrap_or(&0.0);
 
-            let privileged_tpr = *privileged_tp.get(key).unwrap_or(&0) as f32 / (privileged_positive_total + 1) as f32;
-            let unprivileged_tpr = *unprivileged_tp.get(key).unwrap_or(&0) as f32 / (unprivileged_positive_total + 1) as f32;
-
-            let diff = unprivileged_tpr - privileged_tpr;
+            let diff = prob_pred_label_unprivileged - prob_pred_label_privileged;
             result.insert(key.clone(), diff);
         }
 
-        // let privileged_positive_total = privileged_tp + privileged_fn;
-        // let unprivileged_positive_total = unprivileged_tp + unprivileged_fn;
-
-        //if privileged_positive_total == 0 || unprivileged_positive_total == 0 {
-        //    ic_cdk::api::trap("Cannot calculate equal opportunity difference: One of the groups has no positive data points.");
-        //}
-
-        // let privileged_tpr = privileged_tp as f32 / (privileged_positive_total + 1) as f32;
-        // let unprivileged_tpr = unprivileged_tp as f32 / (unprivileged_positive_total + 1) as f32;
-
-        // let result = unprivileged_tpr - privileged_tpr;
         model.metrics.equal_opportunity_difference = Some(result.clone());
         model.metrics.timestamp = ic_cdk::api::time();
 
@@ -424,18 +449,6 @@ pub(crate) fn calculate_group_counts(
                 }
             }
         }
-
-        // if point.privileged {
-        //     privileged_count += 1;
-        //     if point.predicted {
-        //         privileged_positive_count += 1;
-        //     }
-        // } else {
-        //     unprivileged_count += 1;
-        //     if point.predicted {
-        //         unprivileged_positive_count += 1;
-        //     }
-        // }
     }
 
     (
