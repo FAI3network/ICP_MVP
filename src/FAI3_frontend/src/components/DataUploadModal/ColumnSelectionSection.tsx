@@ -1,11 +1,11 @@
 import { ModalContent, ModalHeader, ModalTitle, ModalBody, ModalFooter, Button, closeModal, Select } from "../ui";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
 import { useAuthClient, useDataContext } from "../../utils";
 
-export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () => Promise<any> }) {
+export default function ColumnSelectionSection({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -23,15 +23,22 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
   })
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (latestVars && latestVars.length > 0) {
+      setColumnLabels({...columnLabels, privledged: latestVars.join(", ")});
+    }
+  }, [latestVars]);
+
   const uploadData = async () => {
     setLoading(true);
 
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
-    const privledgedIndexs: bigint[] = []; //index of columns that are privledged
     let features: number[][] = [];
 
     const privledgedLabels = columnLabels.privledged.split(", ");
+
+    const privilegedVariables = [];
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -39,14 +46,13 @@ export default function ColumnSelectionSection({ fetchModel }: { fetchModel: () 
       } else if (columns[i].accessorKey === columnLabels.predictions) {
         predictions = table.getRowModel().rows.map((row) => (row.original[columnLabels.predictions] == 1 ? true : false));
       } else if (privledgedLabels.includes(columns[i].accessorKey)) {
-        privledgedIndexs.push(BigInt(i));
+        privilegedVariables.push({ key: columns[i].accessorKey, value: BigInt(i) });
       } else {
         features.push(table.getRowModel().rows.map((row) => parseFloat(row.original[columns[i].accessorKey])));
       }
     }
 
-    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privledgedIndexs, privledgedLabels);
-    console.log("using webapp")
+    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
     await webapp?.calculate_all_metrics(BigInt(modelId!));
     await fetchModel();
     await fetchModels();

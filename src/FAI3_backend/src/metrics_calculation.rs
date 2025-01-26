@@ -1,12 +1,14 @@
+use crate::types::PrivilegedIndex;
 use crate::{check_cycles_before_action, DataPoint, Model, User, USERS, AverageMetrics};
 use candid::Principal;
 
+use ic_cdk::println;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 #[ic_cdk::update]
-pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap<String, f32> {
+pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
         let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
@@ -34,7 +36,7 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap
             ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
         }
 
-        let mut result = HashMap::new();
+        let mut result = Vec::new();
 
         let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
 
@@ -56,10 +58,15 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap
 
             let diff = unprivileged_probability - privileged_probability;
 
-            result.insert(key.clone(), diff);
+            let new_entry = PrivilegedIndex {
+                variable_name: key.clone(),
+                value: diff,
+            };
+
+            result.push(new_entry);
         }
 
-        let sum: f32 = result.values().sum();
+        let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
 
         let average: f32 = sum / length;
@@ -76,7 +83,7 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> HashMap
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32> {
+pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
         let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
@@ -103,7 +110,7 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32>
             ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
         }
 
-        let mut result = HashMap::new();
+        let mut result = Vec::new();
 
 
         let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
@@ -126,10 +133,15 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32>
 
             let diff = unprivileged_probability / privileged_probability;
 
-            result.insert(key.clone(), diff);
+            let new_entry = PrivilegedIndex {
+                variable_name: key.clone(),
+                value: diff,
+            };
+
+            result.push(new_entry);
         }
         
-        let sum: f32 = result.values().sum();
+        let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
 
         let average: f32 = sum / length;
@@ -146,7 +158,7 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> HashMap<String, f32>
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<String, f32> {
+pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
         let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
@@ -173,7 +185,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<Strin
             unprivileged_fn,
         ) = calculate_confusion_matrix(&model.data_points);
 
-        let mut result = HashMap::new();
+        let mut result = Vec::new();
 
         for (key, _) in &privileged_tp {
             let privileged_positive_total = *privileged_tp.get(key).unwrap_or(&0) + *privileged_fn.get(key).unwrap_or(&0);
@@ -191,10 +203,16 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<Strin
             let unprivileged_fpr: f32 = *unprivileged_fp.get(key).unwrap_or(&0) as f32 / (unprivileged_negative_total + 1) as f32;
 
             let diff = ((unprivileged_fpr - privileged_fpr).abs() + (unprivileged_tpr - privileged_tpr).abs()) / 2.0;
-            result.insert(key.clone(), diff);
+            
+            let new_entry = PrivilegedIndex {
+                variable_name: key.clone(),
+                value: diff,
+            };
+
+            result.push(new_entry);
         }
 
-        let sum: f32 = result.values().sum();
+        let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
 
         let average: f32 = sum / length;
@@ -211,7 +229,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> HashMap<Strin
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> HashMap<String, f32> {
+pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     USERS.with(|users| {
         let mut users = users.borrow_mut();
@@ -255,19 +273,25 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> HashMap<
             }
         }
 
-        let mut result = HashMap::new();
+        let mut result = Vec::new();
 
         let all_keys: HashSet<&String> = count_label_privileged.keys().chain(count_label_unprivileged.keys()).collect();
 
         for key in all_keys {
-            let prob_pred_label_unprivileged = *count_pred_label_unprivileged.get(key).unwrap_or(&0.0) / *count_label_unprivileged.get(key).unwrap_or(&0.0);
-            let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0) / *count_label_privileged.get(key).unwrap_or(&0.0);
+            let prob_pred_label_unprivileged = *count_pred_label_unprivileged.get(key).unwrap_or(&0.0) / (*count_label_unprivileged.get(key).unwrap_or(&0.0) + 1.0);
+            let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0) / (*count_label_privileged.get(key).unwrap_or(&0.0) + 1.0);
 
             let diff = prob_pred_label_unprivileged - prob_pred_label_privileged;
-            result.insert(key.clone(), diff);
+            
+            let new_entry = PrivilegedIndex {
+                variable_name: key.clone(),
+                value: diff,
+            };
+
+            result.push(new_entry);
         }
 
-        let sum: f32 = result.values().sum();
+        let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
 
         let average: f32 = sum / length;
@@ -376,7 +400,7 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_all_metrics(model_id: u128) -> (HashMap<String, f32>, HashMap<String, f32>, HashMap<String, f32>, HashMap<String, f32>, f32, f32, f32) {
+pub(crate) fn calculate_all_metrics(model_id: u128) -> (Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, f32, f32, f32) {
     let spd = calculate_statistical_parity_difference(model_id);
     let di = calculate_disparate_impact(model_id);
     let aod = calculate_average_odds_difference(model_id);

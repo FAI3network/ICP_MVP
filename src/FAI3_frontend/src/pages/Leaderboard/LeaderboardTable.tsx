@@ -243,7 +243,6 @@ export default function LeaderboardTable({ fetchModels }: any) {
               value={table.getColumn("name")?.getFilterValue() ?? ""}
               onChange={(event: any) => {
                 table.getColumn("name")?.setFilterValue(event.target.value);
-                console.log(event.target.value);
               }}
               className="max-w-sm"
             />

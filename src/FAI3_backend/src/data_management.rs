@@ -1,7 +1,14 @@
 use crate::{check_cycles_before_action, USERS, NEXT_DATA_POINT_ID, DataPoint, Model, User};
-use candid::Principal;
+use candid::{CandidType, Principal, Deserialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
+
+#[derive(CandidType, Deserialize)]
+pub (crate) struct KeyValuePair {
+    key: String,
+    value: u128,
+}
+
 
 #[ic_cdk::update]
 pub fn add_dataset(
@@ -9,8 +16,7 @@ pub fn add_dataset(
     features: Vec<Vec<f64>>,
     labels: Vec<bool>,
     predictions: Vec<bool>,
-    privilege_indices: Vec<u128>,
-    privileged_labels: Vec<String>
+    privileged: Vec<KeyValuePair>,
 ) {
     check_cycles_before_action();
 
@@ -28,9 +34,13 @@ pub fn add_dataset(
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
 
-    let privileged_map: HashMap<String, u128> = privileged_labels.iter().enumerate().map(|(i, label)| {
-        (label.clone(), privilege_indices[i])
-    }).collect();
+    // let privileged_map: HashMap<String, u128> = privileged_labels.iter().enumerate().map(|(i, label)| {
+    //     (label.clone(), privilege_indices[i])
+    // }).collect();
+
+    let privileged_map: HashMap<String, u128> = privileged.iter().map(|pair| {
+            (pair.key.clone(), pair.value as u128)
+        }).collect();
 
     USERS.with(|users| {
         let mut users = users.borrow_mut();

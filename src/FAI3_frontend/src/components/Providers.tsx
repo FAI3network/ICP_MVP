@@ -108,8 +108,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }
 
   const fetchModels = async () => {
-    console.log("fetching")
-    console.log(connected);
     const models: Model[] = connected ?
       await (webapp?.get_all_models() as Promise<Model[]>)
       :
@@ -119,7 +117,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       });
 
     setModels(models);
-    console.log(models);
   };
 
   return (

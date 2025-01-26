@@ -14,11 +14,16 @@ type AverageMetrics = record {
   equal_opportunity_difference: opt float32;
 };
 
+type PrivilegedIndex = record {
+  variable_name: text;
+  value: float32;
+};
+
 type Metrics = record {
-  statistical_parity_difference: opt vec record { text; float32 };
-  disparate_impact: opt vec record { text; float32 };
-  average_odds_difference: opt vec record { text; float32 };
-  equal_opportunity_difference: opt vec record { text; float32 };
+  statistical_parity_difference: opt vec PrivilegedIndex;
+  disparate_impact: opt vec PrivilegedIndex;
+  average_odds_difference: opt vec PrivilegedIndex;
+  equal_opportunity_difference: opt vec PrivilegedIndex;
   average_metrics: AverageMetrics;
   accuracy: opt float32;
   precision: opt float32;
@@ -49,6 +54,8 @@ type User = record {
   models: vec record { nat; Model };
 };
 
+type HashMap = vec record { key: text; value: nat };
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -61,19 +68,19 @@ service : () -> {
     "delete_model": (nat) -> ();
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, vec nat, vec text) -> (); //New call for custom privileged fields
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
-    "calculate_statistical_parity_difference": (nat) -> (vec record { text; float32 });
-    "calculate_disparate_impact": (nat) -> (vec record { text; float32 });
-    "calculate_average_odds_difference": (nat) -> (vec record { text; float32 });
-    "calculate_equal_opportunity_difference": (nat) -> (vec record { text; float32 });
+    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex);
+    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex);
+    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex);
+    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex);
     
     // Calculate all fairness metrics
     "calculate_all_metrics": (nat) ->  (
-      vec record { text; float32 }, vec record { text; float32 }, vec record { text; float32 }, vec record { text; float32 }, float32, float32, float32
+      vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
 
     // Example data

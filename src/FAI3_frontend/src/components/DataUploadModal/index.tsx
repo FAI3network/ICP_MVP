@@ -9,7 +9,7 @@ import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal({ fetchModel }: { fetchModel: () => Promise<any> }) {
+export default function DataUploadModal({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
@@ -38,8 +38,6 @@ export default function DataUploadModal({ fetchModel }: { fetchModel: () => Prom
               delete element[""];
             });
           }
-
-          console.log(result.data);
 
           setData(result.data);
           createColumns(result.data);
@@ -90,7 +88,7 @@ export default function DataUploadModal({ fetchModel }: { fetchModel: () => Prom
   const steps = [
     <UploadDataFile />,
     <CSVTableView />,
-    <ColumnSelectionSection fetchModel={fetchModel} />,
+    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} />,
     <ImageUploader />
   ];
 

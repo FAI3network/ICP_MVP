@@ -22,11 +22,18 @@ pub struct AverageMetrics {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct PrivilegedIndex {
+    pub(crate) variable_name: String,
+    pub(crate) value: f32,
+}
+
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Metrics {
-    pub(crate) statistical_parity_difference: Option<HashMap<String, f32>>,
-    pub(crate) disparate_impact: Option<HashMap<String, f32>>,
-    pub(crate) average_odds_difference: Option<HashMap<String, f32>>,
-    pub(crate) equal_opportunity_difference: Option<HashMap<String, f32>>,
+    pub(crate) statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
+    pub(crate) disparate_impact: Option<Vec<PrivilegedIndex>>,
+    pub(crate) average_odds_difference: Option<Vec<PrivilegedIndex>>,
+    pub(crate) equal_opportunity_difference: Option<Vec<PrivilegedIndex>>,
     pub(crate) average_metrics: AverageMetrics,
     pub(crate) accuracy: Option<f32>,
     pub(crate) precision: Option<f32>,
