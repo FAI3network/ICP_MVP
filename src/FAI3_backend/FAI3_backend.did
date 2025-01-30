@@ -34,7 +34,7 @@ type Metrics = record {
 type Model = record {
   model_id: nat;
   model_name: text;
-  user_id: principal;
+  owners: vec principal;
   data_points: vec DataPoint;
   metrics: Metrics;
   details: ModelDetails;
@@ -66,6 +66,7 @@ service : () -> {
     // Model management
     "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
+    "add_owner": (nat, principal) -> ();
 
     // Data point management
     "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields

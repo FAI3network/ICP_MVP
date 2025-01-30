@@ -35,7 +35,7 @@ export default function Leaderboard() {
       {loading ? (
         <div className="w-full text-center">Loading...</div>
       ) : (
-        <LeaderboardTable fetchModels={fetchModels} />
+        <LeaderboardTable />
       )}
     </div>
   );

@@ -45,7 +45,7 @@ pub struct Metrics {
 pub struct Model {
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
-    pub(crate) user_id: Principal,
+    pub(crate) owners: Vec<Principal>,
     pub(crate) data_points: Vec<DataPoint>,
     pub(crate) metrics: Metrics,
     pub(crate) details: ModelDetails,
@@ -62,10 +62,9 @@ pub struct ModelDetails {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-// #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct User {
     pub(crate) user_id: Principal,
-    pub(crate) models: HashMap<u128, Model>,
+    pub(crate) models: Vec<u128>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

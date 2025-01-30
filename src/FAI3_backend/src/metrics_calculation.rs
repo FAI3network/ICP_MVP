@@ -1,5 +1,7 @@
 use crate::types::PrivilegedIndex;
-use crate::{check_cycles_before_action, DataPoint, Model, User, USERS, AverageMetrics};
+use crate::{
+    check_cycles_before_action, get_model, is_owner, model, AverageMetrics, DataPoint, Model, User, MODELS
+};
 use candid::Principal;
 
 use ic_cdk::println;
@@ -10,19 +12,11 @@ use std::hash::Hash;
 #[ic_cdk::update]
 pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
 
         let (
             privileged_count,
@@ -33,12 +27,17 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<Pri
 
         // Handle empty group scenario
         if privileged_count.len() == 0 || unprivileged_count.len() == 0 {
-            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+            ic_cdk::api::trap(
+            "Cannot calculate statistical parity difference: One of the groups has no data points.",
+        );
         }
 
         let mut result = Vec::new();
 
-        let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
+        let all_keys: HashSet<&String> = privileged_count
+            .keys()
+            .chain(unprivileged_count.keys())
+            .collect();
 
         for key in all_keys {
             let privileged_total = *privileged_count.get(key).unwrap_or(&0) as f32;
@@ -85,19 +84,13 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<Pri
 #[ic_cdk::update]
 pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
+        is_owner(&model, caller);
 
         let (
             privileged_count,
@@ -107,13 +100,17 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex>
         ) = calculate_group_counts(&model.data_points);
 
         if privileged_count.len() == 0 || unprivileged_count.len() == 0 {
-            ic_cdk::api::trap("Cannot calculate statistical parity difference: One of the groups has no data points.");
+            ic_cdk::api::trap(
+            "Cannot calculate statistical parity difference: One of the groups has no data points.",
+        );
         }
 
         let mut result = Vec::new();
 
-
-        let all_keys: HashSet<&String> = privileged_count.keys().chain(unprivileged_count.keys()).collect();
+        let all_keys: HashSet<&String> = privileged_count
+            .keys()
+            .chain(unprivileged_count.keys())
+            .collect();
 
         for key in all_keys {
             let privileged_total = *privileged_count.get(key).unwrap_or(&0) as f32;
@@ -140,14 +137,14 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex>
 
             result.push(new_entry);
         }
-        
+
         let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
 
         let average: f32 = sum / length;
 
         model.metrics.average_metrics.disparate_impact = Some(average);
-      
+
         model.metrics.disparate_impact = Some(result.clone());
 
         // Update timestamp after calculation
@@ -160,19 +157,12 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex>
 #[ic_cdk::update]
 pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+        is_owner(&model, caller);
 
         let (
             privileged_tp,
@@ -188,22 +178,32 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<Privilege
         let mut result = Vec::new();
 
         for (key, _) in &privileged_tp {
-            let privileged_positive_total = *privileged_tp.get(key).unwrap_or(&0) + *privileged_fn.get(key).unwrap_or(&0);
-            let unprivileged_positive_total = *unprivileged_tp.get(key).unwrap_or(&0) + *unprivileged_fn.get(key).unwrap_or(&0);
-            let privileged_negative_total = *privileged_fp.get(key).unwrap_or(&0) + *privileged_tn.get(key).unwrap_or(&0);
-            let unprivileged_negative_total = *unprivileged_fp.get(key).unwrap_or(&0) + *unprivileged_tn.get(key).unwrap_or(&0);
+            let privileged_positive_total =
+                *privileged_tp.get(key).unwrap_or(&0) + *privileged_fn.get(key).unwrap_or(&0);
+            let unprivileged_positive_total =
+                *unprivileged_tp.get(key).unwrap_or(&0) + *unprivileged_fn.get(key).unwrap_or(&0);
+            let privileged_negative_total =
+                *privileged_fp.get(key).unwrap_or(&0) + *privileged_tn.get(key).unwrap_or(&0);
+            let unprivileged_negative_total =
+                *unprivileged_fp.get(key).unwrap_or(&0) + *unprivileged_tn.get(key).unwrap_or(&0);
 
             // if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
             //     ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
             // }
 
-            let privileged_tpr: f32 = *privileged_tp.get(key).unwrap_or(&0) as f32 / (privileged_positive_total + 1) as f32;
-            let unprivileged_tpr: f32 = *unprivileged_tp.get(key).unwrap_or(&0) as f32 / (unprivileged_positive_total + 1) as f32;
-            let privileged_fpr: f32 = *privileged_fp.get(key).unwrap_or(&0) as f32 / (privileged_negative_total + 1) as f32;
-            let unprivileged_fpr: f32 = *unprivileged_fp.get(key).unwrap_or(&0) as f32 / (unprivileged_negative_total + 1) as f32;
+            let privileged_tpr: f32 = *privileged_tp.get(key).unwrap_or(&0) as f32
+                / (privileged_positive_total + 1) as f32;
+            let unprivileged_tpr: f32 = *unprivileged_tp.get(key).unwrap_or(&0) as f32
+                / (unprivileged_positive_total + 1) as f32;
+            let privileged_fpr: f32 = *privileged_fp.get(key).unwrap_or(&0) as f32
+                / (privileged_negative_total + 1) as f32;
+            let unprivileged_fpr: f32 = *unprivileged_fp.get(key).unwrap_or(&0) as f32
+                / (unprivileged_negative_total + 1) as f32;
 
-            let diff = ((unprivileged_fpr - privileged_fpr).abs() + (unprivileged_tpr - privileged_tpr).abs()) / 2.0;
-            
+            let diff = ((unprivileged_fpr - privileged_fpr).abs()
+                + (unprivileged_tpr - privileged_tpr).abs())
+                / 2.0;
+
             let new_entry = PrivilegedIndex {
                 variable_name: key.clone(),
                 value: diff,
@@ -231,19 +231,13 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<Privilege
 #[ic_cdk::update]
 pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
+        is_owner(&model, caller);
 
         let mut count_pred_label_unprivileged = HashMap::new();
         let mut count_pred_label_privileged = HashMap::new();
@@ -257,16 +251,28 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<Priv
 
                 if point.features[*variable_index as usize] > 0.0 {
                     if point.target {
-                        count_label_privileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        count_label_privileged
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1.0)
+                            .or_insert(1.0);
                         if point.predicted {
-                            count_pred_label_privileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                            count_pred_label_privileged
+                                .entry(vairable_name.clone())
+                                .and_modify(|e| *e += 1.0)
+                                .or_insert(1.0);
                         }
                     }
                 } else {
                     if point.target {
-                        count_label_unprivileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                        count_label_unprivileged
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1.0)
+                            .or_insert(1.0);
                         if point.predicted {
-                            count_pred_label_unprivileged.entry(vairable_name.clone()).and_modify(|e| *e += 1.0).or_insert(1.0);
+                            count_pred_label_unprivileged
+                                .entry(vairable_name.clone())
+                                .and_modify(|e| *e += 1.0)
+                                .or_insert(1.0);
                         }
                     }
                 }
@@ -275,14 +281,20 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<Priv
 
         let mut result = Vec::new();
 
-        let all_keys: HashSet<&String> = count_label_privileged.keys().chain(count_label_unprivileged.keys()).collect();
+        let all_keys: HashSet<&String> = count_label_privileged
+            .keys()
+            .chain(count_label_unprivileged.keys())
+            .collect();
 
         for key in all_keys {
-            let prob_pred_label_unprivileged = *count_pred_label_unprivileged.get(key).unwrap_or(&0.0) / (*count_label_unprivileged.get(key).unwrap_or(&0.0) + 1.0);
-            let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0) / (*count_label_privileged.get(key).unwrap_or(&0.0) + 1.0);
+            let prob_pred_label_unprivileged =
+                *count_pred_label_unprivileged.get(key).unwrap_or(&0.0)
+                    / (*count_label_unprivileged.get(key).unwrap_or(&0.0) + 1.0);
+            let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0)
+                / (*count_label_privileged.get(key).unwrap_or(&0.0) + 1.0);
 
             let diff = prob_pred_label_unprivileged - prob_pred_label_privileged;
-            
+
             let new_entry = PrivilegedIndex {
                 variable_name: key.clone(),
                 value: diff,
@@ -308,19 +320,13 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<Priv
 #[ic_cdk::update]
 pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
     check_cycles_before_action();
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
+        is_owner(&model, caller);
 
         let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&model.data_points);
         let total = tp + tn + fp + fn_;
@@ -338,19 +344,13 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
 #[ic_cdk::update]
 pub(crate) fn calculate_precision(model_id: u128) -> f32 {
     check_cycles_before_action();
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized");
-        }
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
+        is_owner(&model, caller);
 
         let (tp, _, fp, _) = calculate_overall_confusion_matrix(&model.data_points);
         let denominator = tp + fp;
@@ -368,21 +368,13 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
 #[ic_cdk::update]
 pub(crate) fn calculate_recall(model_id: u128) -> f32 {
     check_cycles_before_action();
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    let caller = ic_cdk::api::caller();
 
-        // Update the timestamp again here if needed, or rely on the last calculated metric
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
 
-        if model.user_id != ic_cdk::api::caller() {
-            ic_cdk::api::trap("Unauthorized");
-        }
+        is_owner(&model, caller);
 
         let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&model.data_points);
         let denominator = tp + fn_;
@@ -400,7 +392,17 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_all_metrics(model_id: u128) -> (Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, f32, f32, f32) {
+pub(crate) fn calculate_all_metrics(
+    model_id: u128,
+) -> (
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    f32,
+    f32,
+    f32,
+) {
     let spd = calculate_statistical_parity_difference(model_id);
     let di = calculate_disparate_impact(model_id);
     let aod = calculate_average_odds_difference(model_id);
@@ -409,15 +411,10 @@ pub(crate) fn calculate_all_metrics(model_id: u128) -> (Vec<PrivilegedIndex>, Ve
     let prec = calculate_precision(model_id);
     let rec = calculate_recall(model_id);
 
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users
-            .get_mut(&ic_cdk::api::caller())
-            .expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
         model.metrics.timestamp = ic_cdk::api::time();
         model.metrics_history.push(model.metrics.clone());
     });
@@ -483,10 +480,28 @@ pub(crate) fn calculate_group_counts(
 
 pub(crate) fn calculate_confusion_matrix(
     data_points: &Vec<DataPoint>,
-) -> (HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>) {
-    let (mut privileged_tp, mut privileged_fp, mut privileged_tn, mut privileged_fn) = (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
-    let (mut unprivileged_tp, mut unprivileged_fp, mut unprivileged_tn, mut unprivileged_fn) =
-        (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
+) -> (
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+) {
+    let (mut privileged_tp, mut privileged_fp, mut privileged_tn, mut privileged_fn) = (
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+    );
+    let (mut unprivileged_tp, mut unprivileged_fp, mut unprivileged_tn, mut unprivileged_fn) = (
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+    );
 
     for point in data_points {
         let features_list = point.features.clone();
@@ -498,53 +513,53 @@ pub(crate) fn calculate_confusion_matrix(
                 (true, true) => {
                     if features_list[*variable_index as usize] > 0.0 {
                         privileged_tp
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     } else {
                         unprivileged_tp
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     }
                 }
                 (true, false) => {
                     if features_list[*variable_index as usize] > 0.0 {
                         privileged_fn
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     } else {
                         unprivileged_fn
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     }
                 }
                 (false, true) => {
                     if features_list[*variable_index as usize] > 0.0 {
                         privileged_fp
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     } else {
                         unprivileged_fp
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     }
                 }
                 (false, false) => {
                     if features_list[*variable_index as usize] > 0.0 {
                         privileged_tn
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     } else {
                         unprivileged_tn
-                        .entry(vairable_name.clone())
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
+                            .entry(vairable_name.clone())
+                            .and_modify(|e| *e += 1)
+                            .or_insert(1);
                     }
                 }
             }
@@ -592,7 +607,12 @@ pub(crate) fn calculate_overall_confusion_matrix(
 
 pub(crate) fn calculate_true_positive_false_negative(
     data_points: &Vec<DataPoint>,
-) -> (HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>) {
+) -> (
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+) {
     let (mut privileged_tp, mut privileged_fn) = (HashMap::new(), HashMap::new());
     let (mut unprivileged_tp, mut unprivileged_fn) = (HashMap::new(), HashMap::new());
 

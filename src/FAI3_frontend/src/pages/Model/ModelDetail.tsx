@@ -32,10 +32,8 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       return;
     };
 
-    if (Principal.fromUint8Array(model.user_id._arr).toString() == address) {
-      setIsOwner(true)
-
-    }
+    setIsOwner(model.owners.map((o: any) => Principal.fromUint8Array(o._arr).toString()).includes(address))
+    
   }, [model, address])
 
   const chartConfig = {

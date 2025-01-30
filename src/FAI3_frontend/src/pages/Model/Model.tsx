@@ -25,6 +25,8 @@ export default function Model() {
     // const model = await FAI3_backend.get_model(id);
     const model: ModelType = connected ? await (webapp?.get_model(id) as Promise<ModelType>) : await FAI3_backend.get_model(id);
 
+    console.log(model);
+
     setModelWithDetails(model);
 
     const metricsHistory = model?.metrics_history;
@@ -53,6 +55,8 @@ export default function Model() {
         }
       });
     }
+
+    console.log(metricsList);
 
     setMetrics(metricsList);
     // console.log(metricsList);

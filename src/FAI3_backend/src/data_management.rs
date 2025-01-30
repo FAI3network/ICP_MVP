@@ -1,14 +1,16 @@
-use crate::{check_cycles_before_action, USERS, NEXT_DATA_POINT_ID, DataPoint, Model, User};
-use candid::{CandidType, Principal, Deserialize};
+use crate::{
+    check_cycles_before_action, get_model, is_owner, DataPoint, Model, User, MODELS,
+    NEXT_DATA_POINT_ID,
+};
+use candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
 #[derive(CandidType, Deserialize)]
-pub (crate) struct KeyValuePair {
+pub(crate) struct KeyValuePair {
     key: String,
     value: u128,
 }
-
 
 #[ic_cdk::update]
 pub fn add_dataset(
@@ -38,22 +40,16 @@ pub fn add_dataset(
     //     (label.clone(), privilege_indices[i])
     // }).collect();
 
-    let privileged_map: HashMap<String, u128> = privileged.iter().map(|pair| {
-            (pair.key.clone(), pair.value as u128)
-        }).collect();
+    let privileged_map: HashMap<String, u128> = privileged
+        .iter()
+        .map(|pair| (pair.key.clone(), pair.value as u128))
+        .collect();
 
-    USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users.get_mut(&caller).expect("User not found");
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
 
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+        is_owner(model, caller);
 
         NEXT_DATA_POINT_ID.with(|next_data_point_id| {
             let mut next_data_point_id = next_data_point_id.borrow_mut();
@@ -102,21 +98,17 @@ pub fn add_data_point(
     let caller: Principal = ic_cdk::api::caller();
     let timestamp: u64 = ic_cdk::api::time();
 
-    let privileged_map: HashMap<String, u128> = privileged_labels.iter().enumerate().map(|(i, label)| {
-        (label.clone(), privilege_indices[i])
-    }).collect();
+    let privileged_map: HashMap<String, u128> = privileged_labels
+        .iter()
+        .enumerate()
+        .map(|(i, label)| (label.clone(), privilege_indices[i]))
+        .collect();
 
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users.get_mut(&caller).expect("User not found");
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
 
-        let model: &mut Model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+        is_owner(model, caller);
 
         NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
             let data_point_id: u128 = *next_data_point_id.borrow();
@@ -140,16 +132,13 @@ pub fn add_data_point(
 pub fn delete_data_point(model_id: u128, data_point_id: u128) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users = users.borrow_mut();
-        let user = users.get_mut(&caller).expect("User not found");
-        let model = user
-            .models
-            .get_mut(&model_id)
-            .expect("Model not found or not owned by user");
-        if model.user_id != caller {
-            ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-        }
+
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get_mut(&model_id).expect("Model not found");
+
+        is_owner(model, caller);
+
         let data_point_index = model
             .data_points
             .iter()

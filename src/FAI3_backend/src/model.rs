@@ -1,7 +1,8 @@
-use crate::{check_cycles_before_action, only_admin, USERS, NEXT_MODEL_ID, Model, ModelDetails, User, Metrics, DataPoint, AverageMetrics};
+use crate::{check_cycles_before_action, only_admin, MODELS, NEXT_MODEL_ID, Model, ModelDetails, User, Metrics, DataPoint, AverageMetrics, is_owner};
 use candid::Principal;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::vec;
 
 #[ic_cdk::update]
 pub fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -13,51 +14,44 @@ pub fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
     }
 
     let caller: Principal = ic_cdk::api::caller();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users.entry(caller).or_insert(User {
-            user_id: caller,
-            models: HashMap::new(),
+
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
+        let model_id: u128 = NEXT_MODEL_ID.with(|next_model_id: &RefCell<u128>| {
+            let model_id: u128 = *next_model_id.borrow();
+            *next_model_id.borrow_mut() += 1;
+            model_id
         });
 
-        NEXT_MODEL_ID.with(|next_model_id: &RefCell<u128>| {
-            let model_id: u128 = *next_model_id.borrow();
-            user.models.insert(
+        models.insert(
+            model_id,
+            Model {
                 model_id,
-                Model {
-                    model_id,
-                    model_name: model_name.clone(),
-                    user_id: caller,
-                    data_points: Vec::new(),
-                    metrics: Metrics {
+                model_name,
+                owners: vec![caller],
+                data_points: Vec::new(),
+                metrics: Metrics {
+                    statistical_parity_difference: None,
+                    disparate_impact: None,
+                    average_odds_difference: None,
+                    equal_opportunity_difference: None,
+                    average_metrics: AverageMetrics {
                         statistical_parity_difference: None,
                         disparate_impact: None,
                         average_odds_difference: None,
                         equal_opportunity_difference: None,
-                        average_metrics: AverageMetrics {
-                            statistical_parity_difference: None,
-                            disparate_impact: None,
-                            average_odds_difference: None,
-                            equal_opportunity_difference: None,
-                        },
-                        accuracy: None,
-                        recall: None,
-                        precision: None,
-                        timestamp: 0,
                     },
-                    details: ModelDetails {
-                        description: model_details.description,
-                        framework: model_details.framework,
-                        version: model_details.version,
-                        objective: model_details.objective,
-                        url: model_details.url,
-                    },
-                    metrics_history: Vec::new(),
+                    accuracy: None,
+                    recall: None,
+                    precision: None,
+                    timestamp: 0,
                 },
-            );
-            *next_model_id.borrow_mut() += 1;
-            model_id
-        })
+                details: model_details,
+                metrics_history: Vec::new(),
+            },
+        );
+
+        model_id
     })
 }
 
@@ -65,75 +59,64 @@ pub fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
 pub fn delete_model(model_id: u128) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let mut users: std::cell::RefMut<'_, HashMap<Principal, User>> = users.borrow_mut();
-        let user: &mut User = users.get_mut(&caller).expect("User not found");
-        if let Some(model) = user.models.get(&model_id) {
-            if model.user_id != caller {
-                ic_cdk::api::trap("Unauthorized: You are not the owner of this model");
-            }
-        }
-        user.models
-            .remove(&model_id)
-            .expect("Model not found or not owned by user");
+
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
+        let model: &Model = models.get(&model_id).expect("Model not found");
+        is_owner(model, caller);
+        models.remove(&model_id);
     });
 }
 
 #[ic_cdk::query]
 pub fn get_all_models() -> Vec<Model> {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let users: std::cell::Ref<'_, HashMap<Principal, User>> = users.borrow();
-        users
-            .values()
-            .flat_map(|user| user.models.values().cloned())
-            .collect()
+
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
+        models.values().cloned().collect()
     })
 }
 
 #[ic_cdk::query]
 pub fn get_model_data_points(model_id: u128) -> Vec<DataPoint> {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let users: std::cell::Ref<'_, HashMap<Principal, User>> = users.borrow();
 
-        for user in users.values() {
-            if let Some(model) = user.models.get(&model_id) {
-                return model.data_points.clone();
-            }
-        }
-
-        ic_cdk::api::trap("Model not found");
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
+        let model: &Model = models.get(&model_id).expect("Model not found");
+        model.data_points.clone()
     })
 }
 
 #[ic_cdk::query]
 pub fn get_model_metrics(model_id: u128) -> Metrics {
     check_cycles_before_action();
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let users: std::cell::Ref<'_, HashMap<Principal, User>> = users.borrow();
 
-        for user in users.values() {
-            if let Some(model) = user.models.get(&model_id) {
-                return model.metrics.clone();
-            }
-        }
-
-        ic_cdk::api::trap("Model not found");
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
+        let model: &Model = models.get(&model_id).expect("Model not found");
+        model.metrics.clone()
     })
 }
 
 #[ic_cdk::query]
 pub fn get_model(model_id: u128) -> Model {
-    USERS.with(|users: &RefCell<HashMap<Principal, User>>| {
-        let users: std::cell::Ref<'_, HashMap<Principal, User>> = users.borrow();
-
-        for user in users.values() {
-            if let Some(model) = user.models.get(&model_id) {
-                return model.clone();
-            }
-        }
-
-        ic_cdk::api::trap("Model not found");
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
+        models.get(&model_id).expect("Model not found").clone()
     })
+}
+
+#[ic_cdk::update]
+pub fn add_owner(model_id: u128, new_owner: Principal) {
+    check_cycles_before_action();
+    let caller: Principal = ic_cdk::api::caller();
+
+    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
+        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
+        let model: &mut Model = models.get_mut(&model_id).expect("Model not found");
+        is_owner(model, caller);
+        model.owners.push(new_owner);
+    });
 }

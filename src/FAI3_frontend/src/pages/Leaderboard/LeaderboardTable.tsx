@@ -44,7 +44,7 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { useAuthClient, useDataContext } from "../../utils";
 
 
-export default function LeaderboardTable({ fetchModels }: any) {
+export default function LeaderboardTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
