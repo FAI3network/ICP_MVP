@@ -15,18 +15,22 @@ pub fn add_model(model_name: String, model_details: ModelDetails) -> u128 {
 
     let caller: Principal = ic_cdk::api::caller();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
-        let model_id: u128 = NEXT_MODEL_ID.with(|next_model_id: &RefCell<u128>| {
-            let model_id: u128 = *next_model_id.borrow();
-            *next_model_id.borrow_mut() += 1;
-            model_id
-        });
+    MODELS.with(|models| {
+        // let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
+        // let model_id: u128 = NEXT_MODEL_ID.with(|next_model_id: &RefCell<u128>| {
+        //     let model_id: u128 = *next_model_id.borrow();
+        //     *next_model_id.borrow_mut() += 1;
+        //     model_id
+        // });~
 
-        models.insert(
+        NEXT_MODEL_ID.with(|id| id.borrow_mut().set(id.borrow().get() + 1).unwrap());
+
+        let model_id = NEXT_MODEL_ID.with(|id| *id.borrow().get());
+
+        models.borrow_mut().insert(
             model_id,
             Model {
-                model_id,
+                model_id: model_id,
                 model_name,
                 owners: vec![caller],
                 data_points: Vec::new(),
@@ -60,10 +64,10 @@ pub fn delete_model(model_id: u128) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
-        let model: &Model = models.get(&model_id).expect("Model not found");
-        is_owner(model, caller);
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let model = models.get(&model_id).expect("Model not found");
+        is_owner(&model, caller);
         models.remove(&model_id);
     });
 }
@@ -72,9 +76,9 @@ pub fn delete_model(model_id: u128) {
 pub fn get_all_models() -> Vec<Model> {
     check_cycles_before_action();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
-        models.values().cloned().collect()
+    MODELS.with(|models| {
+        let models = models.borrow();
+        models.values().map(|model| model.clone()).collect()
     })
 }
 
@@ -82,9 +86,9 @@ pub fn get_all_models() -> Vec<Model> {
 pub fn get_model_data_points(model_id: u128) -> Vec<DataPoint> {
     check_cycles_before_action();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
-        let model: &Model = models.get(&model_id).expect("Model not found");
+    MODELS.with(|models| {
+        let models = models.borrow();
+        let model = models.get(&model_id).expect("Model not found");
         model.data_points.clone()
     })
 }
@@ -93,18 +97,15 @@ pub fn get_model_data_points(model_id: u128) -> Vec<DataPoint> {
 pub fn get_model_metrics(model_id: u128) -> Metrics {
     check_cycles_before_action();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
-        let model: &Model = models.get(&model_id).expect("Model not found");
-        model.metrics.clone()
+    MODELS.with(|models| {
+        models.borrow().get(&model_id).expect("Model not found").metrics.clone()
     })
 }
 
 #[ic_cdk::query]
 pub fn get_model(model_id: u128) -> Model {
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let models: std::cell::Ref<'_, HashMap<u128, Model>> = models.borrow();
-        models.get(&model_id).expect("Model not found").clone()
+    MODELS.with(|models| {
+        models.borrow().get(&model_id).expect("Model not found").clone()
     })
 }
 
@@ -113,10 +114,10 @@ pub fn add_owner(model_id: u128, new_owner: Principal) {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
 
-    MODELS.with(|models: &RefCell<HashMap<u128, Model>>| {
-        let mut models: std::cell::RefMut<'_, HashMap<u128, Model>> = models.borrow_mut();
-        let model: &mut Model = models.get_mut(&model_id).expect("Model not found");
-        is_owner(model, caller);
+    MODELS.with(|models| {
+        let models = models.borrow_mut();
+        let mut model = models.get(&model_id).expect("Model not found");
+        is_owner(&model, caller);
         model.owners.push(new_owner);
     });
 }

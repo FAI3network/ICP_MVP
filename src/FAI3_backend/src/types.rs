@@ -2,6 +2,9 @@
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use ic_stable_structures::Storable;
+use ic_stable_structures::storable::Bound;
+use std::borrow::Cow;
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
@@ -51,6 +54,19 @@ pub struct Model {
     pub(crate) details: ModelDetails,
     pub(crate) metrics_history: Vec<Metrics>,
 }
+
+impl Storable for Model {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        candid::decode_one(&bytes).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {

@@ -4,8 +4,7 @@ use candid::Principal;
 #[ic_cdk::query]
 fn is_admin() -> bool {
     ADMINS.with(|admins| {
-        let admins = admins.borrow();
-        admins.contains(&ic_cdk::api::caller())
+        admins.borrow().contains_key(&ic_cdk::api::caller())
     })
 }
 
@@ -20,13 +19,13 @@ fn add_admin(admin: String) {
     only_admin();
     check_cycles_before_action();
     ADMINS.with(|admins| {
-        admins
-            .borrow_mut()
-            .push(Principal::from_text(admin).unwrap());
+        admins.borrow_mut().insert(Principal::from_text(&admin).unwrap(), ());
     });
 }
 
 #[ic_cdk::query]
 fn get_admins() -> Vec<Principal> {
-    ADMINS.with(|admins| admins.borrow().clone())
+    ADMINS.with(|admins| {
+        admins.borrow().iter().map(|(principal, _)| principal).collect()
+    })
 }

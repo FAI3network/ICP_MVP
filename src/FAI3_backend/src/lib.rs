@@ -13,6 +13,7 @@ use candid::Principal;
 use ic_cdk_macros::*;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use ic_stable_structures::{StableBTreeMap, Cell, memory_manager::{MemoryManager, MemoryId, VirtualMemory}, DefaultMemoryImpl};
 
 use cycles_management::check_cycles_before_action;
 use model::get_model;
@@ -21,20 +22,51 @@ use admin_management::only_admin;
 use utils::is_owner;
 use metrics_calculation::{calculate_confusion_matrix, calculate_group_counts, calculate_overall_confusion_matrix, calculate_true_positive_false_negative};
 
+// thread_local! {
+//     static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());
+//     static MODELS: RefCell<HashMap<u128, Model>> = RefCell::new(HashMap::new());
+//     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
+//     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
+// }
+
 thread_local! {
-    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("f5hu5-c5eqs-4m2bm-fxb27-5mnk2-lpbva-l3tb5-7xv5p-w65wt-a3uyd-lqe").unwrap(), Principal::from_text("o7e2a-bbdxy-oigax-2ci44-naapw-oyqcx-uwf67-4b6ch-zrfis-bfa5n-wae").unwrap()]);
-    // static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
-    static MODELS: RefCell<HashMap<u128, Model>> = RefCell::new(HashMap::new());
-    static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
-    static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
+        MemoryManager::init(DefaultMemoryImpl::default())
+    );
+
+    static ADMINS: RefCell<StableBTreeMap<Principal, (), VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
+        )
+    );
+
+    static MODELS: RefCell<StableBTreeMap<u128, Model, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))
+        )
+    );
+
+    static NEXT_MODEL_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
+            1
+        ).unwrap()
+    );
+
+    static NEXT_DATA_POINT_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))),
+            1
+        ).unwrap()
+    );
 }
 
 #[ic_cdk::init]
 fn init() {
     let deployer = ic_cdk::caller();
-    ADMINS.with(|admins| {
-        admins.borrow_mut().push(deployer);
-    });
+    ADMINS.with(|admins| 
+        admins.borrow_mut().insert(deployer, ())
+    );
 }
 
 #[ic_cdk::query]

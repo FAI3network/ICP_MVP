@@ -46,13 +46,13 @@ pub fn add_dataset(
         .collect();
 
     MODELS.with(|models| {
-        let mut models = models.borrow_mut();
-        let model = models.get_mut(&model_id).expect("Model not found");
+        let models = models.borrow_mut();
+        let mut model = models.get(&model_id).expect("Model not found");
 
-        is_owner(model, caller);
+        is_owner(&model, caller);
 
-        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
-            let mut next_data_point_id = next_data_point_id.borrow_mut();
+        NEXT_DATA_POINT_ID.with(|id| {
+            let mut next_data_point_id = id.borrow_mut();
             for i in 0..data_length {
                 let mut feature_vector = Vec::new();
                 for feature_column in &features {
@@ -70,7 +70,7 @@ pub fn add_dataset(
                 // }
 
                 let data_point = DataPoint {
-                    data_point_id: *next_data_point_id,
+                    data_point_id: *next_data_point_id.get(),
                     target: labels[i],
                     privileged_map: privileged_map.clone(),
                     predicted: predictions[i],
@@ -79,7 +79,8 @@ pub fn add_dataset(
                 };
 
                 model.data_points.push(data_point);
-                *next_data_point_id += 1;
+                let current_id = *next_data_point_id.get();
+                next_data_point_id.set(current_id + 1).unwrap();
             }
         });
     });
@@ -105,14 +106,14 @@ pub fn add_data_point(
         .collect();
 
     MODELS.with(|models| {
-        let mut models = models.borrow_mut();
-        let model = models.get_mut(&model_id).expect("Model not found");
+        let models = models.borrow_mut();
+        let mut model = models.get(&model_id).expect("Model not found");
 
-        is_owner(model, caller);
+        is_owner(&model, caller);
 
-        NEXT_DATA_POINT_ID.with(|next_data_point_id: &RefCell<u128>| {
-            let data_point_id: u128 = *next_data_point_id.borrow();
-
+        NEXT_DATA_POINT_ID.with(|next_data_point_id| {
+            let data_point_id = *next_data_point_id.borrow().get();
+    
             let data_point: DataPoint = DataPoint {
                 data_point_id,
                 target,
@@ -121,9 +122,9 @@ pub fn add_data_point(
                 features,
                 timestamp,
             };
-
+    
             model.data_points.push(data_point);
-            *next_data_point_id.borrow_mut() += 1;
+            next_data_point_id.borrow_mut().set(next_data_point_id.borrow().get() + 1).unwrap()
         });
     });
 }
@@ -134,10 +135,10 @@ pub fn delete_data_point(model_id: u128, data_point_id: u128) {
     let caller: Principal = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let mut models = models.borrow_mut();
-        let model = models.get_mut(&model_id).expect("Model not found");
+        let models = models.borrow_mut();
+        let mut model = models.get(&model_id).expect("Model not found");
 
-        is_owner(model, caller);
+        is_owner(&model, caller);
 
         let data_point_index = model
             .data_points
