@@ -93,7 +93,7 @@ export default function LeaderboardTable() {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.statistical_parity_difference[0]);
+        const cellValue = Number(metrics.average_metrics.statistical_parity_difference[0]);
 
         return isNaN(cellValue) ? null : (
             <div
@@ -125,7 +125,7 @@ export default function LeaderboardTable() {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.disparate_impact[0]);
+        const cellValue = Number(metrics.average_metrics.disparate_impact[0]);
 
         return isNaN(cellValue) ? null : (
           <div
@@ -156,7 +156,7 @@ export default function LeaderboardTable() {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.average_odds_difference[0]);
+        const cellValue = Number(metrics.average_metrics.average_odds_difference[0]);
 
         return isNaN(cellValue) ? null : (
           <div
@@ -187,7 +187,7 @@ export default function LeaderboardTable() {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.equal_opportunity_difference[0]);
+        const cellValue = Number(metrics.average_metrics.equal_opportunity_difference[0]);
 
         return isNaN(cellValue) ? null : (
           <div

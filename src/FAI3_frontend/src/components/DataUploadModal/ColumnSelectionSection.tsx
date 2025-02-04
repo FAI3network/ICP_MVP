@@ -45,10 +45,11 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
         labels = table.getRowModel().rows.map((row) => (row.original[columnLabels.labels] == 1 ? true : false));
       } else if (columns[i].accessorKey === columnLabels.predictions) {
         predictions = table.getRowModel().rows.map((row) => (row.original[columnLabels.predictions] == 1 ? true : false));
-      } else if (privledgedLabels.includes(columns[i].accessorKey)) {
-        privilegedVariables.push({ key: columns[i].accessorKey, value: BigInt(i) });
       } else {
         features.push(table.getRowModel().rows.map((row) => parseFloat(row.original[columns[i].accessorKey])));
+        if (privledgedLabels.includes(columns[i].accessorKey)) {
+          privilegedVariables.push({ key: columns[i].accessorKey, value: BigInt(i) });
+        }
       }
     }
 
