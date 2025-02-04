@@ -81,7 +81,7 @@ export default function LineChartchart({
             .split("#")[1]
             .split("")
             .map((char: string, i: any) => {
-              const dimFactor = Math.max(0, parseInt(char, 16) - (index + 1) * 2);
+              const dimFactor = Math.max(0, parseInt(char, 16) - parseInt(((index) * 3).toString(), 16));
               return dimFactor.toString(16);
             })
             .join("")}`;
