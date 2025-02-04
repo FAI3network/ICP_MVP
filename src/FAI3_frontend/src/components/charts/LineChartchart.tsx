@@ -74,15 +74,26 @@ export default function LineChartchart({
         <ChartTooltip content={<ChartTooltipContent />} />
         {/* <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} /> */}
 
-        {variableNames.map((variableName, index) => (
-          <Area
-            key={index}
-            type="monotone"
-            dataKey={variableName}
-            stroke={color}
-            fill={color}
-          />
-        ))}
+        {variableNames.map((variableName, index) => {
+          const colorWithIndex = `#${color
+            .split("#")[1]
+            .split("")
+            .map((char: string, i: any) => {
+              const dimFactor = Math.max(0, parseInt(char, 16) - (index + 1) * 2);
+              return dimFactor.toString(16);
+            })
+            .join("")}`;
+          console.log(colorWithIndex);
+          return (
+            <Area
+              key={index}
+              type="monotone"
+              dataKey={variableName}
+              stroke={colorWithIndex}
+              fill={colorWithIndex}
+            />
+          );
+        })}
 
         <ReferenceLine
           y={unfairRange[0]}
