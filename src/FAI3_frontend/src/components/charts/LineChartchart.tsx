@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
+  Legend,
 } from "recharts";
 
 import {
@@ -72,6 +73,7 @@ export default function LineChartchart({
           tickFormatter={(value) => value.toFixed(2)}
         />
         <ChartTooltip content={<ChartTooltipContent />} />
+        <Legend />
         {/* <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} /> */}
 
         {variableNames.map((variableName, index) => {
