@@ -19,7 +19,7 @@ use admin_management::only_admin;
 use metrics_calculation::{calculate_confusion_matrix, calculate_group_counts, calculate_overall_confusion_matrix, calculate_true_positive_false_negative};
 
 thread_local! {
-    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("f5hu5-c5eqs-4m2bm-fxb27-5mnk2-lpbva-l3tb5-7xv5p-w65wt-a3uyd-lqe").unwrap(), Principal::from_text("o7e2a-bbdxy-oigax-2ci44-naapw-oyqcx-uwf67-4b6ch-zrfis-bfa5n-wae").unwrap()]);
+    static ADMINS: RefCell<Vec<Principal>> = RefCell::new(vec![Principal::from_text("f5hu5-c5eqs-4m2bm-fxb27-5mnk2-lpbva-l3tb5-7xv5p-w65wt-a3uyd-lqe").unwrap(), Principal::from_text("kcu2e-6fmoo-dzkm2-zpzfl-7yvmr-2cmji-yeb7u-c6etu-66y2x-lc55h-7qe").unwrap()]);
     static USERS: RefCell<HashMap<Principal, User>> = RefCell::new(HashMap::new());
     static NEXT_MODEL_ID: RefCell<u128> = RefCell::new(1);
     static NEXT_DATA_POINT_ID: RefCell<u128> = RefCell::new(1);

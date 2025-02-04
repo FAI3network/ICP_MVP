@@ -85,7 +85,6 @@ export default function LineChartchart({
               return dimFactor.toString(16);
             })
             .join("")}`;
-          console.log(colorWithIndex);
           return (
             <Area
               key={index}

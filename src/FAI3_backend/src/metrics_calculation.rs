@@ -438,6 +438,8 @@ pub(crate) fn calculate_group_counts(
     let mut privileged_positive_count_list: HashMap<String, u128> = HashMap::new();
     let mut unprivileged_positive_count_list: HashMap<String, u128> = HashMap::new();
 
+    let medians = calculate_medians(data_points);
+
     for point in data_points {
         let features_list = point.features.clone();
 
@@ -445,7 +447,7 @@ pub(crate) fn calculate_group_counts(
             let vairable_name = entry.0;
             let variable_index = entry.1;
 
-            if features_list[*variable_index as usize] > 0.0 {
+            if features_list[*variable_index as usize] > *medians.get(vairable_name).unwrap() {
                 privileged_count_list
                     .entry(vairable_name.clone())
                     .and_modify(|e| *e += 1)
@@ -648,4 +650,38 @@ pub(crate) fn calculate_true_positive_false_negative(
         unprivileged_tp,
         unprivileged_fn,
     )
+}
+
+
+pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String, f64> {
+    let mut medians: HashMap<String, f64> = HashMap::new();
+    let mut variable_values: HashMap<String, Vec<f64>> = HashMap::new();
+
+    for point in data_points {
+        for entry in point.privileged_map.iter() {
+            let variable_name = entry.0;
+            let variable_index = entry.1;
+
+            let value = point.features[*variable_index as usize];
+
+            if value.is_nan() {
+                continue;
+            }
+
+            variable_values
+                .entry(variable_name.clone())
+                .and_modify(|e| e.push(value))
+                .or_insert(vec![value]);
+        }
+    }
+
+    for (key, value) in variable_values.iter_mut() {
+        value.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        let min = value.first().cloned().unwrap_or(0.0);
+        let max = value.last().cloned().unwrap_or(0.0);
+        let middle_of_range = (min + max) / 2.0;
+        medians.entry(key.clone()).or_insert(middle_of_range);
+    }
+
+    medians
 }
