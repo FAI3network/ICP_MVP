@@ -125,15 +125,19 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
           </div>
           {
             columnLabels.privledged.length > 0 && (
-              <div className="flex items-center">
+              <div className="flex items-center hover:text-gray-900 hover:cursor-pointer" onClick={() => setOpenThresholdField(!openThresholdField)}>
+                <p className="text-sm text-gray-500 mr-2">Set privileged threshold</p>
                 <div className="flex-grow border-t border-gray-300"></div>
-                <button className="ml-2 text-xl font-bold text-gray-500 hover:text-gray-700" onClick={() => setOpenThresholdField(!openThresholdField)}>+</button>
+                <p className="ml-2 text-xl font-bold text-gray-500">+</p>
               </div>
             )
           }
           {
             openThresholdField && (
               <div className="flex flex-col gap-2">
+                <p className="text-xs text-gray-500 break-words wrap text-left">
+                  The number you set will be used as the threshold. <br/> Any datapoint value larger than this number will be considered privileged.
+                </p>
                 {
                   columnLabels.privledged.split(", ").map((label: string, index: number) => (
                     <div className="flex flex-row gap-2 items-center" key={index}>
