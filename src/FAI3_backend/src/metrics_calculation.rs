@@ -15,8 +15,10 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<Pri
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
+
+        is_owner(&model, caller);
 
         let (
             privileged_count,
@@ -77,6 +79,8 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128) -> Vec<Pri
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
 
+        models.insert(model_id, model.clone());
+
         result
     })
 }
@@ -87,7 +91,7 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex>
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -150,6 +154,8 @@ pub(crate) fn calculate_disparate_impact(model_id: u128) -> Vec<PrivilegedIndex>
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
 
+        models.insert(model_id, model.clone());
+
         result.clone()
     })
 }
@@ -160,7 +166,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<Privilege
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
         is_owner(&model, caller);
 
@@ -224,6 +230,8 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128) -> Vec<Privilege
         // Update timestamp after calculation
         model.metrics.timestamp = ic_cdk::api::time();
 
+        models.insert(model_id, model.clone());
+
         result
     })
 }
@@ -234,7 +242,7 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<Priv
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -313,6 +321,8 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128) -> Vec<Priv
         model.metrics.equal_opportunity_difference = Some(result.clone());
         model.metrics.timestamp = ic_cdk::api::time();
 
+        models.insert(model_id, model.clone());
+
         result
     })
 }
@@ -323,7 +333,7 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -337,6 +347,8 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
         let accuracy = (tp + tn) as f32 / total as f32;
         model.metrics.accuracy = Some(accuracy);
         model.metrics.timestamp = ic_cdk::api::time();
+        models.insert(model_id, model.clone());
+
         accuracy
     })
 }
@@ -347,7 +359,7 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -361,6 +373,8 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
         let precision = tp as f32 / denominator as f32;
         model.metrics.precision = Some(precision);
         model.metrics.timestamp = ic_cdk::api::time();
+        models.insert(model_id, model.clone());
+
         precision
     })
 }
@@ -371,7 +385,7 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
     let caller = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -385,6 +399,7 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
         let recall = tp as f32 / denominator as f32;
         model.metrics.recall = Some(recall);
         model.metrics.timestamp = ic_cdk::api::time();
+        models.insert(model_id, model.clone());
 
         // Push the updated metrics to the history
         recall
@@ -412,11 +427,12 @@ pub(crate) fn calculate_all_metrics(
     let rec = calculate_recall(model_id);
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         model.metrics.timestamp = ic_cdk::api::time();
         model.metrics_history.push(model.metrics.clone());
+        models.insert(model_id, model.clone());
     });
 
     (spd, di, aod, eod, acc, prec, rec)

@@ -46,7 +46,7 @@ pub fn add_dataset(
         .collect();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -79,6 +79,7 @@ pub fn add_dataset(
                 };
 
                 model.data_points.push(data_point);
+                models.insert(model_id, model.clone());
                 let current_id = *next_data_point_id.get();
                 next_data_point_id.set(current_id + 1).unwrap();
             }
@@ -106,7 +107,7 @@ pub fn add_data_point(
         .collect();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
@@ -124,6 +125,7 @@ pub fn add_data_point(
             };
     
             model.data_points.push(data_point);
+            models.insert(model_id, model.clone());
             next_data_point_id.borrow_mut().set(next_data_point_id.borrow().get() + 1).unwrap()
         });
     });
