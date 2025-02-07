@@ -4,7 +4,6 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
 import { useAuthClient, useDataContext } from "../../utils";
-import { IDL } from "@dfinity/candid";
 
 export default function ColumnSelectionSection({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
@@ -57,14 +56,6 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
         }
       }
     }
-
-    const allMetricsArgs = IDL.encode([
-      IDL.Nat,
-      IDL.Opt(IDL.Vec(IDL.Record({ key: IDL.Text, value: IDL.Float64 })))
-    ], [
-      parseInt(modelId!),
-      [thresholdValues]
-    ]);
 
     await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
     await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
