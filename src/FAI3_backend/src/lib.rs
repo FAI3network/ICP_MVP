@@ -1,4 +1,3 @@
-// mod tests;
 pub(crate) mod cycles_management;
 mod types;
 mod admin_management;
@@ -12,7 +11,6 @@ use candid::Principal;
 
 use ic_cdk_macros::*;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use ic_stable_structures::{StableBTreeMap, Cell, memory_manager::{MemoryManager, MemoryId, VirtualMemory}, DefaultMemoryImpl};
 
 use cycles_management::check_cycles_before_action;
@@ -20,7 +18,6 @@ use model::get_model;
 use types::{DataPoint, Metrics, Model, ModelDetails, User, AverageMetrics};
 use admin_management::only_admin;
 use utils::is_owner;
-use metrics_calculation::{calculate_confusion_matrix, calculate_group_counts, calculate_overall_confusion_matrix, calculate_true_positive_false_negative};
 
 // thread_local! {
 //     static ADMINS: RefCell<Vec<Principal>> = RefCell::new(Vec::new());

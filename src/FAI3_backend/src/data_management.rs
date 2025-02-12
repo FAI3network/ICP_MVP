@@ -1,9 +1,8 @@
 use crate::{
-    check_cycles_before_action, get_model, is_owner, DataPoint, Model, User, MODELS,
+    check_cycles_before_action, is_owner, DataPoint, MODELS,
     NEXT_DATA_POINT_ID,
 };
 use candid::{CandidType, Deserialize, Principal};
-use std::cell::RefCell;
 use std::collections::HashMap;
 
 #[derive(CandidType, Deserialize)]

@@ -1,13 +1,9 @@
 use crate::types::PrivilegedIndex;
 use crate::{
-    check_cycles_before_action, get_model, is_owner, model, AverageMetrics, DataPoint, Model, User, MODELS
+    check_cycles_before_action, is_owner, DataPoint, MODELS
 };
-use candid::Principal;
 
-use ic_cdk::println;
-use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 
 #[ic_cdk::update]
 pub(crate) fn calculate_statistical_parity_difference(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
@@ -220,7 +216,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128, privilieged_thre
 
         let sum: f32 = result.iter().map(|x| x.value).sum();
         let length: f32 = result.len() as f32;
-        
+
         let average: f32 = sum / length;
 
         model.metrics.average_metrics.average_odds_difference = Some(average);

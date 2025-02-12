@@ -1,10 +1,8 @@
 use crate::{
     check_cycles_before_action, is_owner, only_admin, AverageMetrics, DataPoint, Metrics, Model,
-    ModelDetails, User, MODELS, NEXT_MODEL_ID,
+    ModelDetails, MODELS, NEXT_MODEL_ID,
 };
 use candid::Principal;
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::vec;
 
 #[ic_cdk::update]
