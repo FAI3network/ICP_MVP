@@ -69,6 +69,7 @@ service : () -> {
     "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
+    "get_owners": (nat) -> (vec principal);
 
     // Data point management
     "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields

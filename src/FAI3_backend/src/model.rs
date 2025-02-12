@@ -122,9 +122,21 @@ pub fn add_owner(model_id: u128, new_owner: Principal) {
     let caller: Principal = ic_cdk::api::caller();
 
     MODELS.with(|models| {
-        let models = models.borrow_mut();
+        let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
         is_owner(&model, caller);
         model.owners.push(new_owner);
+        models.insert(model_id, model);
     });
+}
+
+#[ic_cdk::query]
+pub fn get_owners(model_id: u128) -> Vec<Principal> {
+    check_cycles_before_action();
+    
+    MODELS.with(|models| {
+        let models = models.borrow();
+        let model = models.get(&model_id).expect("Model not found");
+        model.owners.clone()
+    })
 }
