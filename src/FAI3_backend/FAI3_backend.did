@@ -56,6 +56,8 @@ type User = record {
 
 type HashMap = vec record { key: text; value: nat };
 
+type floatHashMap = vec record { key: text; value: float64 };
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -67,6 +69,7 @@ service : () -> {
     "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
+    "get_owners": (nat) -> (vec principal);
 
     // Data point management
     "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
@@ -74,13 +77,13 @@ service : () -> {
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
-    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex);
-    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex);
-    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex);
-    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex);
+    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
     
     // Calculate all fairness metrics
-    "calculate_all_metrics": (nat) ->  (
+    "calculate_all_metrics": (nat, opt floatHashMap) ->  (
       vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
 

@@ -24,7 +24,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false)
   const { address, webapp } = useAuthClient();
-  const latestVars = metrics[metrics.length-1]?.AOD?.map((v: any) => v.variable_name);
+  const latestVars = metrics[metrics.length - 1]?.AOD?.map((v: any) => v.variable_name);
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
@@ -95,7 +95,6 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
 
   return (
     <div className="grid min-h-screen w-full bg-white">
-      <button onClick={teststat}>test</button>
       {
         loading && (
           <div className="w-full text-center">Loading...</div>
