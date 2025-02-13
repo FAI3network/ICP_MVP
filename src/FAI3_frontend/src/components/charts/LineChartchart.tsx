@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
+  Legend,
 } from "recharts";
 
 import {
@@ -24,6 +25,22 @@ export default function LineChartchart({
   minVal,
 }: any) {
   //   console.log(label, ": ", Math.min(unfairRange[0], minVal));
+
+  const dataset = []; // [{timestamp: "2021-10-01", <dataKey>: 32}, ...]
+  const variableNames: string[] = [];
+
+  for (let i = 0; i < chartData.length; i++) {
+    const result: { [key: string]: any } = { timestamp: chartData[i].timestamp };
+
+    for (const variable of chartData[i][dataKey] as { variable_name: string, value: number }[]) {
+      result[variable.variable_name] = variable.value;
+      if (!variableNames.includes(variable.variable_name)) {
+        variableNames.push(variable.variable_name);
+      }
+    }
+
+    dataset.push(result);
+  }
   return (
     <ChartContainer
       config={{ [dataKey]: { label, color } }}
@@ -32,7 +49,7 @@ export default function LineChartchart({
       <AreaChart
         width={500}
         height={400}
-        data={chartData}
+        data={dataset}
         margin={{
           top: 30,
           right: 30,
@@ -53,9 +70,32 @@ export default function LineChartchart({
             Math.min(unfairRange[0], minVal),
             Math.max(unfairRange[1], maxVal),
           ]}
+          tickFormatter={(value) => value.toFixed(2)}
         />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} />
+        <Legend />
+        {/* <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} /> */}
+
+        {variableNames.map((variableName, index) => {
+          const colorWithIndex = `#${color
+            .split("#")[1]
+            .split("")
+            .map((char: string, i: any) => {
+              const dimFactor = Math.max(0, parseInt(char, 16) - parseInt(((index) * 3).toString(), 16));
+              return dimFactor.toString(16);
+            })
+            .join("")}`;
+          return (
+            <Area
+              key={index}
+              type="monotone"
+              dataKey={variableName}
+              stroke={colorWithIndex}
+              fill={colorWithIndex}
+            />
+          );
+        })}
+
         <ReferenceLine
           y={unfairRange[0]}
           stroke="red"

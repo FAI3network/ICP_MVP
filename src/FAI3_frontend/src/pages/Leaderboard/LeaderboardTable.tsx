@@ -44,7 +44,7 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { useAuthClient, useDataContext } from "../../utils";
 
 
-export default function LeaderboardTable({ fetchModels }: any) {
+export default function LeaderboardTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -93,7 +93,7 @@ export default function LeaderboardTable({ fetchModels }: any) {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.statistical_parity_difference[0]);
+        const cellValue = Number(metrics.average_metrics.statistical_parity_difference[0]);
 
         return isNaN(cellValue) ? null : (
             <div
@@ -125,7 +125,7 @@ export default function LeaderboardTable({ fetchModels }: any) {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.disparate_impact[0]);
+        const cellValue = Number(metrics.average_metrics.disparate_impact[0]);
 
         return isNaN(cellValue) ? null : (
           <div
@@ -156,7 +156,7 @@ export default function LeaderboardTable({ fetchModels }: any) {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.average_odds_difference[0]);
+        const cellValue = Number(metrics.average_metrics.average_odds_difference[0]);
 
         return isNaN(cellValue) ? null : (
           <div
@@ -187,7 +187,7 @@ export default function LeaderboardTable({ fetchModels }: any) {
       },
       cell: ({ row }: any) => {
         const metrics = row.original.metrics;
-        const cellValue = Number(metrics.equal_opportunity_difference[0]);
+        const cellValue = Number(metrics.average_metrics.equal_opportunity_difference[0]);
 
         return isNaN(cellValue) ? null : (
           <div
@@ -243,7 +243,6 @@ export default function LeaderboardTable({ fetchModels }: any) {
               value={table.getColumn("name")?.getFilterValue() ?? ""}
               onChange={(event: any) => {
                 table.getColumn("name")?.setFilterValue(event.target.value);
-                console.log(event.target.value);
               }}
               className="max-w-sm"
             />

@@ -1,17 +1,30 @@
 type DataPoint = record {
   data_point_id: nat;
   target: bool;
-  privileged: bool;
+  privileged_map: vec record { text; nat};
   predicted: bool;
   features: vec float64; 
   timestamp: nat64;
 };
 
-type Metrics = record {
+type AverageMetrics = record {
   statistical_parity_difference: opt float32;
   disparate_impact: opt float32;
   average_odds_difference: opt float32;
   equal_opportunity_difference: opt float32;
+};
+
+type PrivilegedIndex = record {
+  variable_name: text;
+  value: float32;
+};
+
+type Metrics = record {
+  statistical_parity_difference: opt vec PrivilegedIndex;
+  disparate_impact: opt vec PrivilegedIndex;
+  average_odds_difference: opt vec PrivilegedIndex;
+  equal_opportunity_difference: opt vec PrivilegedIndex;
+  average_metrics: AverageMetrics;
   accuracy: opt float32;
   precision: opt float32;
   recall: opt float32;
@@ -21,7 +34,7 @@ type Metrics = record {
 type Model = record {
   model_id: nat;
   model_name: text;
-  user_id: principal;
+  owners: vec principal;
   data_points: vec DataPoint;
   metrics: Metrics;
   details: ModelDetails;
@@ -41,6 +54,10 @@ type User = record {
   models: vec record { nat; Model };
 };
 
+type HashMap = vec record { key: text; value: nat };
+
+type floatHashMap = vec record { key: text; value: float64 };
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -51,24 +68,23 @@ service : () -> {
     // Model management
     "add_model": (text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
+    "add_owner": (nat, principal) -> ();
+    "get_owners": (nat) -> (vec principal);
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, vec nat) -> (); //New call for custom privileged fields
-    "add_data_point": (nat, bool, bool, bool, vec float64) -> ();   
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
+    "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
-    "calculate_statistical_parity_difference": (nat) -> (float32);
-    "calculate_disparate_impact": (nat) -> (float32);
-    "calculate_average_odds_difference": (nat) -> (float32);
-    "calculate_equal_opportunity_difference": (nat) -> (float32);
+    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
     
     // Calculate all fairness metrics
-    "calculate_all_metrics": (nat) ->  (
-        equal_opportunity_difference : float32,
-        statistical_parity_difference : float32,
-        disparate_impact : float32,
-        average_odds_difference : float32
+    "calculate_all_metrics": (nat, opt floatHashMap) ->  (
+      vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
 
     // Example data

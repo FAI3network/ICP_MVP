@@ -24,6 +24,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false)
   const { address, webapp } = useAuthClient();
+  const latestVars = metrics[metrics.length - 1]?.AOD?.map((v: any) => v.variable_name);
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
@@ -31,12 +32,8 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       return;
     };
 
-    console.log(model)
-
-    if (Principal.fromUint8Array(model.user_id._arr).toString() == address) {
-      setIsOwner(true)
-      console.log("Owner")
-    }
+    setIsOwner(model.owners.map((o: any) => Principal.fromUint8Array(o._arr).toString()).includes(address))
+    
   }, [model, address])
 
   const chartConfig = {
@@ -91,6 +88,11 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     },
   };
 
+  const teststat = async () => {
+    // const res = await webapp?.add_dataset.inspect();
+    // console.log(res)
+  }
+
   return (
     <div className="grid min-h-screen w-full bg-white">
       {
@@ -114,7 +116,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <Button onClick={openModal}>
                       Upload Data
                     </Button>
-                    <DataUploadModal fetchModel={fetchModel} />
+                    <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} />
                   </div>
                 </>
               )
@@ -223,12 +225,12 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                         chartData={metrics}
                         unfairRange={chartConfig.SPD.unfairRange}
                         maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.SPD > max ? p.SPD : max),
-                          metrics[0]?.SPD
+                          (max: any, p: any) => (p.average.SPD > max ? p.average.SPD : max),
+                          metrics[0]?.average.SPD
                         )}
                         minVal={metrics.reduce(
-                          (min: any, p: any) => (p.SPD < min ? p.SPD : min),
-                          metrics[0]?.SPD
+                          (min: any, p: any) => (p.average.SPD < min ? p.average.SPD : min),
+                          metrics[0]?.average.SPD
                         )}
                       />
                     </CardContent>
@@ -250,12 +252,12 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                         chartData={metrics}
                         unfairRange={chartConfig.DI.unfairRange}
                         maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.DI > max ? p.DI : max),
-                          metrics[0]?.DI
+                          (max: any, p: any) => (p.average.DI > max ? p.average.DI : max),
+                          metrics[0]?.average.DI
                         )}
                         minVal={metrics.reduce(
-                          (min: any, p: any) => (p.DI < min ? p.DI : min),
-                          metrics[0]?.DI
+                          (min: any, p: any) => (p.average.DI < min ? p.average.DI : min),
+                          metrics[0]?.average.DI
                         )}
                       />
                     </CardContent>
@@ -277,12 +279,12 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                         chartData={metrics}
                         unfairRange={chartConfig.AOD.unfairRange}
                         maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.AOD > max ? p.AOD : max),
-                          metrics[0]?.AOD
+                          (max: any, p: any) => (p.average.AOD > max ? p.average.AOD : max),
+                          metrics[0]?.average.AOD
                         )}
                         minVal={metrics.reduce(
-                          (min: any, p: any) => (p.AOD < min ? p.AOD : min),
-                          metrics[0]?.AOD
+                          (min: any, p: any) => (p.average.AOD < min ? p.average.AOD : min),
+                          metrics[0]?.average.AOD
                         )}
                       />
                     </CardContent>
@@ -304,12 +306,12 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                         chartData={metrics}
                         unfairRange={chartConfig.EOD.unfairRange}
                         maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.EOD > max ? p.EOD : max),
-                          metrics[0]?.EOD
+                          (max: any, p: any) => (p.average.EOD > max ? p.average.EOD : max),
+                          metrics[0]?.average.EOD
                         )}
                         minVal={metrics.reduce(
-                          (min: any, p: any) => (p.EOD < min ? p.EOD : min),
-                          metrics[0]?.EOD
+                          (min: any, p: any) => (p.average.EOD < min ? p.average.EOD : min),
+                          metrics[0]?.average.EOD
                         )}
                       />
                     </CardContent>

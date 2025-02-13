@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -71,6 +72,7 @@ export default function TabChart({ chartData }: any) {
       fairRange: [-0.1, 0.1],
     },
   };
+
   return (
     <Tabs defaultValue="chart" className="">
       {/* <TabsList className="grid w-full grid-cols-2">
@@ -121,10 +123,10 @@ export default function TabChart({ chartData }: any) {
                 {chartData.map((row: any, index: number) => (
                   <TableRow key={index}>
                     <TableCell>{row.timestamp}</TableCell>
-                    <TableCell>{row.SPD}</TableCell>
-                    <TableCell>{row.DI}</TableCell>
-                    <TableCell>{row.AOD}</TableCell>
-                    <TableCell>{row.EOD}</TableCell>
+                    <TableCell>{row.average.SPD}</TableCell>
+                    <TableCell>{row.average.DI}</TableCell>
+                    <TableCell>{row.average.AOD}</TableCell>
+                    <TableCell>{row.average.EOD}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

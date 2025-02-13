@@ -19,10 +19,10 @@ export default function BarChartchart({ chartData, chartConfig }: any) {
         />
         <YAxis />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="SPD" fill={chartConfig.SPD.color} radius={4} />
-        <Bar dataKey="DI" fill={chartConfig.DI.color} radius={4} />
-        <Bar dataKey="AOD" fill={chartConfig.AOD.color} radius={4} />
-        <Bar dataKey="EOD" fill={chartConfig.EOD.color} radius={4} />
+        <Bar dataKey="average.SPD" fill={chartConfig.SPD.color} radius={4} />
+        <Bar dataKey="average.DI" fill={chartConfig.DI.color} radius={4} />
+        <Bar dataKey="average.AOD" fill={chartConfig.AOD.color} radius={4} />
+        <Bar dataKey="average.EOD" fill={chartConfig.EOD.color} radius={4} />
       </BarChart>
     </ChartContainer>
   );
