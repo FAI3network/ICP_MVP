@@ -3,7 +3,10 @@ use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS
 };
 
+use core::time;
 use std::collections::{HashMap, HashSet};
+use ic_cdk::println;
+
 
 #[ic_cdk::update]
 pub(crate) fn calculate_statistical_parity_difference(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
@@ -13,15 +16,22 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128, priviliege
     MODELS.with(|models| {
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
-
         is_owner(&model, caller);
 
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+        
         let (
             privileged_count,
             unprivileged_count,
             privileged_positive_count,
             unprivileged_positive_count,
-        ) = calculate_group_counts(&model.data_points, privilieged_threshold);
+        ) = calculate_group_counts(&relevant_data_points, privilieged_threshold);
 
         // Handle empty group scenario
         if privileged_count.len() == 0 || unprivileged_count.len() == 0 {
@@ -92,12 +102,20 @@ pub(crate) fn calculate_disparate_impact(model_id: u128, privilieged_threshold: 
 
         is_owner(&model, caller);
 
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+
         let (
             privileged_count,
             unprivileged_count,
             privileged_positive_count,
             unprivileged_positive_count,
-        ) = calculate_group_counts(&model.data_points, privilieged_threshold);
+        ) = calculate_group_counts(&relevant_data_points, privilieged_threshold);
 
         if privileged_count.len() == 0 || unprivileged_count.len() == 0 {
             ic_cdk::api::trap(
@@ -164,7 +182,16 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128, privilieged_thre
     MODELS.with(|models| {
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
+
         is_owner(&model, caller);
+
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
 
         let (
             privileged_tp,
@@ -175,7 +202,7 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128, privilieged_thre
             unprivileged_fp,
             unprivileged_tn,
             unprivileged_fn,
-        ) = calculate_confusion_matrix(&model.data_points, privilieged_threshold);
+        ) = calculate_confusion_matrix(&relevant_data_points, privilieged_threshold);
 
         let mut result = Vec::new();
 
@@ -243,6 +270,14 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128, privilieged
 
         is_owner(&model, caller);
 
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+
         let mut count_pred_label_unprivileged = HashMap::new();
         let mut count_pred_label_privileged = HashMap::new();
         let mut count_label_unprivileged = HashMap::new();
@@ -250,7 +285,7 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128, privilieged
 
         let threshold_map = if privilieged_threshold.is_some() { privilieged_threshold.unwrap() } else { calculate_medians(&model.data_points) };
 
-        for point in &model.data_points {
+        for point in &relevant_data_points {
             for entry in point.privileged_map.iter() {
                 let vairable_name = entry.0;
                 let variable_index = entry.1;
@@ -336,7 +371,15 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
 
         is_owner(&model, caller);
 
-        let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&model.data_points);
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+
+        let (tp, tn, fp, fn_) = calculate_overall_confusion_matrix(&relevant_data_points);
         let total = tp + tn + fp + fn_;
         if total == 0 {
             ic_cdk::api::trap("No data points to calculate accuracy");
@@ -362,7 +405,15 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
 
         is_owner(&model, caller);
 
-        let (tp, _, fp, _) = calculate_overall_confusion_matrix(&model.data_points);
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+
+        let (tp, _, fp, _) = calculate_overall_confusion_matrix(&relevant_data_points);
         let denominator = tp + fp;
         if denominator == 0 {
             ic_cdk::api::trap("No positive predictions for precision");
@@ -388,7 +439,15 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
 
         is_owner(&model, caller);
 
-        let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&model.data_points);
+        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model.data_points
+            .iter()
+            .filter(|point| point.timestamp == latest_timestamp)
+            .cloned()
+            .collect();
+
+        let (tp, _, _, fn_) = calculate_overall_confusion_matrix(&relevant_data_points);
         let denominator = tp + fn_;
         if denominator == 0 {
             ic_cdk::api::trap("No actual positives for recall");
