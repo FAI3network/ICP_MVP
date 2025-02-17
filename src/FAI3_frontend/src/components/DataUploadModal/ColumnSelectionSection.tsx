@@ -26,10 +26,19 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   const [thresholds, setThresholds] = useState<any>({});
 
   useEffect(() => {
-    if (latestVars && latestVars.length > 0) {
-      setColumnLabels({ ...columnLabels, privledged: latestVars.join(", ") });
-    }
-  }, [latestVars]);
+    const tableColumns = table.getRowModel().rows.length
+      ? Object.keys(table.getRowModel().rows[0].original)
+      : [];
+
+    const labelFilter = tableColumns.filter((col) => col.toLowerCase().includes("label"));
+    const predictionFilter = tableColumns.filter((col) => col.toLowerCase().includes("prediction"));
+
+    setColumnLabels({
+      labels: labelFilter.length > 0 ? labelFilter[0] : "",
+      predictions: predictionFilter.length > 0 ? predictionFilter[0] : "",
+      privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
+    });
+  }, [table]);
 
   const uploadData = async () => {
     setLoading(true);
@@ -42,7 +51,6 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
 
     const privilegedVariables = [];
     const thresholdValues = Object.keys(thresholds).map((key) => ({ key, value: parseFloat(thresholds[key]) }));
-    console.log("thresholdValues", thresholdValues);
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -136,7 +144,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
             openThresholdField && (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-gray-500 break-words wrap text-left">
-                  The number you set will be used as the threshold. <br/> Any datapoint value larger than this number will be considered privileged.
+                  The number you set will be used as the threshold. <br /> Any datapoint value larger than this number will be considered privileged.
                 </p>
                 {
                   columnLabels.privledged.split(", ").map((label: string, index: number) => (
