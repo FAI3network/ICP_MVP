@@ -26,6 +26,13 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   const [thresholds, setThresholds] = useState<any>({});
 
   useEffect(() => {
+    console.log(columnLabels.privledged);
+    if (columnLabels.privledged.length == 0) {
+      setOpenThresholdField(false);
+    }
+  }, [columnLabels.privledged]);
+
+  useEffect(() => {
     const tableColumns = table.getRowModel().rows.length
       ? Object.keys(table.getRowModel().rows[0].original)
       : [];
