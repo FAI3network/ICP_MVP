@@ -23,7 +23,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   })
   const [loading, setLoading] = useState(false);
   const [openThresholdField, setOpenThresholdField] = useState(false);
-  const [thresholds, setThresholds] = useState<any>({});
+  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number }[]>([]);
 
   useEffect(() => {
     console.log(columnLabels.privledged);
@@ -47,8 +47,16 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
     });
   }, [table]);
 
+  useEffect(() => {
+    if (latestVars && latestVars.length > 0) {
+      setThresholds(latestVars.map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
+    } else if (columnLabels.privledged.length > 0) {
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
+    }
+  }, [latestVars, columnLabels.privledged]);
+
   const uploadData = async () => {
-    setLoading(true);
+    // setLoading(true);
 
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
@@ -57,7 +65,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
     const privledgedLabels = columnLabels.privledged.split(", ");
 
     const privilegedVariables = [];
-    const thresholdValues = Object.keys(thresholds).map((key) => ({ key, value: parseFloat(thresholds[key]) }));
+    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount, threshold.comparator == "greater" ? true : false]]));
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -157,7 +165,16 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
                   columnLabels.privledged.split(", ").map((label: string, index: number) => (
                     <div className="flex flex-row gap-2 items-center" key={index}>
                       <h3>{label} Threshold:</h3>
-                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => setThresholds({ ...thresholds, [label]: e.target.value })} />
+                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} setSelection={(selection: any) => {
+                        const newThresholds = [...thresholds];
+                        newThresholds[index].comparator = selection;
+                        setThresholds(newThresholds);
+                      }} />
+                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => {
+                        const newThresholds = [...thresholds];
+                        newThresholds[index].amount = parseFloat(e.target.value);
+                        setThresholds(newThresholds);
+                      }} />
                     </div>
                   ))
                 }
