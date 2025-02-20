@@ -5,6 +5,7 @@ mod data_management;
 mod model;
 mod metrics_calculation;
 mod hugging_face;
+mod context_association_test;
 mod utils;
 
 use candid::Principal;
