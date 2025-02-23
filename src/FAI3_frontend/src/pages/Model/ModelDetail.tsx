@@ -33,7 +33,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     };
 
     setIsOwner(model.owners.map((o: any) => Principal.fromUint8Array(o._arr).toString()).includes(address))
-    
+
   }, [model, address])
 
   const chartConfig = {
