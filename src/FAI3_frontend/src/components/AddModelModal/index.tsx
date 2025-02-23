@@ -2,7 +2,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFo
 import { useState } from "react";
 import { useAuthClient, useDataContext } from "../../utils";
 
-export default function AddModelModal() {
+export default function AddModelModal({ onClose }: { onClose: () => void }) {
   const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ export default function AddModelModal() {
   }
 
   return (
-    <Modal>
+    <Modal onClose={onClose}>
       {
         loading ? (
           <ModalContent closeButton={false}>
