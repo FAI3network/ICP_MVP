@@ -117,6 +117,9 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) profession: ContextAssociationTestMetrics,
     pub(crate) error_count: i32,
     pub(crate) timestamp: u64,
+    pub(crate) intrasentence_prompt_template: String,
+    pub(crate) intersentence_prompt_template: String,
+    pub(crate) seed: i32,
     // precalculated fields
     pub(crate) icat_score_intra: f32,
     pub(crate) icat_score_inter: f32,
