@@ -6,8 +6,7 @@ import {
   CardContent,
   CardFooter,
   Button,
-  openModal,
-  isOpen
+  openModal
 } from "../../components/ui";
 import {
   LineChartchart,
@@ -125,7 +124,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
 
                     {
                       editOrUpload === "edit" ? (
-                        <AddModelModal onClose={() => setEditOrUpload(null)} />
+                        <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
                       ) : editOrUpload == "upload" ? (
                         <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} onClose={() => setEditOrUpload(null)} />
                       ) : null

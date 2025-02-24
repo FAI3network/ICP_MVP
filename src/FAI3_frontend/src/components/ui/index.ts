@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Input } from './input';
 import { Checkbox } from './checkbox';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle, } from './chart';
-import { Modal, ModalContent, ModalTrigger, ModalHeader, ModalBody, ModalTitle, ModalFooter, openModal, closeModal, isOpen } from './modal';
+import { Modal, ModalContent, ModalTrigger, ModalHeader, ModalBody, ModalTitle, ModalFooter, openModal, closeModal } from './modal';
 import { Select } from './select';
 import { CircularProgress } from './progress';
 
@@ -61,6 +61,5 @@ export {
   openModal,
   closeModal,
   Select,
-  CircularProgress,
-  isOpen
+  CircularProgress
 }

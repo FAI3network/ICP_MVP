@@ -15,7 +15,7 @@ const ModalContext = React.createContext<ModalContextType>({
   close: () => { },
 });
 
-let modalInstance: { open: () => void; close: () => void, isOpen: boolean } | null = null;
+let modalInstance: { open: () => void; close: () => void } | null = null;
 
 export const Modal = React.forwardRef(({ className, onClose = null, ...props }: any, ref) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -26,7 +26,7 @@ export const Modal = React.forwardRef(({ className, onClose = null, ...props }: 
     onClose && onClose()
   };
 
-  modalInstance = { open, close, isOpen };
+  modalInstance = { open, close };
 
   return (
     <ModalContext.Provider value={{ isOpen, open, close }}>
@@ -57,13 +57,6 @@ export const closeModal = () => {
   }
 };
 
-export const isOpen = () => {
-  if ( modalInstance) {
-    return modalInstance.isOpen();
-  }
-}
-
-
 export const ModalTrigger = React.forwardRef(({ className, ...props }: any, ref) => (
   <ModalContext.Consumer>
     {({ open }) => (
@@ -85,7 +78,7 @@ export const ModalContent = React.forwardRef(({ className, closeButton = true, .
       <div
         ref={ref}
         className={cn("bg-white max-w-full max-h-full rounded-lg p-4 relative overflow-y-auto", className)}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
         {...props}
       >
         {closeButton && (
