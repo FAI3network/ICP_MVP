@@ -61,7 +61,15 @@ pub fn get_all_llm_models() -> Vec<LLMModel> {
 
     LLM_MODELS.with(|models| {
         let models = models.borrow();
-        models.values().map(|model| model.clone()).collect()
+        models.values().map(
+            |model| {
+                let mut m2 = model.clone();
+                // keys below are excluded to avoid sending unnecessary information
+                m2.cat_metrics = None;
+                m2.cat_metrics_history = Vec::new();
+                m2
+            }
+        ).collect()
     })
 }
 
@@ -89,6 +97,20 @@ pub fn get_context_association_test_metrics(model_id: u128) -> Option<ContextAss
             .get(&model_id)
             .expect("LLMModel not found")
             .cat_metrics
+            .clone()
+    })
+}
+
+#[ic_cdk::query]
+pub fn get_context_association_test_metrics_history(model_id: u128) -> Vec<ContextAssociationTestMetricsBag> {
+    check_cycles_before_action();
+
+    LLM_MODELS.with(|models| {
+        models
+            .borrow()
+            .get(&model_id)
+            .expect("LLMModel not found")
+            .cat_metrics_history
             .clone()
     })
 }

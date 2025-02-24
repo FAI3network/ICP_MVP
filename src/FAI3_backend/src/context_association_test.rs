@@ -668,6 +668,7 @@ pub async fn context_association_test(llm_model_id: u128, max_queries: usize, se
             let mut model = models.get(&llm_model_id).expect("Model not found");
 
             model.cat_metrics = Some(result.clone());
+            model.cat_metrics_history.push(result.clone());
 
             models.insert(llm_model_id, model);
         });

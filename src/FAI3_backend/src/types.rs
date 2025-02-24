@@ -142,7 +142,7 @@ pub struct LLMModel {
     pub(crate) owners: Vec<Principal>,
     pub(crate) details: ModelDetails,
     pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
-    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetrics>,
+    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
 }
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
