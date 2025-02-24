@@ -90,7 +90,7 @@ pub struct HuggingFaceResponseItem {
 }
 
 // LLMs
-#[derive(Copy, Clone, PartialEq, Debug, CandidType, CandidDeserialize)]
+#[derive(Serialize, Copy, Clone, PartialEq, Debug, CandidType, CandidDeserialize)]
 pub enum ContextAssociationTestResult {
     Stereotype,
     AntiStereotype,
@@ -130,7 +130,8 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) general_lms: f32,
     pub(crate) general_ss: f32,
     pub(crate) general_n: i32,
-    pub(crate) icat_score_general: f32, 
+    pub(crate) icat_score_general: f32,
+    pub(crate) data_points: Vec<ContextAssociationTestDataPoint>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -141,16 +142,23 @@ pub struct LLMModel {
     pub(crate) owners: Vec<Principal>,
     pub(crate) details: ModelDetails,
     pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
-    pub(crate) cat_data_points: Vec<ContextAssociationTestDataPoint>,
     pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetrics>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
+pub enum ContextAssociationTestType {
+    Intrasentence,
+    Intersentence,
+}
+
+#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ContextAssociationTestDataPoint {
     pub(crate) data_point_id: u128,
     pub(crate) prompt: String,
-    pub(crate) answer: String,
-    pub(crate) result: ContextAssociationTestResult,
+    pub(crate) answer: Option<String>,
+    pub(crate) result: Option<ContextAssociationTestResult>,
+    pub(crate) error: bool,
+    pub(crate) test_type: ContextAssociationTestType,
     pub(crate) timestamp: u64,
 }
 

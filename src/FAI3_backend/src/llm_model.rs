@@ -29,7 +29,6 @@ pub fn add_llm_model(model_name: String, hf_url: String, model_details: ModelDet
                     model_name,
                     hf_url,
                     owners: vec![caller],
-                    cat_data_points: Vec::new(),
                     cat_metrics: None,
                     details: model_details,
                     cat_metrics_history: Vec::new(),
@@ -67,13 +66,16 @@ pub fn get_all_llm_models() -> Vec<LLMModel> {
 }
 
 #[ic_cdk::query]
-pub fn get_context_association_test_metrics_data_points(model_id: u128) -> Vec<ContextAssociationTestDataPoint> {
+pub fn get_context_association_test_metrics_data_points(model_id: u128) -> Option<Vec<ContextAssociationTestDataPoint>> {
     check_cycles_before_action();
 
     LLM_MODELS.with(|models| {
         let models = models.borrow();
         let model = models.get(&model_id).expect("LLMModel not found");
-        model.cat_data_points.clone()
+        match model.cat_metrics {
+            Some(metrics) => Some(metrics.data_points.clone()),
+            None => None,
+        }
     })
 }
 
