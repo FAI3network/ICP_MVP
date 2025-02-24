@@ -1,10 +1,7 @@
 use crate::types::PrivilegedIndex;
 use crate::{check_cycles_before_action, is_owner, DataPoint, MODELS};
 
-use core::time;
 use std::collections::{HashMap, HashSet};
-use ic_cdk::println;
-
 
 #[ic_cdk::update]
 pub(crate) fn calculate_statistical_parity_difference(

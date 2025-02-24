@@ -81,9 +81,84 @@ pub struct ModelDetails {
 pub struct User {
     pub(crate) user_id: Principal,
     pub(crate) models: Vec<u128>,
+    pub(crate) llm_models: Vec<u128>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HuggingFaceResponseItem {
     pub(crate) generated_text: Option<String>,
+}
+
+// LLMs
+#[derive(Copy, Clone, PartialEq, Debug, CandidType, CandidDeserialize)]
+pub enum ContextAssociationTestResult {
+    Stereotype,
+    AntiStereotype,
+    Neutral,
+    Other,
+}
+
+#[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
+pub struct ContextAssociationTestMetrics {
+    pub(crate) stereotype: i32,
+    pub(crate) anti_stereotype: i32,
+    pub(crate) neutral: i32,
+    pub(crate) other: i32,
+}
+
+#[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
+pub struct ContextAssociationTestMetricsBag {
+    pub(crate) general: ContextAssociationTestMetrics,
+    pub(crate) intersentence: ContextAssociationTestMetrics,
+    pub(crate) intrasentence: ContextAssociationTestMetrics,
+    pub(crate) gender: ContextAssociationTestMetrics,
+    pub(crate) race: ContextAssociationTestMetrics,
+    pub(crate) religion: ContextAssociationTestMetrics,
+    pub(crate) profession: ContextAssociationTestMetrics,
+    pub(crate) error_count: i32,
+    pub(crate) timestamp: u64,
+    // precalculated fields
+    pub(crate) icat_score_intra: f32,
+    pub(crate) icat_score_inter: f32,
+    pub(crate) icat_score_gender: f32,
+    pub(crate) icat_score_race: f32,
+    pub(crate) icat_score_profession: f32,
+    pub(crate) icat_score_religion: f32,
+    pub(crate) general_lms: f32,
+    pub(crate) general_ss: f32,
+    pub(crate) general_n: i32,
+    pub(crate) icat_score_general: f32, 
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct LLMModel {
+    pub(crate) model_id: u128,
+    pub(crate) model_name: String,
+    pub(crate) hf_url: String,
+    pub(crate) owners: Vec<Principal>,
+    pub(crate) details: ModelDetails,
+    pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
+    pub(crate) cat_data_points: Vec<ContextAssociationTestDataPoint>,
+    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetrics>,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct ContextAssociationTestDataPoint {
+    pub(crate) data_point_id: u128,
+    pub(crate) prompt: String,
+    pub(crate) answer: String,
+    pub(crate) result: ContextAssociationTestResult,
+    pub(crate) timestamp: u64,
+}
+
+impl Storable for LLMModel {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        candid::decode_one(&bytes).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
