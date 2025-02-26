@@ -3,7 +3,7 @@ use ic_cdk_macros::*;
 use ic_cdk::api::management_canister::main::raw_rand;
 use std::fmt;
 use crate::hugging_face::call_hugging_face;
-use crate::types::{ContextAssociationTestResult, ContextAssociationTestMetrics, ContextAssociationTestMetricsBag};
+use crate::types::{ContextAssociationTestResult, ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestDataPoint, ContextAssociationTestType};
 use crate::{check_cycles_before_action, LLM_MODELS};
 use crate::utils::is_llm_owner;
 
@@ -213,9 +213,9 @@ fn get_test_result_from_gold_label(gold_label: &str) -> ContextAssociationTestRe
 /// - `seed: i32`: seed for HF
 ///
 /// # Returns
-/// - `Result<ContextAssociationTestResult, String>`:
+/// - `Result<(ContextAssociationTestResult, String), String>`: if Ok(), it returns the result and the full text response (that might be cut because of the stop token options). Otherwise it returns the error message. If the model returns something unexpected but the call didn't fail, it's considered an Ok() response of the ContextAssociationTestResult::Other type. 
 ///
-async fn cat_generic_call(prompt: String, option_indices_definition: Vec<ContextAssociationTestResult>, hf_model: String, seed: i32) -> Result<ContextAssociationTestResult, String> {
+async fn cat_generic_call(prompt: String, option_indices_definition: Vec<ContextAssociationTestResult>, hf_model: String, seed: i32) -> Result<(ContextAssociationTestResult, String), String> {
     ic_cdk::println!("Prompt: {}", prompt);
 
     let response = call_hugging_face(prompt, hf_model, seed).await;
@@ -234,22 +234,19 @@ async fn cat_generic_call(prompt: String, option_indices_definition: Vec<Context
                     } else {
                         -1
                     }
-
                 },
                 None => -1
             };
 
             if char_idx == -1 {
-                return Ok(ContextAssociationTestResult::Other);
-                // return Err(String::from("Returned a non-answer"));
+                return Ok((ContextAssociationTestResult::Other, ret));  // Include full model response
             }
 
             let definition = option_indices_definition[char_idx as usize - 1];
 
-            return Ok(definition);
+            return Ok((definition, ret));  // Include full model response
         },
         Err(e) => {
-            // Handle the error e.g., by logging or converting it to a String if isn't already
             return Err(e.to_string())  // Convert the error to a String and return it
         }
     }
@@ -261,11 +258,12 @@ async fn cat_generic_call(prompt: String, option_indices_definition: Vec<Context
 /// - `hf_model: String`: Hugging Face model to test.
 /// - `entry: IntersentenceEntry`: intrasentence context association test data.
 /// - `seed: i32`: seed for Hugging Face API.
+/// - `shuffle_questions: bool`: whether to shuffle the options given the LLM to avoid order bias or not.
 ///
 /// # Returns
-/// - `Result<ContextAssociationTestResult, String>`:
+/// - `Result<ContextAssociationTestDataPoint, String>`: it returns a datapoint if the call was successful, otherwise it returns the error string.
 ///
-async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, seed: i32) -> Result<ContextAssociationTestResult, String> {
+async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, seed: i32, shuffle_questions:bool) -> Result<ContextAssociationTestDataPoint, String> {
 
     let mut option_indices: Vec<usize> = vec![0, 1, 2];  // indices should start from 0 in Rust not 1
 
@@ -281,9 +279,11 @@ async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, se
     }
 
     // Shuffling the vector to avoid order bias
-    if let Err(err) = shuffle_vector(&mut option_indices).await {
-        ic_cdk::eprintln!("Error: {}", err);
-        return Err(String::from("Problem while generating random numbers"));
+    if shuffle_questions {
+        if let Err(err) = shuffle_vector(&mut option_indices).await {
+            ic_cdk::eprintln!("Error: {}", err);
+            return Err(String::from("Problem while generating random numbers"));
+        }
     }
 
     options = option_indices.iter().map(|&i| options[i].clone()).collect();
@@ -296,7 +296,34 @@ async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, se
 
     let full_prompt = format!("{}Context: {}\n\n{}\n\nAnswer:", CAT_INTRASENTENCE_PROMPT, entry.context, options_str);
 
-    return cat_generic_call(full_prompt, option_indices_definition, hf_model, seed).await;
+    let ret = cat_generic_call(full_prompt.clone(), option_indices_definition, hf_model, seed).await;
+
+    match ret {
+        Ok((result, full_text_response)) => {
+            return Ok(ContextAssociationTestDataPoint {
+                data_point_id: 0, // do we need a data_point_id ?
+                prompt: full_prompt,
+                answer: Some(full_text_response),
+                result: Some(result),
+                error: false,
+                test_type: ContextAssociationTestType::Intrasentence,
+                timestamp: ic_cdk::api::time(),
+            });
+        },
+        Err(_) => {
+            return Ok(ContextAssociationTestDataPoint {
+                data_point_id: 0, // do we need a data_point_id ?
+                prompt: full_prompt,
+                answer: None,
+                result: None,
+                error: true,
+                test_type: ContextAssociationTestType::Intrasentence,
+                timestamp: ic_cdk::api::time(), 
+            });
+        }
+    }
+    
+
 }
 
 /// Does a intersentence context association test against a Hugging Face model.
@@ -305,11 +332,12 @@ async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, se
 /// - `hf_model: String`: Hugging Face model to test.
 /// - `entry: IntersentenceEntry`: intersentence context association test data.
 /// - `seed: i32`: seed for Hugging Face API.
+/// - `shuffle_questions: bool`: whether to shuffle the options given the LLM to avoid order bias or not.
 ///
 /// # Returns
-/// - `Result<ContextAssociationTestResult, String>`:
+/// - `Result<ContextAssociationTestDataPoint, String>`: it returns a datapoint if the call was successful, otherwise it returns the error string.
 ///
-async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, seed: i32) -> Result<ContextAssociationTestResult, String> {
+async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, seed: i32, shuffle_questions:bool) -> Result<ContextAssociationTestDataPoint, String> {
     let mut option_indices: Vec<usize> = vec![0, 1, 2];  // indices should start from 0 in Rust not 1
 
     let mut options: Vec<String> = Vec::new();
@@ -324,9 +352,11 @@ async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, se
     }
 
     // Shuffling the vector to avoid order bias
-    if let Err(err) = shuffle_vector(&mut option_indices).await {
-        ic_cdk::eprintln!("Error: {}", err);
-        return Err(String::from("Problem while generating random numbers"));
+    if shuffle_questions {
+        if let Err(err) = shuffle_vector(&mut option_indices).await {
+            ic_cdk::eprintln!("Error: {}", err);
+            return Err(String::from("Problem while generating random numbers"));
+        }
     }
 
     options = option_indices.iter().map(|&i| options[i].clone()).collect();
@@ -338,8 +368,33 @@ async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, se
     }
 
     let full_prompt = format!("{}Context: {}\n\n{}\n\nAnswer:", CAT_INTERSENTENCE_PROMPT, entry.context, options_str);
+    
+    let ret = cat_generic_call(full_prompt.clone(), option_indices_definition, hf_model, seed).await;
 
-    return cat_generic_call(full_prompt, option_indices_definition, hf_model, seed).await;
+    match ret {
+        Ok((result, full_text_response)) => {
+            return Ok(ContextAssociationTestDataPoint {
+                data_point_id: 0, // do we need a data_point_id ?
+                prompt: full_prompt,
+                answer: Some(full_text_response),
+                result: Some(result),
+                error: false,
+                test_type: ContextAssociationTestType::Intersentence,
+                timestamp: ic_cdk::api::time(),
+            });
+        },
+        Err(_) => {
+            return Ok(ContextAssociationTestDataPoint {
+                data_point_id: 0, // do we need a data_point_id ?
+                prompt: full_prompt,
+                answer: None,
+                result: None,
+                error: true,
+                test_type: ContextAssociationTestType::Intersentence,
+                timestamp: ic_cdk::api::time(), 
+            });
+        }
+    }
 }
 
 /// Execute a series of intersentence Context Association tests against a Hugging Face model.
@@ -353,9 +408,10 @@ async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, se
 /// - `race_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `profession_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `religion_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
+/// - `data_points: &mut Vec<ContextAssociationTestDataPoint>`: vector in which the datapoints will be added.
 /// - `max_queries: usize`: Max queries to execute. If it's 0, it will execute all the queries.
 /// - `seed: i32`: Seed for Hugging face API.
-/// ...
+/// - `shuffle_questions: bool`: whether to shuffle the questions and the options given the LLM.
 ///
 /// # Returns
 /// - `Result<i32, String>`: if Ok(), returns an int with the number of errors. Otherwise, it returns an error description.
@@ -369,12 +425,13 @@ async fn process_context_association_test_intrasentence(
     race_metrics: &mut ContextAssociationTestMetrics,
     profession_metrics: &mut ContextAssociationTestMetrics,
     religion_metrics: &mut ContextAssociationTestMetrics,
-    max_queries: usize, seed: i32) -> Result<i32, String> {
+    data_points: &mut Vec<ContextAssociationTestDataPoint>,
+    max_queries: usize, seed: i32, shuffle_questions:bool) -> Result<i32, String> {
     let mut queries = 0;
     let mut error_count = 0;
 
     // if max queries < intra_dataa.len, then it shoulld be shuffled
-    if max_queries < intra_data.len() {
+    if shuffle_questions && max_queries < intra_data.len() {
         if let Err(e) = shuffle_vector(intra_data).await {
             ic_cdk::eprintln!("Error while shuffling intrasentence entry vector: {}", e.to_string());
             return Err(String::from("An error was ocurred when shuffling sentence vector"));
@@ -388,21 +445,29 @@ async fn process_context_association_test_intrasentence(
 
         ic_cdk::println!("Target Bias Type: {}", entry.bias_type);
         let bias_type = entry.bias_type.clone();
-        let resp = cat_intrasentence_call(hf_model.clone(), entry, seed).await;
+        let resp = cat_intrasentence_call(hf_model.clone(), entry, seed, shuffle_questions).await;
 
         match resp {
-            Ok(ret) => {
-                ic_cdk::println!("Response classified as {}", ret);
-                general_metrics.add_result(ret);
-                intra_metrics.add_result(ret);
+            Ok(data_point) => {
+                if let Some(ret) = data_point.result.clone() {
+                    ic_cdk::println!("Response classified as {}", ret);
+                    general_metrics.add_result(ret);
+                    intra_metrics.add_result(ret);
 
-                match bias_type.as_str() {
-                    "gender" => gender_metrics.add_result(ret),
-                    "race" => race_metrics.add_result(ret),
-                    "profession" => profession_metrics.add_result(ret),
-                    "religion" => religion_metrics.add_result(ret),
-                    _ => (),
+                    match bias_type.as_str() {
+                        "gender" => gender_metrics.add_result(ret),
+                        "race" => race_metrics.add_result(ret),
+                        "profession" => profession_metrics.add_result(ret),
+                        "religion" => religion_metrics.add_result(ret),
+                        _ => (),
+                    }
                 }
+
+                if data_point.error {
+                    error_count += 1;
+                }
+                
+                data_points.push(data_point);
             },
             Err(e) => {
                 ic_cdk::println!("An error has occurred: {}\nCounting this as an error.", e.to_string());
@@ -431,9 +496,10 @@ async fn process_context_association_test_intrasentence(
 /// - `race_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `profession_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `religion_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
+/// - `data_points: &mut Vec<ContextAssociationTestDataPoint>`: vector in which the datapoints will be added.
 /// - `max_queries: usize`: Max queries to execute. If it's 0, it will execute all the queries.
 /// - `seed: i32`: Seed for Hugging face API.
-/// ...
+/// - `shuffle_questions: bool`: whether to shuffle the questions and the options given the LLM.
 ///
 /// # Returns
 /// - `Result<i32, String>`: if Ok(), returns an int with the number of errors. Otherwise, it returns an error description.
@@ -447,13 +513,14 @@ async fn process_context_association_test_intersentence(
     race_metrics: &mut ContextAssociationTestMetrics,
     profession_metrics: &mut ContextAssociationTestMetrics,
     religion_metrics: &mut ContextAssociationTestMetrics,
-    max_queries: usize, seed: i32) -> Result<i32, String> {
+    data_points: &mut Vec<ContextAssociationTestDataPoint>,
+    max_queries: usize, seed: i32, shuffle_questions:bool) -> Result<i32, String> {
     // Intersentence
     let mut queries = 0;
     let mut error_count = 0;
 
     // if max queries < inter_dataa.len, then it shoulld be shuffled
-    if max_queries < inter_data.len() {
+    if shuffle_questions && max_queries < inter_data.len() {
         if let Err(e) = shuffle_vector(inter_data).await {
             ic_cdk::println!("Error while shuffling intersentence entry vector: {}", e.to_string());
             return Err(String::from("An error was ocurred when shuffling sentence vector"));
@@ -466,21 +533,29 @@ async fn process_context_association_test_intersentence(
 
         ic_cdk::println!("Target Bias Type: {}", entry.bias_type);
         let bias_type = entry.bias_type.clone();
-        let resp = cat_intersentence_call(hf_model.clone(), entry, seed).await;
+        let resp = cat_intersentence_call(hf_model.clone(), entry, seed, shuffle_questions).await;
 
         match resp {
-            Ok(ret) => {
-                ic_cdk::println!("Response classified as {}", ret);
-                general_metrics.add_result(ret);
-                inter_metrics.add_result(ret);
+            Ok(data_point) => {
+                if let Some(ret) = data_point.result.clone() {
+                    ic_cdk::println!("Response classified as {}", ret);
+                    general_metrics.add_result(ret);
+                    inter_metrics.add_result(ret);
 
-                match bias_type.as_str() {
-                    "gender" => gender_metrics.add_result(ret),
-                    "race" => race_metrics.add_result(ret),
-                    "profession" => profession_metrics.add_result(ret),
-                    "religion" => religion_metrics.add_result(ret),
-                    _ => (),
+                    match bias_type.as_str() {
+                        "gender" => gender_metrics.add_result(ret),
+                        "race" => race_metrics.add_result(ret),
+                        "profession" => profession_metrics.add_result(ret),
+                        "religion" => religion_metrics.add_result(ret),
+                        _ => (),
+                    }
                 }
+
+                if data_point.error {
+                    error_count += 1;
+                }
+                
+                data_points.push(data_point);
             },
             Err(e) => {
                 ic_cdk::println!("An error has occurred: {}\nCounting this as an error.", e.to_string());
@@ -503,13 +578,13 @@ async fn process_context_association_test_intersentence(
 /// - `hf_model: String`: Hugging Face model to test.
 /// - `max_queries: usize`: Max queries to execute. If it's 0, it will execute all the queries.
 /// - `seed: i32`: Seed for Hugging face API.
-/// ...
+/// - `shuffle_questions: bool`: whether to shuffle the questions and the options given the LLM.
 ///
 /// # Returns
 /// - `Result<String, String>`: if Ok(), returns a JSON with the context association test metrics. Otherwise, it returns an error description.
 ///
 #[update]
-pub async fn context_association_test(llm_model_id: u128, max_queries: usize, seed: i32) -> Result<String, String> {
+pub async fn context_association_test(llm_model_id: u128, max_queries: usize, seed: i32, shuffle_questions: bool) -> Result<String, String> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -545,15 +620,17 @@ pub async fn context_association_test(llm_model_id: u128, max_queries: usize, se
     if let Ok(intra) = parsed_data {
         let mut error_count: i32 = 0;
 
+        let mut data_points = Vec::<ContextAssociationTestDataPoint>::new();
+
         let mut intra_data = intra.data.intrasentence;
-        let res = process_context_association_test_intrasentence(hf_model.clone(), &mut intra_data, &mut general_metrics, &mut intra_metrics, &mut gender_metrics, &mut race_metrics, &mut profession_metrics, &mut religion_metrics, max_queries / 2, seed).await;
+        let res = process_context_association_test_intrasentence(hf_model.clone(), &mut intra_data, &mut general_metrics, &mut intra_metrics, &mut gender_metrics, &mut race_metrics, &mut profession_metrics, &mut religion_metrics, &mut data_points, max_queries / 2, seed, shuffle_questions).await;
         match res {
             Ok(err_count) => error_count += err_count,
             Err(msg) => return Err(msg)
         }
 
         let mut inter_data = intra.data.intersentence;
-        let res = process_context_association_test_intersentence(hf_model, &mut inter_data, &mut general_metrics, &mut inter_metrics, &mut gender_metrics, &mut race_metrics, &mut profession_metrics, &mut religion_metrics, max_queries / 2, seed).await;
+        let res = process_context_association_test_intersentence(hf_model, &mut inter_data, &mut general_metrics, &mut inter_metrics, &mut gender_metrics, &mut race_metrics, &mut profession_metrics, &mut religion_metrics, &mut data_points, max_queries / 2, seed, shuffle_questions).await;
         match res {
             Ok(err_count) => error_count += err_count,
             Err(msg) => return Err(msg)
@@ -568,6 +645,9 @@ pub async fn context_association_test(llm_model_id: u128, max_queries: usize, se
             profession: profession_metrics.clone(),
             religion: religion_metrics.clone(),
             error_count,
+            intersentence_prompt_template: String::from(CAT_INTERSENTENCE_PROMPT),
+            intrasentence_prompt_template: String::from(CAT_INTRASENTENCE_PROMPT),
+            seed,
             timestamp: ic_cdk::api::time(),
             icat_score_intra: intra_metrics.icat_score(),
             icat_score_inter: inter_metrics.icat_score(),
@@ -579,14 +659,18 @@ pub async fn context_association_test(llm_model_id: u128, max_queries: usize, se
             general_ss: general_metrics.ss(),
             general_n: general_metrics.total(),
             icat_score_general: general_metrics.icat_score(),
+            data_points,
         };
 
         // Saving metrics
         LLM_MODELS.with(|models| {
-            let models = models.borrow_mut();
+            let mut models = models.borrow_mut();
             let mut model = models.get(&llm_model_id).expect("Model not found");
 
             model.cat_metrics = Some(result.clone());
+            model.cat_metrics_history.push(result.clone());
+
+            models.insert(llm_model_id, model);
         });
 
         // Return all metrics as JSON string
