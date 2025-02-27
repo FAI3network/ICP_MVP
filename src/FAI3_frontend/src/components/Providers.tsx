@@ -3,7 +3,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor, ActorSubclass, ActorMethod } from '@dfinity/agent';
 import { idlFactory, canisterId } from '../../../declarations/FAI3_backend';
 import { useEffect, useState } from 'react';
-import { Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
+import { LLMModel, Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
 import { FAI3_backend } from '../../../declarations/FAI3_backend';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -13,6 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(true);
   const [Models, setModels] = useState<Model[]>([]);
+  const [LLMModels, setLLMModels] = useState<LLMModel[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -117,10 +118,21 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       });
 
     setModels(models);
+
+    const llmmodels: LLMModel[] = connected ?
+      await (webapp?.get_all_llm_models() as Promise<LLMModel[]>)
+      :
+      await FAI3_backend.get_all_llm_models().catch((err) => {
+        console.error(err);
+        return [];
+      }
+    );
+
+    setLLMModels(llmmodels);
   };
 
   return (
-    <DataContext.Provider value={{ Models, setModels, fetchModels }}>
+    <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels }}>
       <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
         {children}
       </AuthClientContext.Provider>

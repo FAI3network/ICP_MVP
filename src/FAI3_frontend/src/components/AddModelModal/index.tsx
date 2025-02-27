@@ -1,9 +1,10 @@
-import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "../ui";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "@/components/ui";
 import { useState } from "react";
-import { useAuthClient, useDataContext } from "../../utils";
+import { useAuthClient, useDataContext } from "@/utils";
+import { Toggle } from "@/components/ui/toggle";
 
 export default function AddModelModal() {
-  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
+  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
@@ -33,7 +34,7 @@ export default function AddModelModal() {
   }
 
   const clearModelForm = () => {
-    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
+    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
     closeModal();
   }
 
@@ -55,6 +56,11 @@ export default function AddModelModal() {
               <h3 className="text-lg font-bold mb-4">
                 Model Information
               </h3>
+
+              <Toggle variant="outline" size="default" className="mb-4" onPressedChange={() => setNewModel({ ...newModel, is_llm: !newModel.is_llm })}>
+                Is LLM
+              </Toggle>
+
               <div>
                 <h4 className="text-sm font-bold mb-2">
                   Model Name
@@ -127,6 +133,22 @@ export default function AddModelModal() {
                 />
               </div>
 
+              {
+                newModel.is_llm && (
+                  <div>
+                    <h4 className="text-sm font-bold mb-2">
+                      Hugging Face URL
+                    </h4>
+
+                    <Input
+                      placeholder="hf_url"
+                      className="mb-4"
+                      value={newModel.hf_url}
+                      onChange={(event: any) => setNewModel({ ...newModel, hf_url: event.target.value })}
+                    />
+                  </div>
+                ) 
+              }
             </ModalBody>
             <ModalFooter className="flex-col">
               <div className="text-red-500 text-sm w-full text-center">
