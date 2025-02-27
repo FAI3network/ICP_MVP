@@ -6,14 +6,67 @@ use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
 use std::borrow::Cow;
 
+pub type PrivilegedMap = HashMap<String, u128>;
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct DataPoint {
+pub struct DataPoint { // TODO: work point
     pub(crate) data_point_id: u128,
     pub(crate) target: bool,
-    pub(crate) privileged_map: HashMap<String, u128>,
+    pub(crate) privileged_map: PrivilegedMap, // TODO: create card for fixing this
     pub(crate) predicted: bool,
     pub(crate) features: Vec<f64>,
     pub(crate) timestamp: u64,
+}
+
+// Represents a data point for using LLMs as classifiers
+// So the same classifier metrics can be calculated over this
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct LLM_DataPoint { // TODO: work point
+    pub(crate) data_point_id: u128,
+    pub(crate) target: bool,
+    pub(crate) predicted: Option<bool>,
+    pub(crate) features: Vec<f64>,
+    pub(crate) timestamp: u64,
+    pub(crate) prompt: String,
+    pub(crate) response: Option<String>,
+    pub(crate) valid: bool,
+    pub(crate) error: bool,
+}
+
+impl LLM_DataPoint { 
+    /// Transforms a LLM_DataPoint to a DataPoint, so it can be used for metrics
+    // If the LLM DataPoint had an error of some type, it returns None
+    pub fn to_data_point(&self, privileged_map: PrivilegedMap) -> Option<DataPoint> {
+        match self.predicted {
+            Some(pred) => Some(DataPoint {
+                data_point_id: self.data_point_id,
+                target: self.target,
+                privileged_map,
+                predicted: pred,
+                features: self.features.clone(),
+                timestamp: self.timestamp,
+            }),
+            None => None,
+        }
+    }
+
+    pub fn reduce_to_data_points(data_points: &Vec<LLM_DataPoint>, privileged_map: PrivilegedMap) -> Vec<DataPoint> {
+        data_points.into_iter().filter_map(|dp| dp.to_data_point(privileged_map.clone())).collect()
+    }
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct ModelEvaluationResult {
+    pub(crate) model_evaluation_id: u128,
+    pub(crate) dataset: String,
+    pub(crate) timestamp: u64,
+    pub(crate) metrics: Metrics,
+    pub(crate) privileged_map: HashMap<String, u128>,
+    // data_points is to be used in the future,
+    // To replace the metrics and metrics_history
+    pub(crate) data_points: Option<Vec<DataPoint>>,
+    pub(crate) llm_data_points: Option<Vec<LLM_DataPoint>>,
+    pub(crate) prompt_template: Option<String>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -32,7 +85,7 @@ pub struct PrivilegedIndex {
 
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct Metrics {
+pub struct Metrics { // TODO: work point
     pub(crate) statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
     pub(crate) disparate_impact: Option<Vec<PrivilegedIndex>>,
     pub(crate) average_odds_difference: Option<Vec<PrivilegedIndex>>,
@@ -45,21 +98,22 @@ pub struct Metrics {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct ClassifierModelData {
+pub struct ClassifierModelData { // TODO: work point
     pub(crate) data_points: Vec<DataPoint>,
     pub(crate) metrics: Metrics,
     pub(crate) metrics_history: Vec<Metrics>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug, Serialize)]
-pub struct LLMModelData {
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct LLMModelData { // TODO: work point
     pub(crate) hugging_face_url: String,
     pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
     pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
+    pub(crate) evaluations: Vec<ModelEvaluationResult>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct Model {
+pub struct Model { // TODO: work point
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
     pub(crate) owners: Vec<Principal>,
@@ -209,6 +263,7 @@ impl Storable for LLMModelData {
     
     const BOUND: Bound = Bound::Unbounded;
 }
+
 #[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone)]
 pub struct ContextAssociationTestAPIResult {
     pub error_count: u32,
@@ -223,4 +278,12 @@ pub struct ContextAssociationTestAPIResult {
     pub icat_score_race: f32,
     pub icat_score_intra: f32,
     pub icat_score_inter: f32,
+}
+
+#[derive(Debug, CandidType, CandidDeserialize, Clone)]
+pub struct LLM_MetricsAPIResult {
+    pub metrics: Metrics,
+    pub queries: usize,
+    pub invalid_responses: u32,
+    pub call_errors: u32,
 }
