@@ -6,6 +6,7 @@ mod model;
 mod metrics_calculation;
 mod hugging_face;
 mod context_association_test;
+mod llm_fairness;
 mod llm_model;
 mod utils;
 
