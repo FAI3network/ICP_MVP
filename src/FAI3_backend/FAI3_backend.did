@@ -143,6 +143,13 @@ type ContextAssociationTestAPIResult = record {
   icat_score_inter: float32;
 };
 
+type LLM_MetricsAPIResult = record {
+    metrics: Metrics;
+    queries: nat64;
+    invalid_responses: nat32;
+    call_errors: nat32;
+};
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -188,4 +195,6 @@ service : () -> {
     "get_llm_model_data": (Model) -> (LLMModelData) query;
 
     "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
+
+    "calculate_llm_metrics": (nat, text, nat64, nat32) -> ( variant { Ok: LLM_MetricsAPIResult; Err: text} );
 }
