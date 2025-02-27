@@ -138,3 +138,23 @@ pub fn get_owners(model_id: u128) -> Vec<Principal> {
         model.owners.clone()
     })
 }
+
+#[ic_cdk::update]
+pub fn update_model(model_id: u128, model_name: String, model_details: ModelDetails) -> bool {
+    check_cycles_before_action();
+    let caller: Principal = ic_cdk::api::caller();
+    let mut status = false;
+
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let mut model = models.get(&model_id).expect("Model not found"); 
+        is_owner(&model, caller);
+        model.model_name = model_name;
+        model.details = model_details;
+        models.insert(model_id, model);
+
+        status = true;
+    });
+
+    status
+}

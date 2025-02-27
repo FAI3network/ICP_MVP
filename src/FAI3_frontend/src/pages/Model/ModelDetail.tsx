@@ -6,13 +6,13 @@ import {
   CardContent,
   CardFooter,
   Button,
-  openModal,
+  openModal
 } from "../../components/ui";
 import {
   LineChartchart,
   TabChart
 } from "../../components/charts";
-import { DataUploadModal } from "../../components";
+import { DataUploadModal, AddModelModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { useParams } from "react-router-dom";
@@ -24,6 +24,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false)
   const { address, webapp } = useAuthClient();
+  const [editOrUpload, setEditOrUpload] = useState<string | null>(null);
   const latestVars = metrics[metrics.length - 1]?.AOD?.map((v: any) => v.variable_name);
 
   useEffect(() => {
@@ -93,6 +94,10 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     // console.log(res)
   }
 
+  useEffect(() => {
+    editOrUpload != null && openModal()
+  }, [editOrUpload])
+
   return (
     <div className="grid min-h-screen w-full bg-white">
       {
@@ -112,11 +117,23 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
             {
               isOwner && (
                 <>
-                  <div className="w-full flex">
-                    <Button onClick={openModal}>
+                  <div className="w-full flex justify-between">
+                    <Button onClick={() => { setEditOrUpload("upload") }}>
                       Upload Data
                     </Button>
-                    <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} />
+
+                    {
+                      editOrUpload === "edit" ? (
+                        <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
+                      ) : editOrUpload == "upload" ? (
+                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} onClose={() => setEditOrUpload(null)} />
+                      ) : null
+                    }
+
+
+                    <Button onClick={() => { setEditOrUpload("edit") }}>
+                      Edit Model
+                    </Button>
                   </div>
                 </>
               )
