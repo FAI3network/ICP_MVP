@@ -6,7 +6,6 @@ mod model;
 mod metrics_calculation;
 mod hugging_face;
 mod context_association_test;
-mod llm_model;
 mod utils;
 
 use candid::Principal;
@@ -16,7 +15,7 @@ use std::cell::RefCell;
 use ic_stable_structures::{StableBTreeMap, Cell, memory_manager::{MemoryManager, MemoryId, VirtualMemory}, DefaultMemoryImpl};
 
 use cycles_management::check_cycles_before_action;
-use types::{DataPoint, Metrics, Model, LLMModel, ModelDetails, AverageMetrics};
+use types::{DataPoint, Metrics, Model, ModelDetails, AverageMetrics};
 use admin_management::only_admin;
 use utils::is_owner;
 
@@ -57,11 +56,12 @@ thread_local! {
             1
         ).unwrap()
     );
-    
-    static LLM_MODELS: RefCell<StableBTreeMap<u128, LLMModel, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4)))
-        )
+
+    static NEXT_LLM_DATA_POINT_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+            1
+        ).unwrap()
     );
 }
 

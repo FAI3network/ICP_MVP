@@ -45,14 +45,26 @@ pub struct Metrics {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct ClassifierModelData {
+    pub(crate) data_points: Vec<DataPoint>,
+    pub(crate) metrics: Metrics,
+    pub(crate) metrics_history: Vec<Metrics>,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, Serialize)]
+pub struct LLMModelData {
+    pub(crate) hugging_face_url: String,
+    pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
+    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
     pub(crate) owners: Vec<Principal>,
-    pub(crate) data_points: Vec<DataPoint>,
-    pub(crate) metrics: Metrics,
     pub(crate) details: ModelDetails,
-    pub(crate) metrics_history: Vec<Metrics>,
+    pub(crate) model_type: ModelType
 }
 
 impl Storable for Model {
@@ -87,6 +99,28 @@ pub struct User {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HuggingFaceResponseItem {
     pub(crate) generated_text: Option<String>,
+}
+
+#[derive(Clone, Debug, CandidType, CandidDeserialize)]
+pub enum ModelType {
+    Classifier(ClassifierModelData),
+    LLM(LLMModelData),
+}
+
+// Useful function that panics in the case that the model is NOT a classifier
+pub(crate) fn get_classifier_model_data(model: &Model) -> ClassifierModelData {
+    match model.model_type {
+        ModelType::Classifier(ref model_data) => model_data.clone(),
+        _ => panic!("A classifier model was expected, got another type of model instead"),
+    }
+}
+
+// Useful function that panics in the case that the model is NOT a classifier
+pub(crate) fn get_llm_model_data(model: &Model) -> LLMModelData {
+    match model.model_type {
+        ModelType::LLM(ref model_data) => model_data.clone(),
+        _ => panic!("A classifier model was expected, got another type of model instead"),
+    }
 }
 
 // LLMs
@@ -134,17 +168,6 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) data_points: Vec<ContextAssociationTestDataPoint>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct LLMModel {
-    pub(crate) model_id: u128,
-    pub(crate) model_name: String,
-    pub(crate) hf_url: String,
-    pub(crate) owners: Vec<Principal>,
-    pub(crate) details: ModelDetails,
-    pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
-    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
-}
-
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
 pub enum ContextAssociationTestType {
     Intrasentence,
@@ -162,7 +185,20 @@ pub struct ContextAssociationTestDataPoint {
     pub(crate) timestamp: u64,
 }
 
-impl Storable for LLMModel {
+impl Storable for ClassifierModelData {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        candid::decode_one(&bytes).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+
+impl Storable for LLMModelData {
     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
         Cow::Owned(candid::encode_one(self).unwrap())
     }

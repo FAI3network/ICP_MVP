@@ -1,8 +1,10 @@
 use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS,
-    NEXT_DATA_POINT_ID,
+    NEXT_DATA_POINT_ID
 };
 use candid::{CandidType, Deserialize, Principal};
+use crate::types::get_classifier_model_data;
+use crate::types::ModelType;
 use std::collections::HashMap;
 
 #[derive(CandidType, Deserialize)]
@@ -77,7 +79,9 @@ pub fn add_dataset(
                     timestamp,
                 };
 
-                model.data_points.push(data_point);
+                let mut model_data = get_classifier_model_data(&model);
+                model_data.data_points.push(data_point);
+                model.model_type = ModelType::Classifier(model_data);
                 models.insert(model_id, model.clone());
                 let current_id = *next_data_point_id.get();
                 next_data_point_id.set(current_id + 1).unwrap();
@@ -111,6 +115,8 @@ pub fn add_data_point(
 
         is_owner(&model, caller);
 
+        let mut model_data = get_classifier_model_data(&model);
+
         NEXT_DATA_POINT_ID.with(|next_data_point_id| {
             let data_point_id = *next_data_point_id.borrow().get();
     
@@ -123,7 +129,8 @@ pub fn add_data_point(
                 timestamp,
             };
     
-            model.data_points.push(data_point);
+            model_data.data_points.push(data_point);
+            model.model_type = ModelType::Classifier(model_data);
             models.insert(model_id, model.clone());
             next_data_point_id.borrow_mut().set(next_data_point_id.borrow().get() + 1).unwrap()
         });
@@ -141,11 +148,15 @@ pub fn delete_data_point(model_id: u128, data_point_id: u128) {
 
         is_owner(&model, caller);
 
-        let data_point_index = model
+        let mut model_data = get_classifier_model_data(&model);
+
+        let data_point_index = model_data
             .data_points
             .iter()
             .position(|d| d.data_point_id == data_point_id)
             .expect("Data point not found");
-        model.data_points.remove(data_point_index);
+        model_data.data_points.remove(data_point_index);
+
+        model.model_type = ModelType::Classifier(model_data);
     });
 }
