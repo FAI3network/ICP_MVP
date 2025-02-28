@@ -122,7 +122,8 @@ export default function TabChart({ chartData }: any) {
               <TableBody>
                 {chartData.map((row: any, index: number) => (
                   <TableRow key={index}>
-                    <TableCell>{row.timestamp}</TableCell>
+                    {/* <TableCell>{row.timestamp}</TableCell> */}
+                    <TableCell>v{index+1}</TableCell>
                     <TableCell>{row.average.SPD}</TableCell>
                     <TableCell>{row.average.DI}</TableCell>
                     <TableCell>{row.average.AOD}</TableCell>
