@@ -108,7 +108,7 @@ pub enum ModelType {
 }
 
 // Useful function that panics in the case that the model is NOT a classifier
-pub(crate) fn get_classifier_model_data(model: &Model) -> ClassifierModelData {
+pub fn get_classifier_model_data(model: &Model) -> ClassifierModelData {
     match model.model_type {
         ModelType::Classifier(ref model_data) => model_data.clone(),
         _ => panic!("A classifier model was expected, got another type of model instead"),
@@ -116,7 +116,7 @@ pub(crate) fn get_classifier_model_data(model: &Model) -> ClassifierModelData {
 }
 
 // Useful function that panics in the case that the model is NOT a classifier
-pub(crate) fn get_llm_model_data(model: &Model) -> LLMModelData {
+pub fn get_llm_model_data(model: &Model) -> LLMModelData {
     match model.model_type {
         ModelType::LLM(ref model_data) => model_data.clone(),
         _ => panic!("A classifier model was expected, got another type of model instead"),

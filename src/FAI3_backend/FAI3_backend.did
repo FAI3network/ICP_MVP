@@ -166,4 +166,7 @@ service : () -> {
     "get_model_metrics": (nat) -> (Metrics) query;
     "get_model": (nat) -> (Model) query;
     "test_function": () -> (bool);
+
+    "get_classifier_model_data": (Model) -> (ClassifierModelData) query;
+    "get_llm_model_data": (Model) -> (LLMModelData) query;
 }
