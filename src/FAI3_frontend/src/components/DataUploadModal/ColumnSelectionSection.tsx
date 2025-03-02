@@ -4,6 +4,8 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
 import { useAuthClient, useDataContext } from "../../utils";
+import { toast } from "sonner";
+import { features } from "process";
 
 export default function ColumnSelectionSection({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
@@ -23,7 +25,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   })
   const [loading, setLoading] = useState(false);
   const [openThresholdField, setOpenThresholdField] = useState(false);
-  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number }[]>([]);
+  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number | null }[]>([]);
 
   useEffect(() => {
     console.log(columnLabels.privledged);
@@ -51,12 +53,12 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
     if (latestVars && latestVars.length > 0) {
       setThresholds(latestVars.map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
     } else if (columnLabels.privledged.length > 0) {
-      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: null })));
     }
   }, [latestVars, columnLabels.privledged]);
 
   const uploadData = async () => {
-    // setLoading(true);
+    setLoading(true);
 
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
@@ -64,8 +66,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
 
     const privledgedLabels = columnLabels.privledged.split(", ");
 
-    const privilegedVariables = [];
-    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount, threshold.comparator == "greater" ? true : false]]));
+    const privilegedVariables: {key:string, value: bigint}[] = [];
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -80,39 +81,51 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
       }
     }
 
-    console.log(privilegedVariables);
+    let valid = false;
 
-    console.log("using feats", privilegedVariables.map((priv) => features[Number(priv.value)]));
-    
+    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount ?? calculateMedian(features[Number(privilegedVariables.find((priv) => priv.key === threshold.varName)?.value)]), threshold.comparator == "greater" ? true : false]]));
+
     for (const priv of privilegedVariables) {
-      const threshold = thresholds.find((threshold) => threshold.varName === priv.key)!;
-      console.log("threshold", threshold);
-
-      let valid = false;
+      const threshold = thresholdValues.find((threshold) => threshold[0] === priv.key);
+      const amount = threshold?.[1][0] as number | null;
+      const comparator = threshold?.[1][1];
 
       const feats = features[Number(priv.value)];
 
-      if (threshold?.amount < Math.min(...feats) || threshold?.amount > Math.max(...feats)) {
+      if (amount === null) {
+        toast.error(`Something went wrong, please try again`);
+      }
+
+      if (amount! < Math.min(...feats) || amount! > Math.max(...feats)) {
         console.log("threshold out of range");
-        continue;
-      }
-
-      if (threshold?.comparator === "greater") {
-        valid = feats.some((value) => value > threshold.amount);
+      } else if (comparator) {
+        valid = feats.some((value) => value > amount!);
       } else {
-        valid = feats.some((value) => value < threshold.amount);
+        valid = feats.some((value) => value < amount!);
       }
 
-      console.log("valid", valid);
+      if (!valid) {
+        toast.error(`Privileged variable ${priv.key} does not meet the threshold`);
+      }
 
     }
 
-    // await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
-    // await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
-    // await fetchModel();
-    // await fetchModels();
-    // setLoading(false);
-    // closeModal();
+    if (valid) {
+      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
+      await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
+      await fetchModel();
+      await fetchModels();
+      closeModal();
+    }
+
+    setLoading(false);
+  }
+
+  const calculateMedian = (features: number[]) => {
+    const max = Math.max(...features);
+    const min = Math.min(...features);
+
+    return (max + min) / 2;
   }
 
   if (loading) {
