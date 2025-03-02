@@ -80,12 +80,39 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
       }
     }
 
-    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
-    await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
-    await fetchModel();
-    await fetchModels();
-    setLoading(false);
-    closeModal();
+    console.log(privilegedVariables);
+
+    console.log("using feats", privilegedVariables.map((priv) => features[Number(priv.value)]));
+    
+    for (const priv of privilegedVariables) {
+      const threshold = thresholds.find((threshold) => threshold.varName === priv.key)!;
+      console.log("threshold", threshold);
+
+      let valid = false;
+
+      const feats = features[Number(priv.value)];
+
+      if (threshold?.amount < Math.min(...feats) || threshold?.amount > Math.max(...feats)) {
+        console.log("threshold out of range");
+        continue;
+      }
+
+      if (threshold?.comparator === "greater") {
+        valid = feats.some((value) => value > threshold.amount);
+      } else {
+        valid = feats.some((value) => value < threshold.amount);
+      }
+
+      console.log("valid", valid);
+
+    }
+
+    // await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
+    // await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
+    // await fetchModel();
+    // await fetchModels();
+    // setLoading(false);
+    // closeModal();
   }
 
   if (loading) {
