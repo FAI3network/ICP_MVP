@@ -7,7 +7,7 @@ import { useAuthClient, useDataContext } from "../../utils";
 import { toast } from "sonner";
 import { features } from "process";
 
-export default function ColumnSelectionSection({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
+export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -50,12 +50,20 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   }, [table]);
 
   useEffect(() => {
-    if (latestVars && latestVars.length > 0) {
-      setThresholds(latestVars.map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
-    } else if (columnLabels.privledged.length > 0) {
+    if (cachedThresholds && cachedThresholds.length > 0) {
+      setThresholds(cachedThresholds[0].thresholds[0].map((thresholdDetails: any) => ({ varName: thresholdDetails[0], comparator: thresholdDetails[1][1] ? "greater" : "lower", amount: thresholdDetails[1][0] })));
+    }
+  }, [cachedThresholds]);
+
+  useEffect(() => {
+    console.log(thresholds);
+  }, [thresholds]);
+
+  useEffect(() => {
+    if (columnLabels.privledged.length > 0 && cachedThresholds.length == 0) {
       setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: null })));
     }
-  }, [latestVars, columnLabels.privledged]);
+  }, [columnLabels.privledged]);
 
   const uploadData = async () => {
     setLoading(true);
@@ -66,7 +74,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
 
     const privledgedLabels = columnLabels.privledged.split(", ");
 
-    const privilegedVariables: {key:string, value: bigint}[] = [];
+    const privilegedVariables: { key: string, value: bigint }[] = [];
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -205,16 +213,21 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
                   columnLabels.privledged.split(", ").map((label: string, index: number) => (
                     <div className="flex flex-row gap-2 items-center" key={index}>
                       <h3>{label} Threshold:</h3>
-                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} setSelection={(selection: any) => {
-                        const newThresholds = [...thresholds];
-                        newThresholds[index].comparator = selection;
-                        setThresholds(newThresholds);
-                      }} />
-                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => {
-                        const newThresholds = [...thresholds];
-                        newThresholds[index].amount = parseFloat(e.target.value);
-                        setThresholds(newThresholds);
-                      }} />
+                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} 
+                        
+                        setSelection={(selection: any) => {
+                          const newThresholds = [...thresholds];
+                          newThresholds[index].comparator = selection;
+                          setThresholds(newThresholds);
+                        }} 
+                      />
+                      <input type="number" className="border border-gray-300 rounded-md p-1"
+                        value={thresholds[index].amount ?? ""}
+                        onChange={(e) => {
+                          const newThresholds = [...thresholds];
+                          newThresholds[index].amount = parseFloat(e.target.value);
+                          setThresholds(newThresholds);
+                        }} />
                     </div>
                   ))
                 }

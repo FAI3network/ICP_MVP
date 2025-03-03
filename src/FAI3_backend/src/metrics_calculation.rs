@@ -1,4 +1,4 @@
-use crate::types::PrivilegedIndex;
+use crate::types::{CachedThresholds, PrivilegedIndex};
 use crate::{check_cycles_before_action, is_owner, DataPoint, MODELS};
 
 use core::time;
@@ -505,7 +505,7 @@ pub(crate) fn calculate_all_metrics(
     let spd = calculate_statistical_parity_difference(model_id, privilieged_threshold.clone());
     let di = calculate_disparate_impact(model_id, privilieged_threshold.clone());
     let aod = calculate_average_odds_difference(model_id, privilieged_threshold.clone());
-    let eod = calculate_equal_opportunity_difference(model_id, privilieged_threshold);
+    let eod = calculate_equal_opportunity_difference(model_id, privilieged_threshold.clone());
     let acc = calculate_accuracy(model_id);
     let prec = calculate_precision(model_id);
     let rec = calculate_recall(model_id);
@@ -513,6 +513,10 @@ pub(crate) fn calculate_all_metrics(
     MODELS.with(|models| {
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
+
+        model.cached_thresholds = Some(CachedThresholds {
+            thresholds: privilieged_threshold,
+        });
 
         model.metrics.timestamp = ic_cdk::api::time();
         model.metrics_history.push(model.metrics.clone());

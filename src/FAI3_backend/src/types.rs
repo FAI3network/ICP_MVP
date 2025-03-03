@@ -45,6 +45,11 @@ pub struct Metrics {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub(crate) struct CachedThresholds {
+    pub(crate) thresholds: Option<HashMap<String, (f64, bool)>>
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
@@ -53,6 +58,7 @@ pub struct Model {
     pub(crate) metrics: Metrics,
     pub(crate) details: ModelDetails,
     pub(crate) metrics_history: Vec<Metrics>,
+    pub(crate) cached_thresholds: Option<CachedThresholds>,
 }
 
 impl Storable for Model {

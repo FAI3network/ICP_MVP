@@ -1,6 +1,5 @@
 use crate::{
-    check_cycles_before_action, is_owner, DataPoint, MODELS,
-    NEXT_DATA_POINT_ID,
+    check_cycles_before_action, is_owner, DataPoint, MODELS, NEXT_DATA_POINT_ID
 };
 use candid::{CandidType, Deserialize, Principal};
 use std::collections::HashMap;
