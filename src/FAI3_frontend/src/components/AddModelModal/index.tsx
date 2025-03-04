@@ -20,7 +20,7 @@ export default function AddModelModal() {
     setLoading(true);
 
     // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
-    const model = await webapp?.add_model(newModel.name, newModel.details);
+    const model = await webapp?.add_classifier_model(newModel.name, newModel.details);
 
     if (model) {
       fetchModels();

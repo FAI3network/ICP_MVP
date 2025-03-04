@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ModelDetail } from "./ModelDetail";
 import { useParams } from "react-router-dom";
 import { useAuthClient } from "../../utils";
-import { Model as ModelType } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { Model as ModelAsType, ClassifierModelData } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 
 interface Metric {
@@ -23,13 +23,15 @@ export default function Model() {
   const fetchModel = async () => {
     let id = BigInt(modelId || "");
     // const model = await FAI3_backend.get_model(id);
-    const model: ModelType = connected ? await (webapp?.get_model(id) as Promise<ModelType>) : await FAI3_backend.get_model(id);
+    const model: ModelAsType = connected ? await (webapp?.get_model(id) as Promise<ModelAsType>) : await FAI3_backend.get_model(id);
 
     console.log(model);
 
     setModelWithDetails(model);
 
-    const metricsHistory = model?.metrics_history;
+    // Note: this only works for classifier models, it wont work for LLM models
+    const classifierData = (model?.model_type as { Classifier: ClassifierModelData }).Classifier;
+    const metricsHistory = classifierData?.metrics_history;
 
     if (!Array.isArray(metricsHistory)) {
       console.error("Invalid metrics response");
