@@ -31,12 +31,14 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     console.log(columnLabels.privledged);
     if (columnLabels.privledged.length == 0) {
       setOpenThresholdField(false);
-    } else if (columnLabels.privledged.length > 0 && cachedThresholds.length == 0) {
+    } else if (columnLabels.privledged.length > 0 && !loading) {
       setThresholds(columnLabels.privledged.split(", ").map((varName: string, index: number) => ({ varName, comparator: "greater", amount: thresholds[index]?.amount ?? null })));
     }
   }, [columnLabels.privledged]);
 
   useEffect(() => {
+    setLoading(true);
+
     const tableColumns = table.getRowModel().rows.length
       ? Object.keys(table.getRowModel().rows[0].original)
       : [];
@@ -49,13 +51,13 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
       predictions: predictionFilter.length > 0 ? predictionFilter[0] : "",
       privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
     });
-  }, [table]);
 
-  useEffect(() => {
     if (cachedThresholds && cachedThresholds.length > 0) {
       setThresholds(cachedThresholds[0].thresholds[0].map((thresholdDetails: any) => ({ varName: thresholdDetails[0], comparator: thresholdDetails[1][1] ? "greater" : "lower", amount: thresholdDetails[1][0] })));
     }
-  }, [cachedThresholds]);
+
+    setLoading(false);
+  }, [table]);
 
   useEffect(() => {
     console.log(thresholds);
@@ -87,7 +89,12 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
 
     let valid = false;
 
+    console.log(columnLabels.privledged);
+
+    console.log(thresholds);
+
     const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount ?? calculateMedian(features[Number(privilegedVariables.find((priv) => priv.key === threshold.varName)?.value)]), threshold.comparator == "greater" ? true : false]]));
+    console.log(thresholdValues);
 
     for (const priv of privilegedVariables) {
       const threshold = thresholdValues.find((threshold) => threshold[0] === priv.key);
@@ -110,6 +117,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
 
       if (!valid) {
         toast.error(`Privileged variable ${priv.key} does not meet the threshold`);
+        break;
       }
 
     }
