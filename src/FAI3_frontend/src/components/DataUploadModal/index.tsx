@@ -9,7 +9,7 @@ import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal({ fetchModel, latestVars, onClose = () => { } }: { fetchModel: () => Promise<any>, latestVars: any, onClose: () => void }) {
+export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, onClose = () => { } }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
@@ -88,7 +88,7 @@ export default function DataUploadModal({ fetchModel, latestVars, onClose = () =
   const steps = [
     <UploadDataFile />,
     <CSVTableView />,
-    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} />,
+    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={cachedThresholds} />,
     <ImageUploader />
   ];
 

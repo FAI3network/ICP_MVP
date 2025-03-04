@@ -19,6 +19,8 @@ type PrivilegedIndex = record {
   value: float32;
 };
 
+type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
+
 type Metrics = record {
   statistical_parity_difference: opt vec PrivilegedIndex;
   disparate_impact: opt vec PrivilegedIndex;
@@ -31,6 +33,10 @@ type Metrics = record {
   timestamp: nat64;
 };
 
+type CachedThresholds = record {
+  thresholds: PrivilegedThreshold;
+};
+
 type Model = record {
   model_id: nat;
   model_name: text;
@@ -39,6 +45,7 @@ type Model = record {
   metrics: Metrics;
   details: ModelDetails;
   metrics_history: vec Metrics;
+  cached_thresholds: opt CachedThresholds;
 };
 
 type ModelDetails = record {
@@ -55,8 +62,6 @@ type User = record {
 };
 
 type HashMap = vec record { key: text; value: nat };
-
-type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
 
 service : () -> {
     // User management

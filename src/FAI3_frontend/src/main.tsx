@@ -9,6 +9,7 @@ import { AuthClientContext, DataContext } from './utils';
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor, ActorSubclass, ActorMethod } from '@dfinity/agent';
 import { idlFactory, canisterId } from '../../declarations/FAI3_backend';
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (<StrictMode>
@@ -22,6 +23,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      <Toaster />
     </Providers>
   </StrictMode>
   )

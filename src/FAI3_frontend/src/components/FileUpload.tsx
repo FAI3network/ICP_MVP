@@ -23,7 +23,8 @@ export default function FileUpload({ onFileChange, accept="*/*", multiple=false,
     }
   }
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     fileInputRef.current?.click();
   }
 

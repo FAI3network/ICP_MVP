@@ -6,8 +6,6 @@ import {
 } from "../ui";
 
 export default function BarChartchart({ chartData, chartConfig }: any) {
-  console.log(chartData);
-
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart accessibilityLayer data={chartData}>

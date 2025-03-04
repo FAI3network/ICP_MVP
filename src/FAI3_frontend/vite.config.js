@@ -1,11 +1,15 @@
 /// <reference types="vitest" />
-import { fileURLToPath, URL } from 'url';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
-import environment from 'vite-plugin-environment';
-import dotenv from 'dotenv';
+import { fileURLToPath, URL } from "url";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import environment from "vite-plugin-environment";
+import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config({ path: '../../.env' });
+dotenv.config({ path: "../../.env" });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   build: {
@@ -32,17 +36,14 @@ export default defineConfig({
     environment("all", { prefix: "DFX_" }),
   ],
   test: {
-    environment: 'jsdom',
-    setupFiles: 'src/setupTests.js',
+    environment: "jsdom",
+    setupFiles: "src/setupTests.js",
   },
   resolve: {
-    alias: [
-      {
-        find: "declarations",
-        replacement: fileURLToPath(
-          new URL("../declarations", import.meta.url)
-        ),
-      },
-    ],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      find: "declarations",
+      replacement: fileURLToPath(new URL("../declarations", import.meta.url)),
+    },
   },
 });
