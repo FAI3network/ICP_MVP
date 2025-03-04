@@ -31,6 +31,8 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     console.log(columnLabels.privledged);
     if (columnLabels.privledged.length == 0) {
       setOpenThresholdField(false);
+    } else if (columnLabels.privledged.length > 0 && cachedThresholds.length == 0) {
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string, index: number) => ({ varName, comparator: "greater", amount: thresholds[index]?.amount ?? null })));
     }
   }, [columnLabels.privledged]);
 
@@ -58,12 +60,6 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
   useEffect(() => {
     console.log(thresholds);
   }, [thresholds]);
-
-  useEffect(() => {
-    if (columnLabels.privledged.length > 0 && cachedThresholds.length == 0) {
-      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: null })));
-    }
-  }, [columnLabels.privledged]);
 
   const uploadData = async () => {
     setLoading(true);
@@ -210,11 +206,12 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
                   The number you set will be used as the threshold. <br /> Any datapoint value larger than this number will be considered privileged.
                 </p>
                 {
-                  columnLabels.privledged.split(", ").map((label: string, index: number) => (
+                  thresholds.map((threshold, index: number) => {
+                    console.log(thresholds[index]);
+                    return (
                     <div className="flex flex-row gap-2 items-center" key={index}>
-                      <h3>{label} Threshold:</h3>
-                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} 
-
+                      <h3>{threshold.varName} Threshold:</h3>
+                      <Select options={["greater", "lower"]} selection={threshold.comparator} 
                         setSelection={(selection: any) => {
                           const newThresholds = [...thresholds];
                           newThresholds[index].comparator = selection;
@@ -222,7 +219,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
                         }} 
                       />
                       <input type="number" className="border border-gray-300 rounded-md p-1"
-                        value={thresholds[index].amount ?? ""}
+                        value={threshold.amount ?? ""}
                         onChange={(e) => {
                           const newThresholds = [...thresholds];
                           newThresholds[index].amount = parseFloat(e.target.value);
@@ -230,7 +227,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
                         }} 
                       />
                     </div>
-                  ))
+                  )})
                 }
               </div>
             )
