@@ -214,7 +214,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
                     <div className="flex flex-row gap-2 items-center" key={index}>
                       <h3>{label} Threshold:</h3>
                       <Select options={["greater", "lower"]} selection={thresholds[index].comparator} 
-                        
+
                         setSelection={(selection: any) => {
                           const newThresholds = [...thresholds];
                           newThresholds[index].comparator = selection;
@@ -227,7 +227,8 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
                           const newThresholds = [...thresholds];
                           newThresholds[index].amount = parseFloat(e.target.value);
                           setThresholds(newThresholds);
-                        }} />
+                        }} 
+                      />
                     </div>
                   ))
                 }

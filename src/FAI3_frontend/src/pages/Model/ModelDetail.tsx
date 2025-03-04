@@ -106,7 +106,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
         )
       }
       {model && metrics && !loading && (
-        <section className="grid gap-8 p-6 md:p-10">
+        <section className="grid gap-8 p-6 md:p-10"> 
           <div className="text-center relative w-full">
             <h1 className="text-4xl font-bold pb-3">{model.model_name}</h1>
             <h3>
