@@ -19,7 +19,7 @@ struct HuggingFaceRequestParameters {
     return_full_text: Option<bool>,
     decoder_input_details: Option<bool>,
     details: Option<bool>,
-    seed: Option<i32>,
+    seed: Option<u32>,
     do_sample: Option<bool>,
 }
 
@@ -44,7 +44,7 @@ struct HuggingFaceResponse {
 /// # Returns
 /// - `Result<String, String>`: if successful, it returns the model answer, without the prompt text. Otherwise, it returns an error description.
 ///
-pub async fn call_hugging_face(input_text: String, llm_model: String, seed: i32) -> Result<String, String> {
+pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32) -> Result<String, String> {
     // 1) Prepare JSON payload
     let payload = HuggingFaceRequest {
         inputs: input_text,

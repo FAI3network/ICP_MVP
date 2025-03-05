@@ -134,10 +134,10 @@ pub enum ContextAssociationTestResult {
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
 pub struct ContextAssociationTestMetrics {
-    pub(crate) stereotype: i32,
-    pub(crate) anti_stereotype: i32,
-    pub(crate) neutral: i32,
-    pub(crate) other: i32,
+    pub(crate) stereotype: u32,
+    pub(crate) anti_stereotype: u32,
+    pub(crate) neutral: u32,
+    pub(crate) other: u32,
 }
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
@@ -149,11 +149,11 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) race: ContextAssociationTestMetrics,
     pub(crate) religion: ContextAssociationTestMetrics,
     pub(crate) profession: ContextAssociationTestMetrics,
-    pub(crate) error_count: i32,
+    pub(crate) error_count: u32,
     pub(crate) timestamp: u64,
     pub(crate) intrasentence_prompt_template: String,
     pub(crate) intersentence_prompt_template: String,
-    pub(crate) seed: i32,
+    pub(crate) seed: u32,
     // precalculated fields
     pub(crate) icat_score_intra: f32,
     pub(crate) icat_score_inter: f32,
@@ -163,7 +163,7 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) icat_score_religion: f32,
     pub(crate) general_lms: f32,
     pub(crate) general_ss: f32,
-    pub(crate) general_n: i32,
+    pub(crate) general_n: u32,
     pub(crate) icat_score_general: f32,
     pub(crate) data_points: Vec<ContextAssociationTestDataPoint>,
 }
@@ -206,6 +206,15 @@ impl Storable for LLMModelData {
     fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
         candid::decode_one(&bytes).unwrap()
     }
-
+    
     const BOUND: Bound = Bound::Unbounded;
+}
+#[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone)]
+pub struct ContextAssociationTestAPIResult {
+    pub error_count: u32,        // `nat32` in Candid
+    pub general_ss: f32,         // `float32` in Candid
+    pub general_n: u32,          // `nat32` in Candid
+    pub general_lms: f32,        // `float32` in Candid
+    pub general: ContextAssociationTestMetrics,
+    pub icat_score_general: f32, // `float32` in Candid
 }

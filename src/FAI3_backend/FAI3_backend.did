@@ -54,10 +54,10 @@ type ContextAssociationTestDataPoint = record {
 };
 
 type ContextAssociationTestMetrics = record {
-    stereotype: int32;
-    anti_stereotype: int32;
-    neutral: int32;
-    other: int32;
+    stereotype: nat32;
+    anti_stereotype: nat32;
+    neutral: nat32;
+    other: nat32;
 };
 
 type ClassifierModelData = record {
@@ -74,11 +74,11 @@ type ContextAssociationTestMetricsBag = record {
     race: ContextAssociationTestMetrics;
     religion: ContextAssociationTestMetrics;
     profession: ContextAssociationTestMetrics;
-    error_count: int32;
+    error_count: nat32;
     timestamp: nat64;
     intrasentence_prompt_template: text;
     intersentence_prompt_template: text;
-    seed: int32;
+    seed: nat32;
     icat_score_intra: float32;
     icat_score_inter: float32;
     icat_score_gender: float32;
@@ -87,7 +87,7 @@ type ContextAssociationTestMetricsBag = record {
     icat_score_religion: float32;
     general_lms: float32;
     general_ss: float32;
-    general_n: int32;
+    general_n: nat32;
     icat_score_general: float32;
     data_points: vec ContextAssociationTestDataPoint;
 };
@@ -127,6 +127,15 @@ type User = record {
 type HashMap = vec record { key: text; value: nat };
 
 type floatHashMap = vec record { key: text; value: float64 };
+
+type ContextAssociationTestAPIResult = record {
+  error_count: nat32;
+  general_ss: float32;
+  general_n: nat32;
+  general_lms: float32;
+  general: ContextAssociationTestMetrics;
+  icat_score_general: float32;
+};
 
 service : () -> {
     // User management
@@ -170,4 +179,6 @@ service : () -> {
 
     "get_classifier_model_data": (Model) -> (ClassifierModelData) query;
     "get_llm_model_data": (Model) -> (LLMModelData) query;
+
+    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
 }
