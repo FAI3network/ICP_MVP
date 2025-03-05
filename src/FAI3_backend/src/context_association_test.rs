@@ -691,6 +691,12 @@ pub async fn context_association_test(llm_model_id: u128, max_queries: usize, se
             general_ss: result.general_ss,
             general_lms: result.general_lms,
             general_n: result.general_n,
+            icat_score_gender: result.icat_score_gender,
+            icat_score_profession: result.icat_score_profession,
+            icat_score_religion: result.icat_score_religion,
+            icat_score_race: result.icat_score_race,
+            icat_score_intra: result.icat_score_intra,
+            icat_score_inter: result.icat_score_inter,
         };
 
         return Ok(return_result);

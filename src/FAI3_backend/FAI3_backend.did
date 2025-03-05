@@ -135,6 +135,12 @@ type ContextAssociationTestAPIResult = record {
   general_lms: float32;
   general: ContextAssociationTestMetrics;
   icat_score_general: float32;
+  icat_score_gender: float32;
+  icat_score_religion: float32;
+  icat_score_profession: float32;
+  icat_score_race: float32;
+  icat_score_intra: float32;
+  icat_score_inter: float32;
 };
 
 service : () -> {

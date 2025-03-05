@@ -211,10 +211,16 @@ impl Storable for LLMModelData {
 }
 #[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone)]
 pub struct ContextAssociationTestAPIResult {
-    pub error_count: u32,        // `nat32` in Candid
-    pub general_ss: f32,         // `float32` in Candid
-    pub general_n: u32,          // `nat32` in Candid
-    pub general_lms: f32,        // `float32` in Candid
+    pub error_count: u32,
+    pub general_ss: f32, 
+    pub general_n: u32,
+    pub general_lms: f32,
     pub general: ContextAssociationTestMetrics,
-    pub icat_score_general: f32, // `float32` in Candid
+    pub icat_score_general: f32,
+    pub icat_score_gender: f32,
+    pub icat_score_religion: f32,
+    pub icat_score_profession: f32,
+    pub icat_score_race: f32,
+    pub icat_score_intra: f32,
+    pub icat_score_inter: f32,
 }
