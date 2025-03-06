@@ -1,4 +1,4 @@
-use crate::Model;
+use crate::{Model};
 use candid::Principal;
 
 pub fn is_owner(model: &Model, caller: Principal) {
