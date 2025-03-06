@@ -126,7 +126,7 @@ type User = record {
 
 type HashMap = vec record { key: text; value: nat };
 
-type floatHashMap = vec record { key: text; value: float64 };
+type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
 
 type ContextAssociationTestAPIResult = record {
   error_count: nat32;
@@ -156,6 +156,7 @@ service : () -> {
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
     "get_owners": (nat) -> (vec principal);
+    "update_model": (nat, text, ModelDetails) -> (bool);
 
     // Data point management
     "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
@@ -163,13 +164,13 @@ service : () -> {
     "delete_data_point": (nat, nat) -> ();
 
     // Fairness metrics
-    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
-    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
-    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
-    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex, opt floatHashMap);
+    "calculate_statistical_parity_difference": (nat) -> (vec PrivilegedIndex, PrivilegedThreshold);
+    "calculate_disparate_impact": (nat) -> (vec PrivilegedIndex, PrivilegedThreshold);
+    "calculate_average_odds_difference": (nat) -> (vec PrivilegedIndex, PrivilegedThreshold);
+    "calculate_equal_opportunity_difference": (nat) -> (vec PrivilegedIndex, PrivilegedThreshold);
     
     // Calculate all fairness metrics
-    "calculate_all_metrics": (nat, opt floatHashMap) ->  (
+    "calculate_all_metrics": (nat, PrivilegedThreshold) ->  (
       vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
 

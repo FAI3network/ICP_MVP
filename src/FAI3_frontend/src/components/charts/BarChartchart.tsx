@@ -6,6 +6,8 @@ import {
 } from "../ui";
 
 export default function BarChartchart({ chartData, chartConfig }: any) {
+  console.log(chartData);
+
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart accessibilityLayer data={chartData}>
@@ -15,7 +17,7 @@ export default function BarChartchart({ chartData, chartConfig }: any) {
           tickLine={false}
           tickMargin={10}
           axisLine={false}
-          tickFormatter={(value) => value.slice(5, 10)} // Formats to show only MM-DD
+          tickFormatter={(_, index) => `v${index + 1}`}
         />
         <YAxis />
         <ChartTooltip content={<ChartTooltipContent />} />

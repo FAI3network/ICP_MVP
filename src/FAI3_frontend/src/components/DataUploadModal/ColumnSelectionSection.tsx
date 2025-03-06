@@ -23,16 +23,40 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   })
   const [loading, setLoading] = useState(false);
   const [openThresholdField, setOpenThresholdField] = useState(false);
-  const [thresholds, setThresholds] = useState<any>({});
+  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number }[]>([]);
+
+  useEffect(() => {
+    console.log(columnLabels.privledged);
+    if (columnLabels.privledged.length == 0) {
+      setOpenThresholdField(false);
+    }
+  }, [columnLabels.privledged]);
+
+  useEffect(() => {
+    const tableColumns = table.getRowModel().rows.length
+      ? Object.keys(table.getRowModel().rows[0].original)
+      : [];
+
+    const labelFilter = tableColumns.filter((col) => col.toLowerCase().includes("label"));
+    const predictionFilter = tableColumns.filter((col) => col.toLowerCase().includes("prediction"));
+
+    setColumnLabels({
+      labels: labelFilter.length > 0 ? labelFilter[0] : "",
+      predictions: predictionFilter.length > 0 ? predictionFilter[0] : "",
+      privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
+    });
+  }, [table]);
 
   useEffect(() => {
     if (latestVars && latestVars.length > 0) {
-      setColumnLabels({ ...columnLabels, privledged: latestVars.join(", ") });
+      setThresholds(latestVars.map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
+    } else if (columnLabels.privledged.length > 0) {
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
     }
-  }, [latestVars]);
+  }, [latestVars, columnLabels.privledged]);
 
   const uploadData = async () => {
-    setLoading(true);
+    // setLoading(true);
 
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
@@ -41,8 +65,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
     const privledgedLabels = columnLabels.privledged.split(", ");
 
     const privilegedVariables = [];
-    const thresholdValues = Object.keys(thresholds).map((key) => ({ key, value: parseFloat(thresholds[key]) }));
-    console.log("thresholdValues", thresholdValues);
+    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount, threshold.comparator == "greater" ? true : false]]));
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -136,13 +159,22 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
             openThresholdField && (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-gray-500 break-words wrap text-left">
-                  The number you set will be used as the threshold. <br/> Any datapoint value larger than this number will be considered privileged.
+                  The number you set will be used as the threshold. <br /> Any datapoint value larger than this number will be considered privileged.
                 </p>
                 {
                   columnLabels.privledged.split(", ").map((label: string, index: number) => (
                     <div className="flex flex-row gap-2 items-center" key={index}>
                       <h3>{label} Threshold:</h3>
-                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => setThresholds({ ...thresholds, [label]: e.target.value })} />
+                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} setSelection={(selection: any) => {
+                        const newThresholds = [...thresholds];
+                        newThresholds[index].comparator = selection;
+                        setThresholds(newThresholds);
+                      }} />
+                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => {
+                        const newThresholds = [...thresholds];
+                        newThresholds[index].amount = parseFloat(e.target.value);
+                        setThresholds(newThresholds);
+                      }} />
                     </div>
                   ))
                 }

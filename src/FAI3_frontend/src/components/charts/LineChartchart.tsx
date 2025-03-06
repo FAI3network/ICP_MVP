@@ -63,7 +63,8 @@ export default function LineChartchart({
           tickLine={false}
           tickMargin={10}
           axisLine={false}
-          tickFormatter={(value) => value.slice(5, 10)} // Formats to show only MM-DD
+          // tickFormatter={(value) => value.slice(5, 10)} // Formats to show only MM-DD
+          tickFormatter={(_, index) => `v${index + 1}`}
         />
         <YAxis
           domain={[

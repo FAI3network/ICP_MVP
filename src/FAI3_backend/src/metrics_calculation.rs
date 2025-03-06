@@ -6,7 +6,10 @@ use crate::{
 use std::collections::{HashMap, HashSet};
 
 #[ic_cdk::update]
-pub(crate) fn calculate_statistical_parity_difference(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
+pub(crate) fn calculate_statistical_parity_difference(
+    model_id: u128,
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -93,7 +96,10 @@ pub(crate) fn calculate_statistical_parity_difference(model_id: u128, priviliege
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_disparate_impact(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
+pub(crate) fn calculate_disparate_impact(
+    model_id: u128,
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -180,7 +186,10 @@ pub(crate) fn calculate_disparate_impact(model_id: u128, privilieged_threshold: 
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_average_odds_difference(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
+pub(crate) fn calculate_average_odds_difference(
+    model_id: u128,
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -269,7 +278,10 @@ pub(crate) fn calculate_average_odds_difference(model_id: u128, privilieged_thre
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_equal_opportunity_difference(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> Vec<PrivilegedIndex> {
+pub(crate) fn calculate_equal_opportunity_difference(
+    model_id: u128,
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> Vec<PrivilegedIndex> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -300,8 +312,20 @@ pub(crate) fn calculate_equal_opportunity_difference(model_id: u128, privilieged
             for entry in point.privileged_map.iter() {
                 let vairable_name = entry.0;
                 let variable_index = entry.1;
+                let threshold = *threshold_map.get(vairable_name).unwrap_or(&(0.0, true));
 
-                if point.features[*variable_index as usize] > *threshold_map.get(vairable_name).unwrap_or(&0.0) {
+                let greater_than = threshold.1;
+
+                let value = point.features[*variable_index as usize];
+
+                let is_privileged = if greater_than {
+                    value > threshold.0
+                } else {
+                    value < threshold.0
+                };
+
+
+                if is_privileged {
                     if point.target {
                         count_label_privileged
                             .entry(vairable_name.clone())
@@ -483,7 +507,18 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
 }
 
 #[ic_cdk::update]
-pub(crate) fn calculate_all_metrics(model_id: u128, privilieged_threshold: Option<HashMap<String, f64>>) -> (Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, Vec<PrivilegedIndex>, f32, f32, f32) {
+pub(crate) fn calculate_all_metrics(
+    model_id: u128,
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> (
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    Vec<PrivilegedIndex>,
+    f32,
+    f32,
+    f32,
+) {
     let spd = calculate_statistical_parity_difference(model_id, privilieged_threshold.clone());
     let di = calculate_disparate_impact(model_id, privilieged_threshold.clone());
     let aod = calculate_average_odds_difference(model_id, privilieged_threshold.clone());
@@ -507,7 +542,7 @@ pub(crate) fn calculate_all_metrics(model_id: u128, privilieged_threshold: Optio
 
 pub(crate) fn calculate_group_counts(
     data_points: &Vec<DataPoint>,
-    privilieged_threshold: Option<HashMap<String, f64>>
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
 ) -> (
     HashMap<String, u128>,
     HashMap<String, u128>,
@@ -519,7 +554,11 @@ pub(crate) fn calculate_group_counts(
     let mut privileged_positive_count_list: HashMap<String, u128> = HashMap::new();
     let mut unprivileged_positive_count_list: HashMap<String, u128> = HashMap::new();
 
-    let threshold_map = if privilieged_threshold.is_some() { privilieged_threshold.unwrap() } else { calculate_medians(data_points) };
+    let threshold_map = if privilieged_threshold.is_some() {
+        privilieged_threshold.unwrap()
+    } else {
+        calculate_medians(data_points)
+    };
 
     for point in data_points {
         let features_list = point.features.clone();
@@ -528,12 +567,22 @@ pub(crate) fn calculate_group_counts(
             let vairable_name = entry.0;
             let variable_index = entry.1;
 
-            if features_list[*variable_index as usize] > *threshold_map.get(vairable_name).unwrap_or(&0.0) {
-                    privileged_count_list
+            let threshold = *threshold_map.get(vairable_name).unwrap_or(&(0.0, true));
+
+            let greater_than = threshold.1;
+
+            let value = features_list[*variable_index as usize];
+            let is_privileged = if greater_than {
+                value > threshold.0
+            } else {
+                value < threshold.0
+            };
+
+            if is_privileged {
+                privileged_count_list
                     .entry(vairable_name.clone())
                     .and_modify(|e| *e += 1)
                     .or_insert(1);
-
                 if point.predicted {
                     privileged_positive_count_list
                         .entry(vairable_name.clone())
@@ -545,7 +594,6 @@ pub(crate) fn calculate_group_counts(
                     .entry(vairable_name.clone())
                     .and_modify(|e| *e += 1)
                     .or_insert(1);
-
                 if point.predicted {
                     unprivileged_positive_count_list
                         .entry(vairable_name.clone())
@@ -566,13 +614,35 @@ pub(crate) fn calculate_group_counts(
 
 pub(crate) fn calculate_confusion_matrix(
     data_points: &Vec<DataPoint>,
-    privilieged_threshold: Option<HashMap<String, f64>>
-) -> (HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>, HashMap<String, u128>) {
-    let (mut privileged_tp, mut privileged_fp, mut privileged_tn, mut privileged_fn) = (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
-    let (mut unprivileged_tp, mut unprivileged_fp, mut unprivileged_tn, mut unprivileged_fn) =
-        (HashMap::new(), HashMap::new(), HashMap::new(), HashMap::new());
+    privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
+) -> (
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+    HashMap<String, u128>,
+) {
+    let (mut privileged_tp, mut privileged_fp, mut privileged_tn, mut privileged_fn) = (
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+    );
+    let (mut unprivileged_tp, mut unprivileged_fp, mut unprivileged_tn, mut unprivileged_fn) = (
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+        HashMap::new(),
+    );
 
-    let threshold_map = if privilieged_threshold.is_some() { privilieged_threshold.unwrap() } else { calculate_medians(data_points) };
+    let threshold_map = if privilieged_threshold.is_some() {
+        privilieged_threshold.unwrap()
+    } else {
+        calculate_medians(data_points)
+    };
 
     for point in data_points {
         let features_list = point.features.clone();
@@ -580,11 +650,21 @@ pub(crate) fn calculate_confusion_matrix(
             let vairable_name = entry.0;
             let variable_index = entry.1;
 
-            let threshold = *threshold_map.get(vairable_name).unwrap_or(&0.0);
+            let threshold = *threshold_map.get(vairable_name).unwrap_or(&(0.0, true));
+
+            let greater_than = threshold.1;
+
+            let value = features_list[*variable_index as usize];
+
+            let is_privileged = if greater_than {
+                value > threshold.0
+            } else {
+                value < threshold.0
+            };
 
             match (point.target, point.predicted) {
                 (true, true) => {
-                    if features_list[*variable_index as usize] > threshold {
+                    if is_privileged {
                         privileged_tp
                             .entry(vairable_name.clone())
                             .and_modify(|e| *e += 1)
@@ -597,7 +677,7 @@ pub(crate) fn calculate_confusion_matrix(
                     }
                 }
                 (true, false) => {
-                    if features_list[*variable_index as usize] > threshold {
+                    if is_privileged {
                         privileged_fn
                             .entry(vairable_name.clone())
                             .and_modify(|e| *e += 1)
@@ -610,7 +690,7 @@ pub(crate) fn calculate_confusion_matrix(
                     }
                 }
                 (false, true) => {
-                    if features_list[*variable_index as usize] > threshold {
+                    if is_privileged {
                         privileged_fp
                             .entry(vairable_name.clone())
                             .and_modify(|e| *e += 1)
@@ -623,7 +703,7 @@ pub(crate) fn calculate_confusion_matrix(
                     }
                 }
                 (false, false) => {
-                    if features_list[*variable_index as usize] > threshold {
+                    if is_privileged {
                         privileged_tn
                             .entry(vairable_name.clone())
                             .and_modify(|e| *e += 1)
@@ -743,9 +823,8 @@ pub(crate) fn calculate_true_positive_false_negative(
     )
 }
 
-
-pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String, f64> {
-    let mut medians: HashMap<String, f64> = HashMap::new();
+pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String, (f64, bool)> {
+    let mut medians: HashMap<String, (f64, bool)> = HashMap::new();
     let mut variable_values: HashMap<String, Vec<f64>> = HashMap::new();
 
     for point in data_points {
@@ -771,7 +850,9 @@ pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String,
         let min = value.first().cloned().unwrap_or(0.0);
         let max = value.last().cloned().unwrap_or(0.0);
         let middle_of_range = (min + max) / 2.0;
-        medians.entry(key.clone()).or_insert(middle_of_range);
+        medians
+            .entry(key.clone())
+            .or_insert((middle_of_range, true));
     }
 
     medians

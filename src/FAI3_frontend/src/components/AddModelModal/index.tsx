@@ -2,8 +2,16 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFo
 import { useState } from "react";
 import { useAuthClient, useDataContext } from "../../utils";
 
-export default function AddModelModal() {
-  const [newModel, setNewModel] = useState({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
+interface ModelDetails {
+  description: string;
+  framework: string;
+  version: string;
+  objective: string;
+  url: string;
+}
+
+export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any> }) {
+  const [newModel, setNewModel] = useState<{ name: String, details: ModelDetails }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" } });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
@@ -25,6 +33,10 @@ export default function AddModelModal() {
     if (model) {
       fetchModels();
       clearModelForm();
+
+      if (fetchModel) {
+        fetchModel();
+      }
     }
 
     setInterval(() => {
@@ -38,14 +50,14 @@ export default function AddModelModal() {
   }
 
   return (
-    <Modal>
+    <Modal onClose={onClose}>
       {
         loading ? (
           <ModalContent closeButton={false}>
             <CircularProgress />
           </ModalContent>
         ) : (
-          <ModalContent className="w-1/3">
+          <ModalContent className="w-1/3 text-left">
             <ModalHeader>
               <ModalTitle>
                 Add Model
@@ -137,7 +149,9 @@ export default function AddModelModal() {
                   Cancel
                 </Button>
                 <Button onClick={uploadModel}>
-                  Add
+                  {
+                    update ? "Update" : "Add"
+                  }
                 </Button>
               </div>
             </ModalFooter>
