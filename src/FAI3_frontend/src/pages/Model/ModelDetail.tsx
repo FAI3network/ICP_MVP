@@ -193,8 +193,8 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-4xl font-bold">
                         {
-                          model.metrics ? (
-                            Number(model.metrics.accuracy).toFixed(2)
+                          model.model_type?.Classifier ? (
+                            Number(model.model_type?.Classifier?.metrics.accuracy[0]).toFixed(2)
                           ) : (
                             "N/A"
                           )
@@ -205,8 +205,8 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-4xl font-bold">
                         {
-                          model.metrics ? (
-                            Number(model.metrics.precision).toFixed(2)
+                          model.model_type?.Classifier ? (
+                            Number(model.model_type?.Classifier?.metrics.precision[0]).toFixed(2)
                           ) : (
                             "N/A"
                           )
@@ -217,8 +217,8 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-4xl font-bold">
                         {
-                          model.metrics ? (
-                            Number(model.metrics.recall).toFixed(2)
+                          model.model_type?.Classifier ? (
+                            Number(model.model_type?.Classifier?.metrics.recall[0]).toFixed(2)
                           ) : (
                             "N/A"
                           )
