@@ -31,14 +31,84 @@ type Metrics = record {
   timestamp: nat64;
 };
 
+type ContextAssociationTestResult = variant {
+    Stereotype;
+    AntiStereotype;
+    Neutral;
+    Other;
+};
+
+type ContextAssociationTestType = variant {
+    Intrasentence;
+    Intersentence;
+};
+
+type ContextAssociationTestDataPoint = record {
+    data_point_id: nat;
+    prompt: text;
+    answer: opt text;
+    result: opt ContextAssociationTestResult;
+    error: bool;
+    test_type: ContextAssociationTestType;
+    timestamp: nat64;
+};
+
+type ContextAssociationTestMetrics = record {
+    stereotype: nat32;
+    anti_stereotype: nat32;
+    neutral: nat32;
+    other: nat32;
+};
+
+type ClassifierModelData = record {
+     data_points: vec DataPoint;
+     metrics: Metrics;
+     metrics_history: vec Metrics;
+};
+
+type ContextAssociationTestMetricsBag = record {
+    general: ContextAssociationTestMetrics;
+    intersentence: ContextAssociationTestMetrics;
+    intrasentence: ContextAssociationTestMetrics;
+    gender: ContextAssociationTestMetrics;
+    race: ContextAssociationTestMetrics;
+    religion: ContextAssociationTestMetrics;
+    profession: ContextAssociationTestMetrics;
+    error_count: nat32;
+    timestamp: nat64;
+    intrasentence_prompt_template: text;
+    intersentence_prompt_template: text;
+    seed: nat32;
+    icat_score_intra: float32;
+    icat_score_inter: float32;
+    icat_score_gender: float32;
+    icat_score_race: float32;
+    icat_score_profession: float32;
+    icat_score_religion: float32;
+    general_lms: float32;
+    general_ss: float32;
+    general_n: nat32;
+    icat_score_general: float32;
+    data_points: vec ContextAssociationTestDataPoint;
+};
+
+type LLMModelData = record {
+     hugging_face_url: text;
+     cat_metrics: opt vec ContextAssociationTestMetricsBag;
+     cat_metrics_history: vec ContextAssociationTestMetricsBag;
+};
+
+type ModelType = variant {
+    Classifier : ClassifierModelData;
+    LLM : LLMModelData;
+};
+
 type Model = record {
   model_id: nat;
   model_name: text;
   owners: vec principal;
-  data_points: vec DataPoint;
-  metrics: Metrics;
   details: ModelDetails;
-  metrics_history: vec Metrics;
+  model_type: ModelType;
 };
 
 type ModelDetails = record {
@@ -58,73 +128,19 @@ type HashMap = vec record { key: text; value: nat };
 
 type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
 
-type HuggingFaceResponseItem = record {
-  generated_text: opt text;
-};
-
-type ContextAssociationTestResult = variant {
-  Stereotype;
-  AntiStereotype;
-  Neutral;
-  Other;
-};
-
-type ContextAssociationTestMetrics = record {
-  stereotype: nat;
-  anti_stereotype: nat;
-  neutral: nat;
-  other: nat;
-};
-
-type ContextAssociationTestMetricsBag = record {
+type ContextAssociationTestAPIResult = record {
+  error_count: nat32;
+  general_ss: float32;
+  general_n: nat32;
+  general_lms: float32;
   general: ContextAssociationTestMetrics;
-  intersentence: ContextAssociationTestMetrics;
-  intrasentence: ContextAssociationTestMetrics;
-  gender: ContextAssociationTestMetrics;
-  race: ContextAssociationTestMetrics;
-  religion: ContextAssociationTestMetrics;
-  profession: ContextAssociationTestMetrics;
-  error_count: int;
-  timestamp: nat64;
-  intrasentence_prompt_template: text;
-  intersentence_prompt_template: text;
-  seed: int;
+  icat_score_general: float32;
+  icat_score_gender: float32;
+  icat_score_religion: float32;
+  icat_score_profession: float32;
+  icat_score_race: float32;
   icat_score_intra: float32;
   icat_score_inter: float32;
-  icat_score_gender: float32;
-  icat_score_race: float32;
-  icat_score_profession: float32;
-  icat_score_religion: float32;
-  general_lms: float32;
-  general_ss: float32;
-  general_n: int;
-  icat_score_general: float32;
-  data_points: vec ContextAssociationTestDataPoint;
-};
-
-type LLMModel = record {
-  model_id: nat;
-  model_name: text;
-  hf_url: text;
-  owners: vec principal;
-  detilas: ModelDetails;
-  cat_metrics: opt ContextAssociationTestMetricsBag;
-  cat_metrics_history: vec ContextAssociationTestMetricsBag;
-};
-
-type ContextAssociationTestType = variant {
-  Intrasentence;
-  Intersentence;
-};
-
-type ContextAssociationTestDataPoint = record {
-  data_point_id: nat;
-  prompt: text;
-  answer: opt text;
-  result: opt ContextAssociationTestResult;
-  error: bool;
-  test_type: ContextAssociationTestType;
-  timestamp: nat64;
 };
 
 service : () -> {
@@ -135,21 +151,12 @@ service : () -> {
     "get_admins": () -> (vec principal);
 
     // Model management
-    "add_model": (text, ModelDetails) -> (nat);
+    "add_classifier_model": (text, ModelDetails) -> (nat);
+    "add_llm_model": (text, text, ModelDetails) -> (nat);
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
     "get_owners": (nat) -> (vec principal);
-
-    //LLM Model management
-    "add_llm_model": (text, text, ModelDetails) -> (nat);
-    "delete_llm_model": (nat) -> ();
-    "get_all_llm_models": () -> (vec LLMModel) query;
-    "get_context_association_test_metrics_data_points": (nat) -> (opt vec ContextAssociationTestDataPoint);
-    "get_context_association_test_metrics": (nat) -> (opt ContextAssociationTestMetricsBag);
-    "get_context_association_test_metrics_history": (nat) -> (vec ContextAssociationTestMetricsBag);
-    "get_llm_model": (nat) -> (LLMModel) query;
-    "add_llm_owner": (nat, principal) -> ();
-    "get_llm_owners": (nat) -> (vec principal);
+    "update_model": (nat, text, ModelDetails) -> (bool);
 
     // Data point management
     "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
@@ -176,4 +183,9 @@ service : () -> {
     "get_model_metrics": (nat) -> (Metrics) query;
     "get_model": (nat) -> (Model) query;
     "test_function": () -> (bool);
+
+    "get_classifier_model_data": (Model) -> (ClassifierModelData) query;
+    "get_llm_model_data": (Model) -> (LLMModelData) query;
+
+    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
 }

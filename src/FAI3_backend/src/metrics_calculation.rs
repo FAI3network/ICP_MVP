@@ -1,5 +1,7 @@
-use crate::types::PrivilegedIndex;
-use crate::{check_cycles_before_action, is_owner, DataPoint, MODELS};
+use crate::types::{PrivilegedIndex, ModelType, get_classifier_model_data};
+use crate::{
+    check_cycles_before_action, is_owner, DataPoint, MODELS
+};
 
 use std::collections::{HashMap, HashSet};
 
@@ -16,9 +18,11 @@ pub(crate) fn calculate_statistical_parity_difference(
         let mut model = models.get(&model_id).expect("Model not found");
         is_owner(&model, caller);
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+        let mut model_data = get_classifier_model_data(&model);
 
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -76,12 +80,14 @@ pub(crate) fn calculate_statistical_parity_difference(
 
         let average: f32 = sum / length;
 
-        model.metrics.average_metrics.statistical_parity_difference = Some(average);
+        model_data.metrics.average_metrics.statistical_parity_difference = Some(average);
 
-        model.metrics.statistical_parity_difference = Some(result.clone());
+        model_data.metrics.statistical_parity_difference = Some(result.clone());
 
         // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.timestamp = ic_cdk::api::time();
+
+        model.model_type = ModelType::Classifier(model_data);
 
         models.insert(model_id, model.clone());
 
@@ -103,9 +109,11 @@ pub(crate) fn calculate_disparate_impact(
 
         is_owner(&model, caller);
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+        let mut model_data = get_classifier_model_data(&model);
 
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -162,12 +170,14 @@ pub(crate) fn calculate_disparate_impact(
 
         let average: f32 = sum / length;
 
-        model.metrics.average_metrics.disparate_impact = Some(average);
+        model_data.metrics.average_metrics.disparate_impact = Some(average);
 
-        model.metrics.disparate_impact = Some(result.clone());
+        model_data.metrics.disparate_impact = Some(result.clone());
 
         // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.timestamp = ic_cdk::api::time();
+
+        model.model_type = ModelType::Classifier(model_data);
 
         models.insert(model_id, model.clone());
 
@@ -189,9 +199,11 @@ pub(crate) fn calculate_average_odds_difference(
 
         is_owner(&model, caller);
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+        let mut model_data = get_classifier_model_data(&model);
 
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -250,12 +262,14 @@ pub(crate) fn calculate_average_odds_difference(
 
         let average: f32 = sum / length;
 
-        model.metrics.average_metrics.average_odds_difference = Some(average);
+        model_data.metrics.average_metrics.average_odds_difference = Some(average);
 
-        model.metrics.average_odds_difference = Some(result.clone());
+        model_data.metrics.average_odds_difference = Some(result.clone());
 
         // Update timestamp after calculation
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.timestamp = ic_cdk::api::time();
+
+        model.model_type = ModelType::Classifier(model_data);
 
         models.insert(model_id, model.clone());
 
@@ -277,9 +291,11 @@ pub(crate) fn calculate_equal_opportunity_difference(
 
         is_owner(&model, caller);
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+        let mut model_data = get_classifier_model_data(&model);
 
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -290,11 +306,7 @@ pub(crate) fn calculate_equal_opportunity_difference(
         let mut count_label_unprivileged = HashMap::new();
         let mut count_label_privileged = HashMap::new();
 
-        let threshold_map = if privilieged_threshold.is_some() {
-            privilieged_threshold.unwrap()
-        } else {
-            calculate_medians(&model.data_points)
-        };
+        let threshold_map = if privilieged_threshold.is_some() { privilieged_threshold.unwrap() } else { calculate_medians(&model_data.data_points) };
 
         for point in &relevant_data_points {
             for entry in point.privileged_map.iter() {
@@ -372,10 +384,12 @@ pub(crate) fn calculate_equal_opportunity_difference(
 
         let average: f32 = sum / length;
 
-        model.metrics.average_metrics.equal_opportunity_difference = Some(average);
+        model_data.metrics.average_metrics.equal_opportunity_difference = Some(average);
 
-        model.metrics.equal_opportunity_difference = Some(result.clone());
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.equal_opportunity_difference = Some(result.clone());
+        model_data.metrics.timestamp = ic_cdk::api::time();
+
+        model.model_type = ModelType::Classifier(model_data);
 
         models.insert(model_id, model.clone());
 
@@ -394,9 +408,11 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
 
         is_owner(&model, caller);
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
+        let mut model_data = get_classifier_model_data(&model);
 
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
+
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -409,8 +425,9 @@ pub(crate) fn calculate_accuracy(model_id: u128) -> f32 {
         }
 
         let accuracy = (tp + tn) as f32 / total as f32;
-        model.metrics.accuracy = Some(accuracy);
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.accuracy = Some(accuracy);
+        model_data.metrics.timestamp = ic_cdk::api::time();
+        model.model_type = ModelType::Classifier(model_data);
         models.insert(model_id, model.clone());
 
         accuracy
@@ -427,10 +444,11 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
+        
+        let mut model_data = get_classifier_model_data(&model);
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
-
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -443,8 +461,9 @@ pub(crate) fn calculate_precision(model_id: u128) -> f32 {
         }
 
         let precision = tp as f32 / denominator as f32;
-        model.metrics.precision = Some(precision);
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.precision = Some(precision);
+        model_data.metrics.timestamp = ic_cdk::api::time();
+        model.model_type = ModelType::Classifier(model_data);
         models.insert(model_id, model.clone());
 
         precision
@@ -461,10 +480,10 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
         let mut model = models.get(&model_id).expect("Model not found");
 
         is_owner(&model, caller);
+        let mut model_data = get_classifier_model_data(&model);
+        let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
 
-        let latest_timestamp = model.data_points[model.data_points.len() - 1].timestamp;
-
-        let relevant_data_points: Vec<DataPoint> = model.data_points
+        let relevant_data_points: Vec<DataPoint> = model_data.data_points
             .iter()
             .filter(|point| point.timestamp == latest_timestamp)
             .cloned()
@@ -477,8 +496,9 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
         }
 
         let recall = tp as f32 / denominator as f32;
-        model.metrics.recall = Some(recall);
-        model.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics.recall = Some(recall);
+        model_data.metrics.timestamp = ic_cdk::api::time();
+        model.model_type = ModelType::Classifier(model_data);
         models.insert(model_id, model.clone());
 
         // Push the updated metrics to the history
@@ -510,9 +530,10 @@ pub(crate) fn calculate_all_metrics(
     MODELS.with(|models| {
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
-
-        model.metrics.timestamp = ic_cdk::api::time();
-        model.metrics_history.push(model.metrics.clone());
+        let mut model_data = get_classifier_model_data(&model);
+        model_data.metrics.timestamp = ic_cdk::api::time();
+        model_data.metrics_history.push(model_data.metrics.clone());
+        model.model_type = ModelType::Classifier(model_data);
         models.insert(model_id, model.clone());
     });
 
