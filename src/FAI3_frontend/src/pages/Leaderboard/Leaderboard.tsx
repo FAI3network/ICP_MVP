@@ -1,15 +1,14 @@
-import LeaderboardTable from "./LeaderboardTable";
-import { use, useEffect, useState } from "react";
-import { FAI3_backend } from "../../../../declarations/FAI3_backend"
-import { Model } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
-import { Button } from "../../components/ui";
-import { Principal } from "@dfinity/principal";
+import ClassifierTable from "./ClassifierTable";
+import { useEffect, useState } from "react";
+import { Button, openModal } from "../../components/ui";
 import { useAuthClient, useDataContext } from "../../utils";
+import { AddModelModal } from "../../components";
+import LLMTable from "./LLMTable";
 
 
 export default function Leaderboard() {
-  const { webapp, connected } = useAuthClient();
-  const { setModels, Models, fetchModels, LLMModels } = useDataContext();
+  const { isAdmin } = useAuthClient();
+  const { Models, fetchModels } = useDataContext();
   const [loading, setLoading] = useState(Models.length === 0);
 
   useEffect(() => {
@@ -40,8 +39,35 @@ export default function Leaderboard() {
       {loading ? (
         <div className="w-full text-center">Loading...</div>
       ) : (
-        <LeaderboardTable />
-      )}
-    </div>
+        <div className="w-full">
+          {Models && (
+            <>
+              <AddModelModal />
+
+              <div className="flex items-center justify-center py-4 mb-4 gap-3">
+                {
+                  isAdmin && (
+                    <Button onClick={openModal}>
+                      Add Model
+                    </Button>
+                  )
+                }
+              </div>
+                <div className="flex flex-col xl:flex-row gap-4">
+                <div className="w-full xl:w-1/2">
+                  <h2 className="text-xl font-bold text-left mb-2">Classifier Models</h2>
+                  <ClassifierTable />
+                </div>
+                <div className="w-full xl:w-1/2">
+                  <h2 className="text-xl font-bold text-left mb-2">LLM Models</h2>
+                  <LLMTable />
+                </div>
+                </div>
+            </>
+          )}
+        </div>
+      )
+      }
+    </div >
   );
 }
