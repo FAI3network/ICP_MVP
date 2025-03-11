@@ -214,3 +214,15 @@ pub fn update_model(model_id: u128, model_name: String, model_details: ModelDeta
 
     status
 }
+
+#[ic_cdk::query]
+pub fn get_llm_model_data_id(model_id: u128) -> LLMModelData {
+    MODELS.with(|models| {
+        let models = models.borrow();
+        let model = models.get(&model_id).expect("Model not found");
+        match model.model_type {
+            ModelType::LLM(ref model_data) => model_data.clone(),
+            _ => panic!("A classifier model was expected, got another type of model instead"),
+        }
+    })
+}

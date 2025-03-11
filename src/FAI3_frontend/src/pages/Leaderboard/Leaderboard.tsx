@@ -8,7 +8,7 @@ import LLMTable from "./LLMTable";
 
 export default function Leaderboard() {
   const { isAdmin } = useAuthClient();
-  const { Models, fetchModels } = useDataContext();
+  const { Models, fetchModels, LLMModels } = useDataContext();
   const [loading, setLoading] = useState(Models.length === 0);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function Leaderboard() {
             <>
               <AddModelModal />
 
-              <div className="flex items-center justify-center py-4 mb-4 gap-3">
+              <div className="flex items-center justify-end py-4 mb-4 gap-3">
                 {
                   isAdmin && (
                     <Button onClick={openModal}>

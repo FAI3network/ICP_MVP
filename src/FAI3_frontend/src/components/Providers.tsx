@@ -3,7 +3,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor, ActorSubclass, ActorMethod } from '@dfinity/agent';
 import { idlFactory, canisterId } from '../../../declarations/FAI3_backend';
 import { useEffect, useState } from 'react';
-import { LLMModel, Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
+import { Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
 import { FAI3_backend } from '../../../declarations/FAI3_backend';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -13,7 +13,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(true);
   const [Models, setModels] = useState<Model[]>([]);
-  const [LLMModels, setLLMModels] = useState<LLMModel[]>([]);
+  const [LLMModels, setLLMModels] = useState<any[]>([]);
+  const [ClassifierModels, setClassifierModels] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -117,22 +118,38 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         return [];
       });
 
+    console.log(models);
+
+    let classifierList = [];
+    let LLMlist = [];
+
+    for (let i = 0; i < models.length; i++) {
+      if ('LLM' in models[i].model_type) {
+        LLMlist.push(models[i]);
+      } else if ('Classifier' in models[i].model_type) {
+        classifierList.push(models[i]);
+      }
+    }
+
+    setLLMModels(LLMlist);
+    setClassifierModels(classifierList);
+
     setModels(models);
 
-    const llmmodels: LLMModel[] = connected ?
-      await (webapp?.get_all_llm_models() as Promise<LLMModel[]>)
-      :
-      await FAI3_backend.get_all_llm_models().catch((err) => {
-        console.error(err);
-        return [];
-      }
-    );
+    // const llmmodels: LLMModel[] = connected ?
+    //   await (webapp?.get_all_llm_models() as Promise<LLMModel[]>)
+    //   :
+    //   await FAI3_backend.get_all_llm_models().catch((err) => {
+    //     console.error(err);
+    //     return [];
+    //   }
+    // );
 
-    setLLMModels(llmmodels);
+    // setLLMModels(llmmodels);
   };
 
   return (
-    <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels }}>
+    <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels, ClassifierModels, setClassifierModels }}>
       <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
         {children}
       </AuthClientContext.Provider>

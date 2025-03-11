@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ModelDetail } from "./ModelDetail";
+import LLMDetails from "./LLMDetails";
 import { useParams } from "react-router-dom";
 import { useAuthClient } from "../../utils";
 import { Model as ModelAsType, ClassifierModelData } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
@@ -17,7 +18,7 @@ export default function Model() {
   const { modelId } = useParams();
   const { webapp, connected } = useAuthClient();
 
-  const [modelWithDetails, setModelWithDetails] = useState({});
+  const [modelWithDetails, setModelWithDetails] = useState<any>({});
   const [metrics, setMetrics] = useState([] as Metric[]);
 
   const fetchModel = async () => {
@@ -85,7 +86,13 @@ export default function Model() {
       {modelWithDetails && Object.keys(modelWithDetails).length > 0 ? (
         <div>
           {/* {console.log(modelWithDetails.data.name, metrics)} */}
-          <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+          {
+            modelWithDetails.model_type.LLM ? (
+              <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+            ) : (
+              <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+            )
+          }
         </div>
       ) : (
         <div className="w-full text-center">Loading...</div>

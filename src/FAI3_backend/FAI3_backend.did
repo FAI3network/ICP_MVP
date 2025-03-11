@@ -94,7 +94,7 @@ type ContextAssociationTestMetricsBag = record {
 
 type LLMModelData = record {
      hugging_face_url: text;
-     cat_metrics: opt vec ContextAssociationTestMetricsBag;
+     cat_metrics: opt ContextAssociationTestMetricsBag;
      cat_metrics_history: vec ContextAssociationTestMetricsBag;
 };
 
@@ -186,6 +186,7 @@ service : () -> {
 
     "get_classifier_model_data": (Model) -> (ClassifierModelData) query;
     "get_llm_model_data": (Model) -> (LLMModelData) query;
+    "get_llm_model_data_id": (nat) -> (LLMModelData) query;
 
     "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
 }

@@ -12,7 +12,7 @@ interface ModelDetails {
 }
 
 export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any> }) {
-  const [newModel, setNewModel] = useState<{ name: String, details: ModelDetails }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" } });
+  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
@@ -28,8 +28,11 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
 
     setLoading(true);
 
+    const modelName = newModel.name;
+    const details = newModel.details;
+
     // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
-    const model = await webapp?.add_classifier_model(newModel.name, newModel.details);
+    const model = newModel.is_llm ? await webapp?.add_llm_model(modelName, newModel.hf_url, details) : await webapp?.add_classifier_model(modelName, details);
 
     if (model) {
       fetchModels();

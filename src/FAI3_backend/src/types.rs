@@ -6,6 +6,8 @@ use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
 use std::borrow::Cow;
 
+use crate::MODELS;
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
     pub(crate) data_point_id: u128,

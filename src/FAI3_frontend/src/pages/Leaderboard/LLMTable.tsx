@@ -29,7 +29,7 @@ import { useDataContext } from "../../utils";
 import { useState } from "react";
 
 export default function LLMTable() {
-  const { Models } = useDataContext();
+  const { LLMModels } = useDataContext();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -149,7 +149,7 @@ export default function LLMTable() {
   ];
 
   const table = useReactTable({
-    data: Models,
+    data: LLMModels,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
