@@ -27,6 +27,7 @@ import { ArrowUpDown } from "lucide-react";
 import { useDataContext } from "../../utils";
 
 import { useState } from "react";
+import { LLMModelData } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
 export default function LLMTable() {
   const { LLMModels } = useDataContext();
@@ -75,13 +76,19 @@ export default function LLMTable() {
           </Button>
         );
       },
-      cell: ({ row }: any) => (
-        <div
-          className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
-        >
-          1
-        </div>
-      ),
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['LLM'] as LLMModelData;
+        const cat_metrics = model_data.cat_metrics[0];
+        const sum = Object.values(cat_metrics?.general || {}).reduce((a, b) => a + b, 0);
+
+        return (
+          <div
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
+          >
+            {sum}
+          </div>
+        )
+      },
     },
     {
       accessorKey: "icat_score_general",
@@ -96,13 +103,18 @@ export default function LLMTable() {
           </Button>
         );
       },
-      cell: ({ row }: any) => (
-        <div
-          className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
-        >
-          1
-        </div>
-      ),
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['LLM'] as LLMModelData;
+        const cat_metrics = model_data.cat_metrics[0];
+
+        return (
+          <div
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
+          >
+            {cat_metrics?.icat_score_general}
+          </div>
+        )
+      },
     },
     {
       accessorKey: "general_llms",
@@ -117,13 +129,17 @@ export default function LLMTable() {
           </Button>
         );
       },
-      cell: ({ row }: any) => (
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['LLM'] as LLMModelData;
+        const cat_metrics = model_data.cat_metrics[0];
+
+        return (
         <div
           className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
         >
-          1
+          {cat_metrics?.general_lms}
         </div>
-      ),
+      )},
     },
     {
       accessorKey: "general_ss",
@@ -138,13 +154,17 @@ export default function LLMTable() {
           </Button>
         );
       },
-      cell: ({ row }: any) => (
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['LLM'] as LLMModelData;
+        const cat_metrics = model_data.cat_metrics[0];
+
+        return (
         <div
           className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
         >
-          1
+          {cat_metrics?.general_ss}
         </div>
-      ),
+      )},
     },
   ];
 

@@ -100,7 +100,7 @@ import {
 
     const runCAT = async () => {
       setLoading(true);
-      const res = await webapp?.context_association_test(BigInt(modelId!), 10, 1, false);
+      const res = await webapp?.context_association_test(BigInt(modelId!), 20, 1, false);
       console.log(res);
       setLoading(false);
     }
