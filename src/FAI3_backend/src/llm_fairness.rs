@@ -160,7 +160,13 @@ async fn run_metrics_calculation(
     let format_example = |example: &HashMap<String, String>| -> String {
         let mut sample = "<Student Attributes>: ".to_string();
         let mut answer_str = "<Answer>: ".to_string();
-        example.iter().for_each(|(key, value)| {
+
+        // Sorting keys to avoid inconsistent order in the produced text
+        let mut keys: Vec<_> = example.keys().collect();
+        keys.sort();
+        
+        for key in keys {
+            let value = &example[key];
             if key != sensible_attribute {  // assuming `sensible_attribute` is like `task_id` to skip
                 if key == reader_score_column {
                     answer_str += &format!("{}: {}", key, value);
@@ -168,7 +174,7 @@ async fn run_metrics_calculation(
                     sample += &format!("{}: {}, ", key, value);
                 }
             }
-        });
+        }
         sample.pop(); sample.pop(); // Removes the last ", "
         sample + "\n" + &answer_str
     };
@@ -205,13 +211,19 @@ async fn run_metrics_calculation(
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
 
+        // Sorting keys to avoid inconsistent order in the produced text
+        let mut keys: Vec<_> = result.keys().collect();
+        keys.sort();
+
         // Generating test-specific attributes string
-        let mut result_attributes = result.iter().fold(String::new(), |mut acc, (key, value)| {
+        let mut result_attributes: String = String::from("");
+
+        for key in keys {
+            let value = &result[key];
             if key != predict_attribute {
-                acc += &format!("{}: {}, ", key, value);
+                result_attributes += &format!("{}: {}, ", key, value);
             }
-            acc
-        });
+        }
         
         // clean up string formatting (last two characters)
         result_attributes.pop();
