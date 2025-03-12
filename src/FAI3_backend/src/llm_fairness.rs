@@ -43,6 +43,32 @@ schoolSize: The number of students in this student's school\"\n\
 <Student Attributes>: *?*\n\
 <Answer>: readingScore: ";
 
+struct LLMFairnessDataset<'a> {
+    prompt_template: &'a str,
+    train_csv: &'a str,
+    test_csv: &'a str,
+    cf_test_csv: &'a str,
+    name: &'a str,
+    sensible_attribute: &'a str,
+    predict_attribute: &'a str,
+    sensible_attribute_values: &'a[&'a str; 2],
+    predict_attributes_values: &'a[&'a str; 2],
+}
+
+const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
+    prompt_template: PISA_PROMPT,
+    train_csv: include_str!("./data/pisa2009_train_processed.csv"),
+    test_csv: include_str!("data/pisa2009_test_processed.csv"),
+    cf_test_csv: include_str!("data/pisa2009_cf_test_processed.csv"),
+    sensible_attribute: "male",
+    name: "pisa",
+    predict_attribute: "readingScore",
+    sensible_attribute_values: &["0", "1"],
+    predict_attributes_values: &["L", "H"],
+};
+
+const LLM_FAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET];
+
 /// Generates the next ID for a data point, incrementing the previous ID in a threadsafe manner.
 /// 
 /// This function utilizes a thread-local mutable storage (NEXT_LLM_DATA_POINT_ID) to keep track of the latest ID issued,
@@ -70,8 +96,10 @@ fn generate_data_point_id() -> u128 {
 /// * `test_csv` - Full CSV with test data.
 /// * `_cf_test_csv` - Full CSV with counter factual test data. Currently unused.
 /// * `sensible_attribute` - The sensible attribute column name.
+/// * `predict_attribute` - The attribute to predict.
 /// * `data_points` - Vector of `LLM_DataPoint` structures to calculate metrics against.
 /// * `timestamp` - The timestamp of the calculation.
+/// * `prompt_template` - The prompt template to be used
 ///
 /// # Return
 /// Returns a `Result` containing either:
@@ -81,8 +109,11 @@ fn generate_data_point_id() -> u128 {
 async fn run_metrics_calculation(
     hf_model: String, seed: u32, max_queries: usize,
     train_csv: &str, test_csv: &str, _cf_test_csv: &str,
-    sensible_attribute: &str, data_points: &mut Vec<LLM_DataPoint>,
-    timestamp: u64) -> Result<(usize, u32, u32), String> {
+    sensible_attribute: &str, predict_attribute: &str, data_points: &mut Vec<LLM_DataPoint>,
+    timestamp: u64, prompt_template: String,
+    sensible_attribute_values: &[& str; 2],
+    predict_attributes_values: &[& str; 2],
+) -> Result<(usize, u32, u32), String> {
 
     // Create a CSV reader from the string input rather than a file path
     let mut rdr = csv::ReaderBuilder::new()
@@ -106,24 +137,24 @@ async fn run_metrics_calculation(
 
     // 1. Pick 4 random examples based on the dynamic sensible attribute and readerScore
     let attribute_high = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&"1".to_string()) &&
-                r.get(reader_score_column) == Some(&"H".to_string())), seed)
-        .ok_or_else(|| format!("{} with value 1 and high reader score not found", sensible_attribute))?;
+        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
+                r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), seed)
+        .ok_or_else(|| format!("{} with value 1 and high score not found", sensible_attribute))?;
 
     let attribute_low = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&"1".to_string()) &&
-                r.get(reader_score_column) == Some(&"L".to_string())), 2 * seed)
-        .ok_or_else(|| format!("{} with value 1 and low reader score not found", sensible_attribute))?;
+        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
+                r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 2 * seed)
+        .ok_or_else(|| format!("{} with value 1 and low score not found", sensible_attribute))?;
 
     let non_attribute_high = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&"0".to_string()) &&
-                r.get(reader_score_column) == Some(&"H".to_string())), 3 * seed)
-        .ok_or_else(|| format!("{} with value 0 and high reader score not found", sensible_attribute))?;
+        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
+                r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), 3 * seed)
+        .ok_or_else(|| format!("{} with value 0 and high score not found", sensible_attribute))?;
 
     let non_attribute_low = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&"0".to_string()) &&
-                r.get(reader_score_column) == Some(&"L".to_string())), 4 * seed)
-        .ok_or_else(|| format!("{} with value 0 and low reader score not found", sensible_attribute))?;
+        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
+                r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 4 * seed)
+        .ok_or_else(|| format!("{} with value 0 and low score not found", sensible_attribute))?;
     
     // 2. Create the prompts and send the requests
     let format_example = |example: &HashMap<String, String>| -> String {
@@ -147,7 +178,7 @@ async fn run_metrics_calculation(
         .map( |x| format_example(&x) )
         .collect();
 
-    let prompt = PISA_PROMPT
+    let prompt = prompt_template
         .replace("<EXAMPLE_0>", &attributes[0])
         .replace("<EXAMPLE_1>", &attributes[1])
         .replace("<EXAMPLE_2>", &attributes[2])
@@ -176,7 +207,7 @@ async fn run_metrics_calculation(
 
         // Generating test-specific attributes string
         let mut result_attributes = result.iter().fold(String::new(), |mut acc, (key, value)| {
-            if key != "readingScore" {
+            if key != predict_attribute {
                 acc += &format!("{}: {}, ", key, value);
             }
             acc
@@ -195,15 +226,12 @@ async fn run_metrics_calculation(
             .unwrap_or_else(|| { ic_cdk::println!("Missing or invalid value for attribute '{}'", sensible_attribute); 0.0 });
         let features: Vec<f64> = vec![sensible_attr];
         
-        let expected_result = match result.get("readingScore").map(|s| s.trim()) {
+        let expected_result = match result.get(predict_attribute).map(|s| s.trim()) {
             Some("H") => true,
             Some("L") => false,
             _ => panic!("Invalid reading score"),
         };
-
-        // ic_cdk::println!("Prompt: {}", personalized_prompt.clone());
-        // ic_cdk::println!("---");
-
+        
         let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
 
         match res {
@@ -309,28 +337,33 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
     let timestamp: u64 = ic_cdk::api::time();
 
-    let res;
+    let mut res = Err(String::from("Unknown dataset passed."));
 
     let mut data_points: Vec<LLM_DataPoint> = Vec::new();
 
     let mut privileged_map = PrivilegedMap::new();
-    let prompt_template;
 
-    match dataset.as_str() {
-        "pisa" => {
-            let train_csv = include_str!("./data/pisa2009_train_processed.csv");
-            let test_csv = include_str!("data/pisa2009_test_processed.csv");
-            let cf_test_csv = include_str!("data/pisa2009_cf_test_processed.csv");
-            let sensible_attribute = "male";
-            prompt_template = String::from(PISA_PROMPT);
+    let mut prompt_template: String = String::from("");
 
-            res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv, sensible_attribute, &mut data_points, timestamp).await;
+    for item in LLM_FAIRNESS_DATASETS.iter().enumerate() {
+        let (_, ds) = item;
+        if ds.name == dataset.as_str() {
+            let train_csv = ds.train_csv;
+            let test_csv = ds.test_csv;
+            let cf_test_csv = ds.cf_test_csv;
+            prompt_template = String::from(ds.prompt_template);
 
-            privileged_map.insert("male".to_string(), 0);
-        },
-        _ => ic_cdk::trap("Invalid dataset passed."),
+            res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv,
+                                          ds.sensible_attribute, ds.predict_attribute, &mut data_points, timestamp,
+                                          prompt_template.clone(), ds.sensible_attribute_values,
+                                          ds.predict_attributes_values
+            ).await;
+
+            privileged_map.insert(ds.sensible_attribute.to_string(), 0);
+            break;
+        }
     }
-
+    
     match res {
         Ok(ret) => {
             // Calculate metrics for data_points
@@ -420,7 +453,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
                     model_data.evaluations.push(ModelEvaluationResult {
                         model_evaluation_id: *next_data_point_id.get(), 
-                        dataset: "PISA".to_string(),
+                        dataset,
                         timestamp,
                         // Left here in case we want to use data_points for normal models
                         data_points: None, 
