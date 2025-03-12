@@ -43,15 +43,41 @@ schoolSize: The number of students in this student's school\"\n\
 <Student Attributes>: *?*\n\
 <Answer>: readingScore: ";
 
-fn generate_data_point_id() -> u128 { // TODO: use the same LLM_DATA_POINT_ID or separate with CAT?
-    return NEXT_LLM_DATA_POINT_ID.with(|id| {
-        let mut next_data_point_id = id.borrow_mut();
+/// Generates the next ID for a data point, incrementing the previous ID in a threadsafe manner.
+/// 
+/// This function utilizes a thread-local mutable storage (NEXT_LLM_DATA_POINT_ID) to keep track of the latest ID issued,
+/// ensuring that each call produces a unique incremental ID. Upon calling this function, it retrieves the current ID,
+/// increments it for the next use, and returns the preceding ID.
+///
+/// # Returns
+/// * `u128` - The unique ID of the current data point before incrementing.
+fn generate_data_point_id() -> u128 {
+    NEXT_LLM_DATA_POINT_ID.with(|id| {
+        let mut next_data_point_id = id.borrow_mut(); // TODO: should we use the same data point as the one for CAT?
         let current_id = *next_data_point_id.get();
         next_data_point_id.set(current_id + 1).unwrap();
         return current_id;
-    });
+    })
 }
 
+/// Asynchronously runs metrics calculation based on provided parameters.
+///
+/// # Arguments
+/// * `hf_model` - A string representing the model for Hugging face.
+/// * `seed` - An unsigned 32-bit integer used as the seed for both Hugging Face and examples shuffling.
+/// * `max_queries` - The maximum number of queries. Set to 0 for infinite.
+/// * `train_csv` - Full CSV with train data.
+/// * `test_csv` - Full CSV with test data.
+/// * `_cf_test_csv` - Full CSV with counter factual test data. Currently unused.
+/// * `sensible_attribute` - The sensible attribute column name.
+/// * `data_points` - Vector of `LLM_DataPoint` structures to calculate metrics against.
+/// * `timestamp` - The timestamp of the calculation.
+///
+/// # Return
+/// Returns a `Result` containing either:
+/// * On success: A tuple containing a `usize` representing queries executed,
+///   and two `u32` values representing wrong responses and call errors.
+/// * On failure: A string indicating the error.
 async fn run_metrics_calculation(
     hf_model: String, seed: u32, max_queries: usize,
     train_csv: &str, test_csv: &str, _cf_test_csv: &str,
@@ -248,15 +274,16 @@ async fn run_metrics_calculation(
     Ok((queries, wrong_response, call_errors))
 }
 
-/// Calculates a series of metrics over a dataset.
+/// Calculates metrics for a given (LLM) across the specified dataset.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `llm_model_id: u128`: Unique identifier for the LLM model.
+/// - `dataset: String`: dataset to be tested. For now, it only supports 'pisa'.
 /// - `max_queries: usize`: Max queries to execute. If it's 0, it will execute all the queries.
-/// - `seed: u32`: Seed for Hugging face API.
+/// - `seed: u32`: Seed for Hugging face API and option shuffling (makes the call reproducible).
 ///
 /// # Returns
-/// - `Result<String, String>`: if Ok(), returns a JSON with the context association test metrics. Otherwise, it returns an error description.
+/// - `Result<LLM_MetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
 ///
 #[update]
 pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLM_MetricsAPIResult, String> {

@@ -258,6 +258,25 @@ pub(crate) fn calculate_recall(model_id: u128) -> f32 {
 }
 
 #[ic_cdk::update]
+/// Calculates all relevant metrics for a given model.
+/// 
+/// This function computes a series of fairness and performance metrics for a specific model based on
+/// the model_id and an optional threshold provided for privileged groups.
+/// It returns the Statistical Parity Difference, Disparate Impact, Average Odds Difference,
+/// Equal Opportunity Difference, Accuracy, Precision, and Recall.
+/// 
+/// - model_id: The unique identifier for the model.
+/// - privilieged_threshold: An optional HashMap where keys are feature names with their threshold values and a boolean
+///   indicating if higher values are privileged.
+/// 
+/// Returns a tuple of several metrics results in the following order:
+/// 1. Vector of Statistical Parity Difference for each group
+/// 2. Vector of Disparate Impact for each group
+/// 3. Vector of Average Odds Difference for each group
+/// 4. Vector of Equal Opportunity Difference for each group
+/// 5. Accuracy as a single f32 value
+/// 6. Precision as a single f32 value
+/// 7. Recall as a single f32 value
 pub(crate) fn calculate_all_metrics(
     model_id: u128,
     privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
@@ -291,6 +310,23 @@ pub(crate) fn calculate_all_metrics(
     (spd, di, aod, eod, acc, prec, rec)
 }
 
+/// Calculates group counts for privileged and unprivileged groups based on specified thresholds.
+///
+/// This function separates the data points into privileged and unprivileged groups according to 
+/// the thresholds provided or calculated median values. It then counts the total number and the 
+/// number of positive outcomes for both groups.
+///
+/// # Arguments
+/// * `data_points` - A reference to a vector of `DataPoint` containing features and outcomes.
+/// * `privileged_threshold` - Optional hash map defining the thresholds for determining whether 
+///   a data point is privileged or not.
+///
+/// # Returns
+/// Four hash maps containing counts of:
+/// - Total privileged
+/// - Total unprivileged
+/// - Privileged positive outcomes
+/// - Unprivileged positive outcomes
 pub(crate) fn calculate_group_counts(
     data_points: &Vec<DataPoint>,
     privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
@@ -363,6 +399,11 @@ pub(crate) fn calculate_group_counts(
     )
 }
 
+/// Calculates the confusion matrix for provided data points based on optional privileged thresholds.
+///
+/// # Arguments
+/// * `data_points` - A reference to a vector of `DataPoint` structures.
+/// * `privileged_threshold` - An optional map from keys to a pair of floating points and booleans, indicating thresholds and conditions.
 pub(crate) fn calculate_confusion_matrix(
     data_points: &Vec<DataPoint>,
     privilieged_threshold: Option<HashMap<String, (f64, bool)>>,
@@ -482,6 +523,13 @@ pub(crate) fn calculate_confusion_matrix(
     )
 }
 
+/// Calculates the overall confusion matrix from a set of data points.
+///
+/// # Parameters
+/// * `data_points` - A reference to a vector of `DataPoint` structs containing the target and predicted values.
+///
+/// # Returns
+/// Returns a tuple `(tp, tn, fp, fn_)` representing true positives, true negatives, false positives, and false negatives respectively.
 pub(crate) fn calculate_overall_confusion_matrix(
     data_points: &Vec<DataPoint>,
 ) -> (i128, i128, i128, i128) {
@@ -500,6 +548,21 @@ pub(crate) fn calculate_overall_confusion_matrix(
 }
 
 
+/// Calculates the median values for each variable in a dataset, and marks them as valid.
+///
+/// This function processes a dataset provided as a vector of `DataPoint` entries
+/// and computes the median value for each variable inside these entries.
+/// All variable names and their associated median values are stored in a
+/// `HashMap` where the key is the variable's name and the value is a tuple
+/// containing the median value and a boolean.
+///
+/// # Parameters
+/// - `data_points`: A reference to a vector of `DataPoint` structures which contains
+///   the feature array and a map of variable indices identifying their locations in the features array.
+///
+/// # Returns
+/// A `HashMap` where each key is a string representing the variable name,
+/// and each value is a tuple containing the median value and a boolean indicating if it is valid.
 pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String, (f64, bool)> {
     let mut medians: HashMap<String, (f64, bool)> = HashMap::new();
     let mut variable_values: HashMap<String, Vec<f64>> = HashMap::new();
@@ -535,7 +598,19 @@ pub(crate) fn calculate_medians(data_points: &Vec<DataPoint>) -> HashMap<String,
     medians
 }
 
-// Internal functions
+
+/// Calculates the Statistical Parity Difference (SPD) across different groups within the provided data.
+///
+/// # Parameters:
+/// * `data_points`: A reference to a vector of `DataPoint` instances, representing the dataset.
+/// * `privileged_threshold`: An optional HashMap defining the privileged threshold for different variable names.
+///   Each entry in the map specifies a threshold value and a boolean indicating whether higher values than the threshold
+///   are considered privileged.
+///
+/// # Returns:
+/// A tuple containing:
+/// * A vector of `PrivilegedIndex`, where each `PrivilegedIndex` holds the variable name and the calculated SPD.
+/// * A floating-point number (f32) representing the average SPD across all variables.
 pub(crate) fn statistical_parity_difference(data_points: &Vec<DataPoint>, privilieged_threshold: Option<HashMap<String, (f64, bool)>>) -> (Vec<PrivilegedIndex>, f32) {
     let (
         privileged_count,
@@ -592,6 +667,19 @@ pub(crate) fn statistical_parity_difference(data_points: &Vec<DataPoint>, privil
     (result, average)
 }
 
+/// Calculates the Disparate Impact (DI) measure between different groups within the data.
+///
+/// # Arguments
+///
+/// * `data_points` - A reference to a vector of `DataPoint` instances, which represent the data points to evaluate.
+/// * `privileged_threshold` - An optional hashmap where each key represents a variable name and each value is a tuple composed of a threshold value and a boolean indicating if the privilege comparisson should use greater or lower.
+///
+/// # Returns
+///
+/// A tuple containing:
+/// - A vector of `PrivilegedIndex` structures, where each holds a variable name and its DI score.
+/// - A single float (f32) representing the average DI score across all variables.
+///
 pub(crate) fn disparate_impact(data_points: &Vec<DataPoint>, privilieged_threshold: Option<HashMap<String, (f64, bool)>>) -> (Vec<PrivilegedIndex>, f32) {
     let (
         privileged_count,
@@ -647,6 +735,17 @@ pub(crate) fn disparate_impact(data_points: &Vec<DataPoint>, privilieged_thresho
     (result, average)
 }
 
+/// Computes the average odds difference for a given dataset considering potentially
+/// privileged groups thresholded based on the provided criteria.
+///
+/// # Arguments
+/// * `data_points` - A reference to a vector containing the data points to evaluate.
+/// * `privileged_threshold` - An optional hashmap where each key corresponds to a group identifier
+///   and the value is a tuple containing a numeric threshold and a boolean indicating the privilege direction.
+///
+/// # Returns
+/// A tuple containing a vector of indices for privileged data points and a floating-point
+/// representation of the average odds difference.
 pub(crate) fn average_odds_difference(data_points: &Vec<DataPoint>, privilieged_threshold: Option<HashMap<String, (f64, bool)>>) -> (Vec<PrivilegedIndex>, f32) { 
     let (
         privileged_tp,
@@ -708,6 +807,16 @@ pub(crate) fn average_odds_difference(data_points: &Vec<DataPoint>, privilieged_
     (result, average)
 }
                                
+/// Computes the difference in opportunities between privileged and unprivileged groups.
+///
+/// # Arguments
+/// * `data_points` - A reference to a vector of `DataPoint` structs that contain the relevant data.
+/// * `privilieged_threshold` - An optional hash map where the key is a characteristic and the value is a tuple containing a threshold and a flag determining the privilege direction.
+///
+/// # Returns
+/// * A tuple containing:
+///   - `Vec<PrivilegedIndex>`: A vector indicating the indices of privileged data points.
+///   - `f32`: A floating-point number representing the difference in opportunities.
 pub(crate) fn equal_opportunity_difference(data_points: &Vec<DataPoint>, privilieged_threshold: Option<HashMap<String, (f64, bool)>>) -> (Vec<PrivilegedIndex>, f32) {
     let mut count_pred_label_unprivileged = HashMap::new();
     let mut count_pred_label_privileged = HashMap::new();
@@ -851,8 +960,6 @@ pub(crate) fn all_metrics(data_points: &Vec<DataPoint>, privilieged_threshold: O
 
 #[cfg(test)]
 mod metrics_calculation_tests {
-    use candid::Principal;
-    use crate::{Metrics, Model, ModelDetails};
     use std::collections::HashMap;
     use super::*;
 
