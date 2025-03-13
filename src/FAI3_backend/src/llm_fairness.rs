@@ -1,7 +1,7 @@
 use ic_cdk_macros::*;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
-use crate::types::{DataPoint, LLM_DataPoint, ModelType, LLM_MetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap};
-use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID, NEXT_LLM_MODEL_EVALUATION_ID};
+use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap};
+use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID};
 use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
 use std::collections::HashMap;
 use crate::metrics_calculation::{all_metrics, calculate_group_counts, accuracy, precision, recall, can_calculate_precision, can_calculate_recall, calculate_overall_confusion_matrix};
@@ -67,24 +67,7 @@ const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     predict_attributes_values: &["L", "H"],
 };
 
-const LLM_FAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET];
-
-/// Generates the next ID for a data point, incrementing the previous ID in a threadsafe manner.
-/// 
-/// This function utilizes a thread-local mutable storage (NEXT_LLM_DATA_POINT_ID) to keep track of the latest ID issued,
-/// ensuring that each call produces a unique incremental ID. Upon calling this function, it retrieves the current ID,
-/// increments it for the next use, and returns the preceding ID.
-///
-/// # Returns
-/// * `u128` - The unique ID of the current data point before incrementing.
-fn generate_data_point_id() -> u128 {
-    NEXT_LLM_DATA_POINT_ID.with(|id| {
-        let mut next_data_point_id = id.borrow_mut(); // TODO: should we use the same data point as the one for CAT?
-        let current_id = *next_data_point_id.get();
-        next_data_point_id.set(current_id + 1).unwrap();
-        return current_id;
-    })
-}
+const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET];
 
 /// Asynchronously runs metrics calculation based on provided parameters.
 ///
@@ -97,8 +80,7 @@ fn generate_data_point_id() -> u128 {
 /// * `_cf_test_csv` - Full CSV with counter factual test data. Currently unused.
 /// * `sensible_attribute` - The sensible attribute column name.
 /// * `predict_attribute` - The attribute to predict.
-/// * `data_points` - Vector of `LLM_DataPoint` structures to calculate metrics against.
-/// * `timestamp` - The timestamp of the calculation.
+/// * `data_points` - Vector of `LLMDataPoint` structures to calculate metrics against.
 /// * `prompt_template` - The prompt template to be used
 ///
 /// # Return
@@ -109,8 +91,8 @@ fn generate_data_point_id() -> u128 {
 async fn run_metrics_calculation(
     hf_model: String, seed: u32, max_queries: usize,
     train_csv: &str, test_csv: &str, _cf_test_csv: &str,
-    sensible_attribute: &str, predict_attribute: &str, data_points: &mut Vec<LLM_DataPoint>,
-    timestamp: u64, prompt_template: String,
+    sensible_attribute: &str, predict_attribute: &str, data_points: &mut Vec<LLMDataPoint>,
+    prompt_template: String,
     sensible_attribute_values: &[& str; 2],
     predict_attributes_values: &[& str; 2],
 ) -> Result<(usize, u32, u32), String> {
@@ -135,6 +117,7 @@ async fn run_metrics_calculation(
         return Err(format!("Required column '{}' not found in CSV", reader_score_column));
     }
 
+    // TODO: move this inside the for loop
     // 1. Pick 4 random examples based on the dynamic sensible attribute and readerScore
     let attribute_high = select_random_element(records.iter()
         .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
@@ -208,6 +191,8 @@ async fn run_metrics_calculation(
     let mut call_errors: u32 = 0;
 
     let mut queries: usize = 0;
+    // data_point_ids are indices for this type of data
+    let mut data_point_id = 0;
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
 
@@ -246,6 +231,8 @@ async fn run_metrics_calculation(
         
         let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
 
+        let timestamp: u64 = ic_cdk::api::time();
+        
         match res {
             Ok(r) => {
                 let trimmed_response = r.trim();
@@ -258,9 +245,9 @@ async fn run_metrics_calculation(
                 
                 match response {
                     Ok(val) => {
-                        data_points.push(LLM_DataPoint {
+                        data_points.push(LLMDataPoint {
                             prompt: personalized_prompt,
-                            data_point_id: generate_data_point_id(),
+                            data_point_id,
                             target: expected_result,
                             predicted: Some(val),
                             features,
@@ -272,9 +259,9 @@ async fn run_metrics_calculation(
                     },
                     Err(e) => {
                         ic_cdk::println!("Response error: {}", e);
-                        data_points.push(LLM_DataPoint {
+                        data_points.push(LLMDataPoint {
                             prompt: personalized_prompt,
-                            data_point_id: generate_data_point_id(),
+                            data_point_id,
                             target: expected_result,
                             predicted: None,
                             features: Vec::new(),
@@ -289,9 +276,9 @@ async fn run_metrics_calculation(
             },
             Err(e) => {
                 ic_cdk::println!("Call error: {}", e);
-                data_points.push(LLM_DataPoint {
+                data_points.push(LLMDataPoint {
                     prompt: personalized_prompt,
-                    data_point_id: generate_data_point_id(),
+                    data_point_id,
                     target: expected_result,
                     predicted: None,
                     features: Vec::new(),
@@ -307,6 +294,7 @@ async fn run_metrics_calculation(
         if max_queries > 0 && queries >= max_queries {
             break;
         }
+        data_point_id += 1;
     }
 
     // 3. Calculate metrics from responses (add metric for errors)
@@ -323,10 +311,10 @@ async fn run_metrics_calculation(
 /// - `seed: u32`: Seed for Hugging face API and option shuffling (makes the call reproducible).
 ///
 /// # Returns
-/// - `Result<LLM_MetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
+/// - `Result<LLMMetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
 ///
 #[update]
-pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLM_MetricsAPIResult, String> {
+pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
@@ -351,13 +339,13 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
     let mut res = Err(String::from("Unknown dataset passed."));
 
-    let mut data_points: Vec<LLM_DataPoint> = Vec::new();
+    let mut data_points: Vec<LLMDataPoint> = Vec::new();
 
     let mut privileged_map = PrivilegedMap::new();
 
     let mut prompt_template: String = String::from("");
 
-    for item in LLM_FAIRNESS_DATASETS.iter().enumerate() {
+    for item in LLMFAIRNESS_DATASETS.iter().enumerate() {
         let (_, ds) = item;
         if ds.name == dataset.as_str() {
             let train_csv = ds.train_csv;
@@ -366,7 +354,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
             prompt_template = String::from(ds.prompt_template);
 
             res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv,
-                                          ds.sensible_attribute, ds.predict_attribute, &mut data_points, timestamp,
+                                          ds.sensible_attribute, ds.predict_attribute, &mut data_points,
                                           prompt_template.clone(), ds.sensible_attribute_values,
                                           ds.predict_attributes_values
             ).await;
@@ -379,7 +367,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
     match res {
         Ok(ret) => {
             // Calculate metrics for data_points
-            let simplified_data_points: Vec<DataPoint> = LLM_DataPoint::reduce_to_data_points(&data_points, privileged_map.clone());
+            let simplified_data_points: Vec<DataPoint> = LLMDataPoint::reduce_to_data_points(&data_points, privileged_map.clone());
 
             let privileged_threshold = None;
             let (
@@ -485,7 +473,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
             
             
             let (queries, invalid_responses, call_errors) = ret;
-            Ok(LLM_MetricsAPIResult {
+            Ok(LLMMetricsAPIResult {
                 metrics,
                 queries,
                 invalid_responses,

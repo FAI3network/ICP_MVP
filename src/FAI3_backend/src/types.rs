@@ -21,7 +21,7 @@ pub struct DataPoint {
 // Represents a data point for using LLMs as classifiers
 // So the same classifier metrics can be calculated over this
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub struct LLM_DataPoint {
+pub struct LLMDataPoint {
     pub(crate) data_point_id: u128,
     pub(crate) target: bool,
     pub(crate) predicted: Option<bool>,
@@ -33,7 +33,7 @@ pub struct LLM_DataPoint {
     pub(crate) error: bool,
 }
 
-impl LLM_DataPoint { 
+impl LLMDataPoint { 
     /// Transforms a LLM_DataPoint to a DataPoint, so it can be used for metrics
     // If the LLM DataPoint had an error of some type, it returns None
     pub fn to_data_point(&self, privileged_map: PrivilegedMap) -> Option<DataPoint> {
@@ -50,7 +50,7 @@ impl LLM_DataPoint {
         }
     }
 
-    pub fn reduce_to_data_points(data_points: &Vec<LLM_DataPoint>, privileged_map: PrivilegedMap) -> Vec<DataPoint> {
+    pub fn reduce_to_data_points(data_points: &Vec<LLMDataPoint>, privileged_map: PrivilegedMap) -> Vec<DataPoint> {
         data_points.into_iter().filter_map(|dp| dp.to_data_point(privileged_map.clone())).collect()
     }
 }
@@ -65,7 +65,7 @@ pub struct ModelEvaluationResult {
     // data_points is to be used in the future,
     // To replace the metrics and metrics_history
     pub(crate) data_points: Option<Vec<DataPoint>>,
-    pub(crate) llm_data_points: Option<Vec<LLM_DataPoint>>,
+    pub(crate) llm_data_points: Option<Vec<LLMDataPoint>>,
     pub(crate) prompt_template: Option<String>,
 }
 
@@ -281,7 +281,7 @@ pub struct ContextAssociationTestAPIResult {
 }
 
 #[derive(Debug, CandidType, CandidDeserialize, Clone)]
-pub struct LLM_MetricsAPIResult {
+pub struct LLMMetricsAPIResult {
     pub metrics: Metrics,
     pub queries: usize,
     pub invalid_responses: u32,
