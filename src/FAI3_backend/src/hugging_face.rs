@@ -11,26 +11,26 @@ use crate::types::HuggingFaceResponseItem;
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models";
 const HUGGING_FACE_BEARER_TOKEN: &str = "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";
 
-#[derive(Serialize, Deserialize)]
-struct HuggingFaceRequestParameters {
-    stop: Option<Vec<char>>,
-    max_new_tokens: Option<i32>,
-    temperature: Option<f32>,
-    return_full_text: Option<bool>,
-    decoder_input_details: Option<bool>,
-    details: Option<bool>,
-    seed: Option<u32>,
-    do_sample: Option<bool>,
+#[derive(Serialize, Deserialize, Clone)]
+pub struct HuggingFaceRequestParameters {
+    pub stop: Option<Vec<char>>,
+    pub max_new_tokens: Option<u32>,
+    pub temperature: Option<f32>,
+    pub return_full_text: Option<bool>,
+    pub decoder_input_details: Option<bool>,
+    pub details: Option<bool>,
+    pub seed: Option<u32>,
+    pub do_sample: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct HuggingFaceRequest {
+pub struct HuggingFaceRequest {
     inputs: String,
     parameters: Option<HuggingFaceRequestParameters>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct HuggingFaceResponse {
+pub struct HuggingFaceResponse {
     generated_text: Option<String>,
 }
 
@@ -39,30 +39,39 @@ struct HuggingFaceResponse {
 /// # Parameters
 /// - `input_text: String`: prompt to be passed to the LLM.
 /// - `llm_model: String`: name of the model. It's the string that goes after 'https://api-inference.huggingface.co/models' in the URL.
-/// - `seed: i32`: seed param for Hugging Face.
+/// - `seed: u32`: seed param for Hugging Face.
 ///
 /// # Returns
 /// - `Result<String, String>`: if successful, it returns the model answer, without the prompt text. Otherwise, it returns an error description.
 ///
-pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32) -> Result<String, String> {
+pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32, hf_parameters: Option<HuggingFaceRequestParameters>) -> Result<String, String> {
+
+    let default_parameters = HuggingFaceRequestParameters {
+        max_new_tokens: Some(100),
+        stop: Some(vec!['1', '2', '3']),
+        temperature: Some(0.3),
+        decoder_input_details: Some(false),
+        details: Some(false),
+        return_full_text: Some(false),
+        seed: Some(seed),
+        do_sample: Some(false),
+    };
+
+    let mut parameters = default_parameters;
+
+    if let Some(p) = hf_parameters {
+        parameters = p;
+    }
+    
     // 1) Prepare JSON payload
     let payload = HuggingFaceRequest {
         inputs: input_text,
-        parameters: Some(HuggingFaceRequestParameters {
-            max_new_tokens: Some(100),
-            stop: Some(vec!['1', '2', '3']),
-            temperature: Some(0.3),
-            decoder_input_details: Some(false),
-            details: Some(false),
-            return_full_text: Some(false),
-            seed: Some(seed),
-            do_sample: Some(false),
-        })
+        parameters: Some(parameters), 
     };
     let json_payload =
         serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
 
-    ic_cdk::println!("{}", String::from_utf8(json_payload.clone()).unwrap());
+    // ic_cdk::println!("{}", String::from_utf8(json_payload.clone()).unwrap());
 
     // 2) Prepare headers
     let headers = vec![
