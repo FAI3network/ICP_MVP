@@ -881,11 +881,18 @@ pub(crate) fn equal_opportunity_difference(data_points: &Vec<DataPoint>, privili
         .collect();
 
     for key in all_keys {
+        if (*count_label_unprivileged.get(key).unwrap_or(&0.0)) == 0.0
+            || (*count_label_privileged.get(key).unwrap_or(&0.0)) == 0.0 {
+                ic_cdk::println!("Missing labels for key one of the groups of key {}, return worse possible EOD", key);
+                // Returning 1 so TPR_priv (1) - TPR_unpriv (0), but it could also be -1
+                return (Vec::<PrivilegedIndex>::new(), 1.0);
+            }
+        
         let prob_pred_label_unprivileged =
             *count_pred_label_unprivileged.get(key).unwrap_or(&0.0)
-            / (*count_label_unprivileged.get(key).unwrap_or(&0.0)); // TODO: +1 removed
+            / (*count_label_unprivileged.get(key).unwrap_or(&0.0));
         let prob_pred_label_privileged = *count_pred_label_privileged.get(key).unwrap_or(&0.0)
-            / (*count_label_privileged.get(key).unwrap_or(&0.0)); // TODO: +1 removed
+            / (*count_label_privileged.get(key).unwrap_or(&0.0));
 
         let diff = prob_pred_label_unprivileged - prob_pred_label_privileged;
 
