@@ -118,62 +118,6 @@ async fn run_metrics_calculation(
         return Err(format!("Required column '{}' not found in CSV", reader_score_column));
     }
 
-    // TODO: move this inside the for loop
-    // 1. Pick 4 random examples based on the dynamic sensible attribute and readerScore
-    let attribute_high = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
-                r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), seed)
-        .ok_or_else(|| format!("{} with value 1 and high score not found", sensible_attribute))?;
-
-    let attribute_low = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
-                r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 2 * seed)
-        .ok_or_else(|| format!("{} with value 1 and low score not found", sensible_attribute))?;
-
-    let non_attribute_high = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
-                r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), 3 * seed)
-        .ok_or_else(|| format!("{} with value 0 and high score not found", sensible_attribute))?;
-
-    let non_attribute_low = select_random_element(records.iter()
-        .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
-                r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 4 * seed)
-        .ok_or_else(|| format!("{} with value 0 and low score not found", sensible_attribute))?;
-    
-    // 2. Create the prompts and send the requests
-    let format_example = |example: &HashMap<String, String>| -> String {
-        let mut sample = "<Student Attributes>: ".to_string();
-        let mut answer_str = "<Answer>: ".to_string();
-
-        // Sorting keys to avoid inconsistent order in the produced text
-        let mut keys: Vec<_> = example.keys().collect();
-        keys.sort();
-        
-        for key in keys {
-            let value = &example[key];
-            if key != sensible_attribute {  // assuming `sensible_attribute` is like `task_id` to skip
-                if key == reader_score_column {
-                    answer_str += &format!("{}: {}", key, value);
-                } else {
-                    sample += &format!("{}: {}, ", key, value);
-                }
-            }
-        }
-        sample.pop(); sample.pop(); // Removes the last ", "
-        sample + "\n" + &answer_str
-    };
-
-    let attributes: Vec<String> = seeded_vector_shuffle(vec![attribute_high, attribute_low, non_attribute_high, non_attribute_low], seed * 5)
-        .iter()
-        .map( |x| format_example(&x) )
-        .collect();
-
-    let prompt = prompt_template
-        .replace("<EXAMPLE_0>", &attributes[0])
-        .replace("<EXAMPLE_1>", &attributes[1])
-        .replace("<EXAMPLE_2>", &attributes[2])
-        .replace("<EXAMPLE_3>", &attributes[3]);
-
     let mut test_rdr = csv::ReaderBuilder::new()
         .from_reader(test_csv.as_bytes());
 
@@ -196,6 +140,61 @@ async fn run_metrics_calculation(
     let mut data_point_id = 0;
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
+
+        // 1. Pick 4 random examples based on the dynamic sensible attribute and readerScore
+        let attribute_high = select_random_element(records.iter()
+                                                   .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
+                                                           r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), seed + (queries as u32))
+            .ok_or_else(|| format!("{} with value 1 and high score not found", sensible_attribute))?;
+
+        let attribute_low = select_random_element(records.iter()
+                                                  .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
+                                                          r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 2 * (seed + (queries as u32)))
+            .ok_or_else(|| format!("{} with value 1 and low score not found", sensible_attribute))?;
+
+        let non_attribute_high = select_random_element(records.iter()
+                                                       .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
+                                                               r.get(reader_score_column) == Some(&predict_attributes_values[1].to_string())), 3 * (seed + (queries as u32)))
+            .ok_or_else(|| format!("{} with value 0 and high score not found", sensible_attribute))?;
+
+        let non_attribute_low = select_random_element(records.iter()
+                                                      .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
+                                                              r.get(reader_score_column) == Some(&predict_attributes_values[0].to_string())), 4 * (seed + (queries as u32)))
+            .ok_or_else(|| format!("{} with value 0 and low score not found", sensible_attribute))?;
+        
+        // 2. Create the prompts and send the requests
+        let format_example = |example: &HashMap<String, String>| -> String {
+            let mut sample = "<Student Attributes>: ".to_string();
+            let mut answer_str = "<Answer>: ".to_string();
+
+            // Sorting keys to avoid inconsistent order in the produced text
+            let mut keys: Vec<_> = example.keys().collect();
+            keys.sort();
+            
+            for key in keys {
+                let value = &example[key];
+                if key != sensible_attribute {  // assuming `sensible_attribute` is like `task_id` to skip
+                    if key == reader_score_column {
+                        answer_str += &format!("{}: {}", key, value);
+                    } else {
+                        sample += &format!("{}: {}, ", key, value);
+                    }
+                }
+            }
+            sample.pop(); sample.pop(); // Removes the last ", "
+            sample + "\n" + &answer_str
+        };
+
+        let attributes: Vec<String> = seeded_vector_shuffle(vec![attribute_high, attribute_low, non_attribute_high, non_attribute_low], (seed + (queries as u32)) * 5)
+            .iter()
+            .map( |x| format_example(&x) )
+            .collect();
+
+        let prompt = prompt_template
+            .replace("<EXAMPLE_0>", &attributes[0])
+            .replace("<EXAMPLE_1>", &attributes[1])
+            .replace("<EXAMPLE_2>", &attributes[2])
+            .replace("<EXAMPLE_3>", &attributes[3]);
 
         // Sorting keys to avoid inconsistent order in the produced text
         let mut keys: Vec<_> = result.keys().collect();
@@ -316,8 +315,6 @@ async fn run_metrics_calculation(
         }
         data_point_id += 1;
     }
-
-    // 3. Calculate metrics from responses (add metric for errors)
 
     Ok((queries, wrong_response, call_errors))
 }
