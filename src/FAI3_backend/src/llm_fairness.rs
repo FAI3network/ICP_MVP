@@ -52,6 +52,7 @@ struct LLMFairnessDataset<'a> {
     sensible_attribute: &'a str,
     predict_attribute: &'a str,
     sensible_attribute_values: &'a[&'a str; 2],
+    // First element in the array corresponds to "false", second one corresponds to "true"
     predict_attributes_values: &'a[&'a str; 2],
 }
 
@@ -222,11 +223,23 @@ async fn run_metrics_calculation(
             .flatten()
             .unwrap_or_else(|| { ic_cdk::println!("Missing or invalid value for attribute '{}'", sensible_attribute); 0.0 });
         let features: Vec<f64> = vec![sensible_attr];
-        
-        let expected_result = match result.get(predict_attribute).map(|s| s.trim()) {
-            Some("H") => true,
-            Some("L") => false,
-            _ => panic!("Invalid reading score"),
+
+        let expected_result: bool = {
+            let res = result.get(predict_attribute).map(|s| s.trim());
+            match res {
+                Some(r) => {
+                    if r == predict_attributes_values[1] {
+                        true
+                    } else {
+                        if r == predict_attributes_values[0] {
+                            false
+                        } else {
+                            ic_cdk::api::trap("Invalid reading score")
+                        }
+                    }
+                },
+                _ => ic_cdk::api::trap("Invalid reading score"),
+            }
         };
         
         let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
@@ -236,13 +249,20 @@ async fn run_metrics_calculation(
         match res {
             Ok(r) => {
                 let trimmed_response = r.trim();
-                ic_cdk::println!("Response: {}", trimmed_response);
-                let response = match trimmed_response {
-                    "H" => Result::Ok(true),
-                    "L" => Result::Ok(false),
-                    _ => Err(format!("Unknown response '{}'", trimmed_response)),
+                let response: Result<bool, String> = {
+                    ic_cdk::println!("Response: {}", trimmed_response.to_string());
+
+                    if trimmed_response == predict_attributes_values[1] {
+                        Result::Ok(true)
+                    } else {
+                        if trimmed_response == predict_attributes_values[0] {
+                            Result::Ok(false)
+                        } else {
+                            Result::Err(format!("Unknown response '{}'", trimmed_response.to_string()))
+                        }
+                    }
                 };
-                
+                    
                 match response {
                     Ok(val) => {
                         data_points.push(LLMDataPoint {
