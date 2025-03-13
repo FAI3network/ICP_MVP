@@ -770,18 +770,19 @@ pub(crate) fn average_odds_difference(data_points: &Vec<DataPoint>, privilieged_
         let unprivileged_negative_total =
             *unprivileged_fp.get(key).unwrap_or(&0) + *unprivileged_tn.get(key).unwrap_or(&0);
 
-        // if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
-        //     ic_cdk::api::trap("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
-        // }
+        if privileged_positive_total == 0 || unprivileged_positive_total == 0 || privileged_negative_total == 0 || unprivileged_negative_total == 0 {
+            ic_cdk::println!("Cannot calculate average odds difference: One of the groups has no data points or no positives/negatives.");
+            return (Vec::new(), 1.0);
+        }
 
         let privileged_tpr: f32 = *privileged_tp.get(key).unwrap_or(&0) as f32
-            / (privileged_positive_total + 1) as f32;
+            / (privileged_positive_total) as f32;
         let unprivileged_tpr: f32 = *unprivileged_tp.get(key).unwrap_or(&0) as f32
-            / (unprivileged_positive_total + 1) as f32;
+            / (unprivileged_positive_total) as f32;
         let privileged_fpr: f32 = *privileged_fp.get(key).unwrap_or(&0) as f32
-            / (privileged_negative_total + 1) as f32;
+            / (privileged_negative_total) as f32;
         let unprivileged_fpr: f32 = *unprivileged_fp.get(key).unwrap_or(&0) as f32
-            / (unprivileged_negative_total + 1) as f32;
+            / (unprivileged_negative_total) as f32;
 
         let diff = ((unprivileged_fpr - privileged_fpr).abs()
                     + (unprivileged_tpr - privileged_tpr).abs())
