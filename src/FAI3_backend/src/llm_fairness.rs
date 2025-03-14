@@ -1,6 +1,6 @@
 use ic_cdk_macros::*;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
-use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap};
+use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID};
 use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
 use std::collections::HashMap;
@@ -460,7 +460,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
             // Saving metrics
             MODELS.with(|models| {
                 let mut models = models.borrow_mut();
-                let model = models.get(&llm_model_id).expect("Model not found");
+                let mut model = models.get(&llm_model_id).expect("Model not found");
 
                 let mut model_data = get_llm_model_data(&model);
 
@@ -476,7 +476,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                         data_points: None, 
                         metrics: metrics.clone(),
                         llm_data_points: Some(data_points),
-                        privileged_map,
+                        privileged_map: privileged_map.into_iter().map( |(key, value)| KeyValuePair { key, value } ).collect(),
                         prompt_template: Some(prompt_template.clone()),
                     });
 
@@ -484,6 +484,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                     next_data_point_id.set(current_id + 1).unwrap();
                 });
 
+                model.model_type = ModelType::LLM(model_data);
                 models.insert(llm_model_id, model);
             });
 

@@ -2,16 +2,10 @@ use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS,
     NEXT_DATA_POINT_ID
 };
-use candid::{CandidType, Deserialize, Principal};
+use candid::{Principal};
 use crate::types::get_classifier_model_data;
-use crate::types::ModelType;
+use crate::types::{ModelType, KeyValuePair};
 use std::collections::HashMap;
-
-#[derive(CandidType, Deserialize)]
-pub(crate) struct KeyValuePair {
-    key: String,
-    value: u128,
-}
 
 #[ic_cdk::update]
 pub fn add_dataset(

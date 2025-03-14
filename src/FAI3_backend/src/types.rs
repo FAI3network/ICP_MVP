@@ -55,13 +55,19 @@ impl LLMDataPoint {
     }
 }
 
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub(crate) struct KeyValuePair {
+    pub(crate) key: String,
+    pub(crate) value: u128,
+}
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelEvaluationResult {
     pub(crate) model_evaluation_id: u128,
     pub(crate) dataset: String,
     pub(crate) timestamp: u64,
     pub(crate) metrics: Metrics,
-    pub(crate) privileged_map: HashMap<String, u128>,
+    pub(crate) privileged_map: Vec<KeyValuePair>,
     // data_points is to be used in the future,
     // To replace the metrics and metrics_history
     pub(crate) data_points: Option<Vec<DataPoint>>,
