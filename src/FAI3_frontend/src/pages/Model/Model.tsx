@@ -3,7 +3,7 @@ import { ModelDetail } from "./ModelDetail";
 import LLMDetails from "./LLMDetails";
 import { useParams } from "react-router-dom";
 import { useAuthClient } from "../../utils";
-import { Model as ModelAsType, ClassifierModelData } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { Model as ModelAsType, ClassifierModelData, LLMModelData, ContextAssociationTestMetricsBag } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 
 interface Metric {
@@ -18,50 +18,58 @@ export default function Model() {
   const { modelId } = useParams();
   const { webapp, connected } = useAuthClient();
 
-  const [modelWithDetails, setModelWithDetails] = useState<any>({});
-  const [metrics, setMetrics] = useState([] as Metric[]);
+  const [modelWithDetails, setModelWithDetails] = useState<ModelAsType>();
+  const [metrics, setMetrics] = useState<Metric[] | ContextAssociationTestMetricsBag[]>([]);
 
   const fetchModel = async () => {
     let id = BigInt(modelId || "");
     // const model = await FAI3_backend.get_model(id);
-    const model: ModelAsType = connected ? await (webapp?.get_model(id) as Promise<ModelAsType>) : await FAI3_backend.get_model(id);
+    const model: ModelAsType = (connected ? await webapp?.get_model(id) : await FAI3_backend.get_model(id)) as ModelAsType;
 
     console.log(model);
 
     setModelWithDetails(model);
 
-    // Note: this only works for classifier models, it wont work for LLM models
-    const classifierData = (model?.model_type as { Classifier: ClassifierModelData }).Classifier;
-    const metricsHistory = classifierData?.metrics_history;
+    const isClassifier = 'Classifier' in model?.model_type ? true : false;
 
-    if (!Array.isArray(metricsHistory)) {
-      console.error("Invalid metrics response");
-      return;
+    if (isClassifier) {
+      const classifierData = (model?.model_type as { Classifier: ClassifierModelData }).Classifier;
+      const metricsHistory = classifierData?.metrics_history;
+
+      if (!Array.isArray(metricsHistory)) {
+        console.error("Invalid metrics response");
+        return;
+      }
+
+      const metricsList: any[] = [];
+
+      for (let metric of metricsHistory) {
+        const timestamp = new Date(Number(metric.timestamp) / 1e6).toISOString().split('T')[0];
+
+        metricsList.push({
+          timestamp: timestamp,
+          SPD: metric.statistical_parity_difference[0],
+          DI: metric.disparate_impact[0],
+          AOD: metric.average_odds_difference[0],
+          EOD: metric.equal_opportunity_difference[0],
+          average: {
+            SPD: metric.average_metrics.statistical_parity_difference[0],
+            DI: metric.average_metrics.disparate_impact[0],
+            AOD: metric.average_metrics.average_odds_difference[0],
+            EOD: metric.average_metrics.equal_opportunity_difference[0]
+          }
+        });
+      }
+
+      console.log(metricsList);
+
+      setMetrics(metricsList);
+    } else {
+      const llmData = (model?.model_type as { LLM: LLMModelData }).LLM;
+
+      
+      setMetrics(llmData.cat_metrics_history);
     }
-
-    const metricsList: any[] = [];
-
-    for (let metric of metricsHistory) {
-      const timestamp = new Date(Number(metric.timestamp) / 1e6).toISOString().split('T')[0];
-
-      metricsList.push({
-        timestamp: timestamp,
-        SPD: metric.statistical_parity_difference[0],
-        DI: metric.disparate_impact[0],
-        AOD: metric.average_odds_difference[0],
-        EOD: metric.equal_opportunity_difference[0],
-        average: {
-          SPD: metric.average_metrics.statistical_parity_difference[0],
-          DI: metric.average_metrics.disparate_impact[0],
-          AOD: metric.average_metrics.average_odds_difference[0],
-          EOD: metric.average_metrics.equal_opportunity_difference[0]
-        }
-      });
-    }
-
-    console.log(metricsList);
-
-    setMetrics(metricsList);
     // console.log(metricsList);
   };
 
@@ -87,10 +95,10 @@ export default function Model() {
         <div>
           {/* {console.log(modelWithDetails.data.name, metrics)} */}
           {
-            modelWithDetails.model_type.LLM ? (
-              <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
-            ) : (
+            'Classifier' in modelWithDetails?.model_type ? (
               <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+            ) : (
+              <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
             )
           }
         </div>
