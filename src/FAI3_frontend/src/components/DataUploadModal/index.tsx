@@ -28,16 +28,22 @@ export default function DataUploadModal({ fetchModel, latestVars, cachedThreshol
   useEffect(() => {
     if (file && !Array.isArray(file) && file.type.includes("csv") || file && Array.isArray(file) && file[0].type.includes("csv")) {
       const readingFile = Array.isArray(file) ? file[0] : file;
+      console.log("parsing")
       Papa.parse(readingFile as File, {
         header: true,
         complete: (result: Papa.ParseResult<any>) => {
           //Do not accept filelds that are empty strings
           //Remove the empty string field
+          console.log(result)
           if (result.data[0][""] !== undefined) {
             result.data.forEach((element: any) => {
               delete element[""];
             });
           }
+
+          result.data = result.data.filter((row: any) => {
+            return !Object.values(row).every(value => value === null || value === '');
+          });
 
           setData(result.data);
           createColumns(result.data);

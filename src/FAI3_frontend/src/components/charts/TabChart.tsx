@@ -113,6 +113,7 @@ export default function TabChart({ chartData }: any) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
+                  <TableHead>Version</TableHead>
                   <TableHead>Statistical Parity Difference (SPD)</TableHead>
                   <TableHead>Disparate Impact (DI)</TableHead>
                   <TableHead>Average Odds Difference (AOD)</TableHead>
@@ -122,7 +123,7 @@ export default function TabChart({ chartData }: any) {
               <TableBody>
                 {chartData.map((row: any, index: number) => (
                   <TableRow key={index}>
-                    {/* <TableCell>{row.timestamp}</TableCell> */}
+                    <TableCell>{row.timestamp}</TableCell>
                     <TableCell>v{index+1}</TableCell>
                     <TableCell>{row.average.SPD}</TableCell>
                     <TableCell>{row.average.DI}</TableCell>

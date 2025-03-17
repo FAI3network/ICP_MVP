@@ -134,8 +134,12 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
   }
 
   const calculateMedian = (features: number[]) => {
+    console.log(features);
+
     const max = Math.max(...features);
     const min = Math.min(...features);
+
+    console.log(max, min);
 
     return (max + min) / 2;
   }
