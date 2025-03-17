@@ -32,7 +32,11 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
     const details = newModel.details;
 
     // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
-    const model = newModel.is_llm ? await webapp?.add_llm_model(modelName, newModel.hf_url, details) : await webapp?.add_classifier_model(modelName, details);
+    const model = await (update? 
+        webapp?.update_model(modelId, newModel.name, newModel.details)
+      : newModel.is_llm ? 
+        webapp?.add_llm_model(modelName, newModel.hf_url, details)
+      : webapp?.add_classifier_model(modelName, details));
 
     if (model) {
       fetchModels();
@@ -72,9 +76,12 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
                 Model Information
               </h3>
 
-              <Toggle variant="outline" size="default" className="mb-4" onPressedChange={() => setNewModel({ ...newModel, is_llm: !newModel.is_llm })}>
-                Is LLM
-              </Toggle>
+              {
+                !update && (
+                  <Toggle variant="outline" size="default" className="mb-4" onPressedChange={() => setNewModel({ ...newModel, is_llm: !newModel.is_llm })}>
+                  Is LLM
+                </Toggle>)
+              }
 
               <div>
                 <h4 className="text-sm font-bold mb-2">

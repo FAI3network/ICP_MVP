@@ -22,7 +22,7 @@ import { DataUploadModal, AddModelModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { useParams } from "react-router-dom";
-import { useAuthClient } from "../../utils";
+import { useAuthClient, useDataContext } from "../../utils";
 import { Principal } from "@dfinity/principal";
 import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
@@ -31,8 +31,8 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const [loading, setLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false)
   const { address, webapp } = useAuthClient();
-  const [editOrUpload, setEditOrUpload] = useState<string | null>(null);
-  const latestVars = metrics[metrics.length - 1]?.AOD?.map((v: any) => v.variable_name);
+  const { fetchModels } = useDataContext();
+  
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
@@ -44,14 +44,12 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
 
   }, [model, address])
 
-  useEffect(() => {
-    editOrUpload != null && openModal()
-  }, [editOrUpload])
-
   const runCAT = async () => {
     setLoading(true);
     const res = await webapp?.context_association_test(BigInt(modelId!), 20, 1, false);
     console.log(res);
+    fetchModel();
+    fetchModels();
     setLoading(false);
   }
 
@@ -79,16 +77,9 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                       Run test
                     </Button>
 
-                    {
-                      editOrUpload === "edit" ? (
-                        <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
-                      ) : editOrUpload == "upload" ? (
-                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} onClose={() => setEditOrUpload(null)} />
-                      ) : null
-                    }
+                    <AddModelModal modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
 
-
-                    <Button onClick={() => { setEditOrUpload("edit") }}>
+                    <Button onClick={openModal}>
                       Edit Model
                     </Button>
                   </div>
@@ -143,7 +134,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                       Detailed information about each model run.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="overflow-auto h-[350px]">
                     <Table>
                       <TableHeader>
                         <TableRow>
