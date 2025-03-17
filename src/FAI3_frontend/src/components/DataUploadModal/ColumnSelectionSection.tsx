@@ -32,7 +32,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     if (columnLabels.privledged.length == 0) {
       setOpenThresholdField(false);
     } else if (columnLabels.privledged.length > 0 && !loading) {
-      setThresholds(columnLabels.privledged.split(", ").map((varName: string, index: number) => ({ varName, comparator: "greater", amount: thresholds[index]?.amount ?? null })));
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string, index: number) => ({ varName, comparator: thresholds[index]?.comparator ?? "greater", amount: thresholds[index]?.amount ?? null })));
     }
   }, [columnLabels.privledged]);
 
