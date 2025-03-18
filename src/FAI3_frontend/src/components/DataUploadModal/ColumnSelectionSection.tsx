@@ -7,7 +7,7 @@ import { useAuthClient, useDataContext } from "../../utils";
 import { toast } from "sonner";
 import { features } from "process";
 
-export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any }) {
+export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds, cachedSelections }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -47,8 +47,8 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     const predictionFilter = tableColumns.filter((col) => col.toLowerCase().includes("prediction"));
 
     setColumnLabels({
-      labels: labelFilter.length > 0 ? labelFilter[0] : "",
-      predictions: predictionFilter.length > 0 ? predictionFilter[0] : "",
+      labels: cachedSelections[0][0] ?? (labelFilter.length > 0 ? labelFilter[0] : ""),
+      predictions:cachedSelections[0][1] ?? (predictionFilter.length > 0 ? predictionFilter[0] : ""),
       privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
     });
 
@@ -60,8 +60,8 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
   }, [table]);
 
   useEffect(() => {
-    console.log(thresholds);
-  }, [thresholds]);
+    console.log(columnLabels);
+  }, [columnLabels]);
 
   const uploadData = async () => {
     setLoading(true);
@@ -123,7 +123,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     }
 
     if (valid) {
-      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
+      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables, [columnLabels.labels, columnLabels.predictions]);
       await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
       await fetchModel();
       await fetchModels();

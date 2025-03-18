@@ -46,6 +46,7 @@ type Model = record {
   details: ModelDetails;
   metrics_history: vec Metrics;
   cached_thresholds: opt CachedThresholds;
+  cached_selections: opt vec text;
 };
 
 type ModelDetails = record {
@@ -78,7 +79,7 @@ service : () -> {
     "update_model": (nat, text, ModelDetails) -> (bool);
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap, vec text) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 

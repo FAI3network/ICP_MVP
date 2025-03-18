@@ -59,6 +59,7 @@ pub struct Model {
     pub(crate) details: ModelDetails,
     pub(crate) metrics_history: Vec<Metrics>,
     pub(crate) cached_thresholds: Option<CachedThresholds>,
+    pub(crate) cached_selections: Option<Vec<String>>
 }
 
 impl Storable for Model {

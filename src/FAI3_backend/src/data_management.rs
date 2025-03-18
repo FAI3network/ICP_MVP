@@ -17,6 +17,7 @@ pub fn add_dataset(
     labels: Vec<bool>,
     predictions: Vec<bool>,
     privileged: Vec<KeyValuePair>,
+    selection_labels: Vec<String>,
 ) {
     check_cycles_before_action();
 
@@ -75,6 +76,8 @@ pub fn add_dataset(
                     features: feature_vector.clone(),
                     timestamp,
                 };
+
+                model.cached_selections = Some(selection_labels.clone());
 
                 model.data_points.push(data_point);
                 models.insert(model_id, model.clone());

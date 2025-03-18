@@ -126,7 +126,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                       editOrUpload === "edit" ? (
                         <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
                       ) : editOrUpload == "upload" ? (
-                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} onClose={() => setEditOrUpload(null)} />
+                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} cachedSelections={model.cached_selections} onClose={() => setEditOrUpload(null)} />
                       ) : null
                     }
 
