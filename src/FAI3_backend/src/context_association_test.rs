@@ -322,7 +322,8 @@ async fn cat_intrasentence_call(hf_model: String, entry: &IntrasentenceEntry, se
 
             return Ok(data_point);
         },
-        Err(_) => {
+        Err(e) => {
+            ic_cdk::println!("Error while processing data point: {}", e.to_string());
             data_point.error = true;
             return Ok(data_point);
         }
@@ -398,7 +399,8 @@ async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, se
 
             return Ok(data_point);
         },
-        Err(_) => {
+        Err(e) => {
+            ic_cdk::println!("Error while processing data point: {}", e.to_string());
             data_point.error = true;
             return Ok(data_point);
         }
