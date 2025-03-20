@@ -1,5 +1,5 @@
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "@/components/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthClient, useDataContext } from "@/utils";
 import { Toggle } from "@/components/ui/toggle";
 
@@ -39,10 +39,12 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
       : webapp?.add_classifier_model(modelName, details));
 
     if (model) {
+      console.log("fetching and clearing");
       fetchModels();
       clearModelForm();
 
       if (fetchModel) {
+        console.log("refetching model ");
         fetchModel();
       }
     }
@@ -51,6 +53,10 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
       setLoading(false);
     }, 1000);
   }
+
+  useEffect(() => {
+    console.log(newModel);
+  }, [newModel]);
 
   const clearModelForm = () => {
     setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });

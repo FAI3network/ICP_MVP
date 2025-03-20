@@ -6,8 +6,6 @@ import {
 } from "../ui";
 
 export default function BarChartchart({ chartData, chartConfig }: any) {
-  console.log(chartData);
-
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart accessibilityLayer data={chartData}>
@@ -21,10 +19,13 @@ export default function BarChartchart({ chartData, chartConfig }: any) {
         />
         <YAxis />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="average.SPD" fill={chartConfig.SPD.color} radius={4} />
+        {/* <Bar dataKey="average.SPD" fill={chartConfig.SPD.color} radius={4} />
         <Bar dataKey="average.DI" fill={chartConfig.DI.color} radius={4} />
         <Bar dataKey="average.AOD" fill={chartConfig.AOD.color} radius={4} />
-        <Bar dataKey="average.EOD" fill={chartConfig.EOD.color} radius={4} />
+        <Bar dataKey="average.EOD" fill={chartConfig.EOD.color} radius={4} /> */}~
+        {Object.values(chartConfig).map((config: any, index: number) => (
+          <Bar key={index} dataKey={config.key} fill={config.color} radius={4} />
+        ))}
       </BarChart>
     </ChartContainer>
   );

@@ -44,10 +44,8 @@ export default function Model() {
       const metricsList: any[] = [];
 
       for (let metric of metricsHistory) {
-        const timestamp = new Date(Number(metric.timestamp) / 1e6).toISOString().split('T')[0];
-
         metricsList.push({
-          timestamp: timestamp,
+          timestamp: metric.timestamp,
           SPD: metric.statistical_parity_difference[0],
           DI: metric.disparate_impact[0],
           AOD: metric.average_odds_difference[0],
@@ -67,7 +65,7 @@ export default function Model() {
     } else {
       const llmData = (model?.model_type as { LLM: LLMModelData }).LLM;
 
-      
+
       setMetrics(llmData.cat_metrics_history);
     }
     // console.log(metricsList);
@@ -90,21 +88,16 @@ export default function Model() {
 
 
   return (
-    <div>
+    <>
       {modelWithDetails && Object.keys(modelWithDetails).length > 0 ? (
-        <div>
-          {/* {console.log(modelWithDetails.data.name, metrics)} */}
-          {
-            'Classifier' in modelWithDetails?.model_type ? (
-              <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
-            ) : (
-              <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
-            )
-          }
-        </div>
+        'Classifier' in modelWithDetails?.model_type ? (
+          <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+        ) : (
+          <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
+        )
       ) : (
         <div className="w-full text-center">Loading...</div>
       )}
-    </div>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import { cn } from "../../utils";
 import { useState, useEffect } from "react";
 
-export const Select = ({ options, selection, setSelection, multiple = false }: any) => {
+export const Select = ({ options, selection, setSelection, multiple = false, placeholder = "Select a column..." }: any) => {
   const [multipleSelection, setMultipleSelection] = useState<string[]>([]);
 
   const handleSelection = (value: string) => {
@@ -35,9 +35,9 @@ export const Select = ({ options, selection, setSelection, multiple = false }: a
   return (
     <RadixSelect.Root onValueChange={(value: string) => handleSelection(value)} value={multiple ? multipleSelection : selection}>
       <RadixSelect.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
-        <RadixSelect.Value placeholder={ selection.length == 0 ? "Select a column…" : selection.length > 32 ? selection.slice(0, 24) + "..." : selection} >
+        <RadixSelect.Value placeholder={ selection.length == 0 ? placeholder : selection.length > 32 ? selection.slice(0, 24) + "..." : selection} >
           {selection.length > 32 ? selection.slice(0, 24) + "..." : selection}
-          {selection.length == 0 && "Select a column..."}
+          {selection.length == 0 && placeholder}
         </RadixSelect.Value>
         <RadixSelect.Icon>
           <ChevronDown />
