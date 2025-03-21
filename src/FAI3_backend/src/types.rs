@@ -18,6 +18,18 @@ pub struct DataPoint {
     pub(crate) timestamp: u64,
 }
 
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct LLMDataPointCounterFactual {
+    pub(crate) prompt: Option<String>,
+    pub(crate) response: Option<String>,
+    pub(crate) valid: bool,
+    pub(crate) error: bool,
+    pub(crate) target: bool,
+    pub(crate) timestamp: u64,
+    pub(crate) predicted: Option<bool>,
+    pub(crate) features: Vec<f64>,
+}
+
 // Represents a data point for using LLMs as classifiers
 // So the same classifier metrics can be calculated over this
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -31,6 +43,7 @@ pub struct LLMDataPoint {
     pub(crate) response: Option<String>,
     pub(crate) valid: bool,
     pub(crate) error: bool,
+    pub(crate) counter_factual: Option<LLMDataPointCounterFactual>,
 }
 
 impl LLMDataPoint { 
@@ -62,6 +75,14 @@ pub(crate) struct KeyValuePair {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct CounterFactualModelEvaluationResult {
+    pub(crate) change_rate_overall: f32,
+    pub(crate) change_rate_sensible_attributes: Vec<f32>,
+    pub(crate) total_sensible_attributes: Vec<u32>,
+    pub(crate) sensible_attribute: String,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelEvaluationResult {
     pub(crate) model_evaluation_id: u128,
     pub(crate) dataset: String,
@@ -73,6 +94,7 @@ pub struct ModelEvaluationResult {
     pub(crate) data_points: Option<Vec<DataPoint>>,
     pub(crate) llm_data_points: Option<Vec<LLMDataPoint>>,
     pub(crate) prompt_template: Option<String>,
+    pub(crate) counter_factual: Option<CounterFactualModelEvaluationResult>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -292,4 +314,5 @@ pub struct LLMMetricsAPIResult {
     pub queries: usize,
     pub invalid_responses: u32,
     pub call_errors: u32,
+    pub counter_factual: Option<CounterFactualModelEvaluationResult>,
 }
