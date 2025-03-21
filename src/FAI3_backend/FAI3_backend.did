@@ -75,6 +75,8 @@ type ContextAssociationTestMetricsBag = record {
     religion: ContextAssociationTestMetrics;
     profession: ContextAssociationTestMetrics;
     error_count: nat32;
+    error_rate: float32;
+    total_queries: nat32;
     timestamp: nat64;
     intrasentence_prompt_template: text;
     intersentence_prompt_template: text;
@@ -143,6 +145,13 @@ type ContextAssociationTestAPIResult = record {
   icat_score_inter: float32;
 };
 
+type GenericError = record {
+    category: nat16;   // The error category (e.g., 100 for Input Errors)
+    code: nat16;       // A specific error within the category
+    message: text;     // Human-readable error message
+    details: vec record { key: text; value: text }; // Additional info as key-value pairs  
+};
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -188,5 +197,5 @@ service : () -> {
     "get_llm_model_data": (Model) -> (LLMModelData) query;
     "get_llm_model_data_id": (nat) -> (LLMModelData) query;
 
-    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
+    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: GenericError });
 }

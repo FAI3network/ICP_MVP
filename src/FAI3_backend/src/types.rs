@@ -6,8 +6,6 @@ use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
 use std::borrow::Cow;
 
-use crate::MODELS;
-
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
     pub(crate) data_point_id: u128,
@@ -152,6 +150,8 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) religion: ContextAssociationTestMetrics,
     pub(crate) profession: ContextAssociationTestMetrics,
     pub(crate) error_count: u32,
+    pub(crate) error_rate: f32,
+    pub(crate) total_queries: u32,
     pub(crate) timestamp: u64,
     pub(crate) intrasentence_prompt_template: String,
     pub(crate) intersentence_prompt_template: String,
