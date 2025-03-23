@@ -22,12 +22,6 @@ import {
 } from "../ui";
 import BarChartchart from "./BarChartchart";
 
-const Label = ({ children, htmlFor }: any) => (
-  <label htmlFor={htmlFor} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-    {children}
-  </label>
-);
-
 export default function TabChart({ chartData, chartConfig }: any) {
   const allMetricsKeys: string[] = Object.values(chartConfig).map((config: any) => config.key);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(allMetricsKeys || []);
@@ -61,7 +55,9 @@ export default function TabChart({ chartData, chartConfig }: any) {
             </TabsList>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 flex flex-wrap gap-4">
+            <div className="mb-4 flex flex-wrap gap-4 items-center">
+              <p className="text-sm font-medium ">Filter metrics:</p>
+
               <Select
                 options={allMetricsKeys}
                 selection={selectedMetricsString}
