@@ -47,8 +47,8 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
     const predictionFilter = tableColumns.filter((col) => col.toLowerCase().includes("prediction"));
 
     setColumnLabels({
-      labels: cachedSelections[0][0] ?? (labelFilter.length > 0 ? labelFilter[0] : ""),
-      predictions:cachedSelections[0][1] ?? (predictionFilter.length > 0 ? predictionFilter[0] : ""),
+      labels: cachedSelections?.[0]?.[0] ?? (labelFilter.length > 0 ? labelFilter[0] : ""),
+      predictions:cachedSelections?.[0]?.[1] ?? (predictionFilter.length > 0 ? predictionFilter[0] : ""),
       privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
     });
 
