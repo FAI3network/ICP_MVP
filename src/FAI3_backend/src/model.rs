@@ -49,7 +49,8 @@ pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> 
                         },
                         metrics_history: Vec::new(),
                     }),
-                                
+                    cached_thresholds: None,
+                    cached_selections: None,
                 },
             );
 

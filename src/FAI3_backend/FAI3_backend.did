@@ -136,8 +136,6 @@ type User = record {
 
 type HashMap = vec record { key: text; value: nat };
 
-type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
-
 type ContextAssociationTestAPIResult = record {
   error_count: nat32;
   general_ss: float32;
