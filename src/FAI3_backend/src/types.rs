@@ -153,8 +153,7 @@ pub struct Model {
     pub details: ModelDetails,
     pub model_type: ModelType,
     pub cached_thresholds: Option<CachedThresholds>,
-    pub cached_selections: Option<Vec<String>>,
-    pub version: u128,
+    pub cached_selections: Option<Vec<String>>
 }
 
 impl Storable for Model {

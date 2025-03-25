@@ -51,7 +51,6 @@ pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> 
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
-                    version: 0,
                 },
             );
 
@@ -93,7 +92,6 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
-                    version: 0,
                 },
             );
 
