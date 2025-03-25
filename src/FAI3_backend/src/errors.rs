@@ -1,7 +1,7 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
-#[derive(Debug, CandidType, Serialize, Deserialize)]
+#[derive(Debug, CandidType, Serialize, Deserialize, PartialEq)]
 pub struct GenericError {
     pub category: u16,
     pub code: u16,
