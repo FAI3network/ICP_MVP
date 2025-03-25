@@ -87,7 +87,9 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                         cat_metrics: None,
                         cat_metrics_history: Vec::new(),
                         hugging_face_url,
-                    })
+                    }),
+                    cached_thresholds: None,
+                    cached_selections: None,
                 },
             );
 

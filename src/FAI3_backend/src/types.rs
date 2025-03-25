@@ -59,12 +59,19 @@ pub struct LLMModelData {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub(crate) struct CachedThresholds {
+    pub(crate) thresholds: Option<HashMap<String, (f64, bool)>>
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
     pub(crate) owners: Vec<Principal>,
     pub(crate) details: ModelDetails,
-    pub(crate) model_type: ModelType
+    pub(crate) model_type: ModelType,
+    pub(crate) cached_thresholds: Option<CachedThresholds>,
+    pub(crate) cached_selections: Option<Vec<String>>
 }
 
 impl Storable for Model {

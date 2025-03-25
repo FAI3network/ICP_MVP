@@ -19,6 +19,8 @@ type PrivilegedIndex = record {
   value: float32;
 };
 
+type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
+
 type Metrics = record {
   statistical_parity_difference: opt vec PrivilegedIndex;
   disparate_impact: opt vec PrivilegedIndex;
@@ -105,12 +107,18 @@ type ModelType = variant {
     LLM : LLMModelData;
 };
 
+type CachedThresholds = record {
+  thresholds: PrivilegedThreshold;
+};
+
 type Model = record {
   model_id: nat;
   model_name: text;
   owners: vec principal;
   details: ModelDetails;
   model_type: ModelType;
+  cached_thresholds: opt CachedThresholds;
+  cached_selections: opt vec text;
 };
 
 type ModelDetails = record {
@@ -168,7 +176,7 @@ service : () -> {
     "update_model": (nat, text, ModelDetails) -> (bool);
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap, vec text) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 

@@ -1,4 +1,4 @@
-use crate::types::{PrivilegedIndex, ModelType, get_classifier_model_data};
+use crate::types::{{CachedThresholds, PrivilegedIndex, ModelType, get_classifier_model_data}};
 use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS
 };
@@ -199,7 +199,7 @@ pub(crate) fn calculate_average_odds_difference(
 
         is_owner(&model, caller);
 
-        let mut model_data = get_classifier_model_data(&model);
+        let mut model_data = get_classifier_model_data(&model); 
 
         let latest_timestamp = model_data.data_points[model_data.data_points.len() - 1].timestamp;
 
@@ -522,7 +522,7 @@ pub(crate) fn calculate_all_metrics(
     let spd = calculate_statistical_parity_difference(model_id, privilieged_threshold.clone());
     let di = calculate_disparate_impact(model_id, privilieged_threshold.clone());
     let aod = calculate_average_odds_difference(model_id, privilieged_threshold.clone());
-    let eod = calculate_equal_opportunity_difference(model_id, privilieged_threshold);
+    let eod = calculate_equal_opportunity_difference(model_id, privilieged_threshold.clone());
     let acc = calculate_accuracy(model_id);
     let prec = calculate_precision(model_id);
     let rec = calculate_recall(model_id);
@@ -531,6 +531,10 @@ pub(crate) fn calculate_all_metrics(
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found");
         let mut model_data = get_classifier_model_data(&model);
+        model.cached_thresholds = Some(CachedThresholds {
+            thresholds: privilieged_threshold,
+        });
+
         model_data.metrics.timestamp = ic_cdk::api::time();
         model_data.metrics_history.push(model_data.metrics.clone());
         model.model_type = ModelType::Classifier(model_data);
