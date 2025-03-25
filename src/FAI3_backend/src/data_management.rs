@@ -1,6 +1,5 @@
 use crate::{
-    check_cycles_before_action, is_owner, DataPoint, MODELS,
-    NEXT_DATA_POINT_ID
+    check_cycles_before_action, is_owner, DataPoint, MODELS, NEXT_DATA_POINT_ID
 };
 use candid::{CandidType, Deserialize, Principal};
 use crate::types::get_classifier_model_data;
@@ -20,6 +19,7 @@ pub fn add_dataset(
     labels: Vec<bool>,
     predictions: Vec<bool>,
     privileged: Vec<KeyValuePair>,
+    selection_labels: Vec<String>,
 ) {
     check_cycles_before_action();
 
@@ -78,6 +78,10 @@ pub fn add_dataset(
                     features: feature_vector.clone(),
                     timestamp,
                 };
+
+                model.cached_selections = Some(selection_labels.clone());
+
+                model.cached_selections = Some(selection_labels.clone());
 
                 let mut model_data = get_classifier_model_data(&model);
                 model_data.data_points.push(data_point);

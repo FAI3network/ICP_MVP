@@ -7,6 +7,7 @@ mod metrics_calculation;
 mod hugging_face;
 mod context_association_test;
 mod utils;
+mod errors;
 
 use candid::Principal;
 

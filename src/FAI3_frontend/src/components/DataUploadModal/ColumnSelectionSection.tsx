@@ -4,8 +4,10 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { Table } from "@tanstack/react-table";
 import { DataUploadContext } from "./utils";
 import { useAuthClient, useDataContext } from "../../utils";
+import { toast } from "sonner";
+import { features } from "process";
 
-export default function ColumnSelectionSection({ fetchModel, latestVars }: { fetchModel: () => Promise<any>, latestVars: any }) {
+export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds, cachedSelections }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -23,16 +25,20 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
   })
   const [loading, setLoading] = useState(false);
   const [openThresholdField, setOpenThresholdField] = useState(false);
-  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number }[]>([]);
+  const [thresholds, setThresholds] = useState<{ varName: string, comparator: string, amount: number | null }[]>([]);
 
   useEffect(() => {
     console.log(columnLabels.privledged);
     if (columnLabels.privledged.length == 0) {
       setOpenThresholdField(false);
+    } else if (columnLabels.privledged.length > 0 && !loading) {
+      setThresholds(columnLabels.privledged.split(", ").map((varName: string, index: number) => ({ varName, comparator: thresholds[index]?.comparator ?? "greater", amount: thresholds[index]?.amount ?? null })));
     }
   }, [columnLabels.privledged]);
 
   useEffect(() => {
+    setLoading(true);
+
     const tableColumns = table.getRowModel().rows.length
       ? Object.keys(table.getRowModel().rows[0].original)
       : [];
@@ -41,22 +47,24 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
     const predictionFilter = tableColumns.filter((col) => col.toLowerCase().includes("prediction"));
 
     setColumnLabels({
-      labels: labelFilter.length > 0 ? labelFilter[0] : "",
-      predictions: predictionFilter.length > 0 ? predictionFilter[0] : "",
+      labels: cachedSelections?.[0]?.[0] ?? (labelFilter.length > 0 ? labelFilter[0] : ""),
+      predictions:cachedSelections?.[0]?.[1] ?? (predictionFilter.length > 0 ? predictionFilter[0] : ""),
       privledged: latestVars && latestVars.length > 0 ? latestVars.join(", ") : ""
     });
+
+    if (cachedThresholds && cachedThresholds.length > 0) {
+      setThresholds(cachedThresholds[0].thresholds[0].map((thresholdDetails: any) => ({ varName: thresholdDetails[0], comparator: thresholdDetails[1][1] ? "greater" : "lower", amount: thresholdDetails[1][0] })));
+    }
+
+    setLoading(false);
   }, [table]);
 
   useEffect(() => {
-    if (latestVars && latestVars.length > 0) {
-      setThresholds(latestVars.map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
-    } else if (columnLabels.privledged.length > 0) {
-      setThresholds(columnLabels.privledged.split(", ").map((varName: string) => ({ varName, comparator: "greater", amount: 0 })));
-    }
-  }, [latestVars, columnLabels.privledged]);
+    console.log(columnLabels);
+  }, [columnLabels]);
 
   const uploadData = async () => {
-    // setLoading(true);
+    setLoading(true);
 
     let labels: boolean[] = [];
     let predictions: boolean[] = [];
@@ -64,8 +72,7 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
 
     const privledgedLabels = columnLabels.privledged.split(", ");
 
-    const privilegedVariables = [];
-    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount, threshold.comparator == "greater" ? true : false]]));
+    const privilegedVariables: { key: string, value: bigint }[] = [];
 
     for (let i = 0; i < columns.length; i++) {
       if (columns[i].accessorKey === columnLabels.labels) {
@@ -80,12 +87,61 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
       }
     }
 
-    await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables);
-    await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
-    await fetchModel();
-    await fetchModels();
+    let valid = false;
+
+    console.log(columnLabels.privledged);
+
+    console.log(thresholds);
+
+    const thresholdValues = thresholds.map((threshold) => ([threshold.varName, [threshold.amount ?? calculateMedian(features[Number(privilegedVariables.find((priv) => priv.key === threshold.varName)?.value)]), threshold.comparator == "greater" ? true : false]]));
+    console.log(thresholdValues);
+
+    for (const priv of privilegedVariables) {
+      const threshold = thresholdValues.find((threshold) => threshold[0] === priv.key);
+      const amount = threshold?.[1][0] as number | null;
+      const comparator = threshold?.[1][1];
+
+      const feats = features[Number(priv.value)];
+
+      if (amount === null) {
+        toast.error(`Something went wrong, please try again`);
+      }
+
+      if (amount! < Math.min(...feats) || amount! > Math.max(...feats)) {
+        console.log("threshold out of range");
+      } else if (comparator) {
+        valid = feats.some((value) => value > amount!);
+      } else {
+        valid = feats.some((value) => value < amount!);
+      }
+
+      if (!valid) {
+        toast.error(`Privileged variable ${priv.key} does not meet the threshold`);
+        break;
+      }
+
+    }
+
+    if (valid) {
+      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables, [columnLabels.labels, columnLabels.predictions]);
+      await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
+      await fetchModel();
+      await fetchModels();
+      closeModal();
+    }
+
     setLoading(false);
-    closeModal();
+  }
+
+  const calculateMedian = (features: number[]) => {
+    console.log(features);
+
+    const max = Math.max(...features);
+    const min = Math.min(...features);
+
+    console.log(max, min);
+
+    return (max + min) / 2;
   }
 
   if (loading) {
@@ -162,21 +218,28 @@ export default function ColumnSelectionSection({ fetchModel, latestVars }: { fet
                   The number you set will be used as the threshold. <br /> Any datapoint value larger than this number will be considered privileged.
                 </p>
                 {
-                  columnLabels.privledged.split(", ").map((label: string, index: number) => (
+                  thresholds.map((threshold, index: number) => {
+                    console.log(thresholds[index]);
+                    return (
                     <div className="flex flex-row gap-2 items-center" key={index}>
-                      <h3>{label} Threshold:</h3>
-                      <Select options={["greater", "lower"]} selection={thresholds[index].comparator} setSelection={(selection: any) => {
-                        const newThresholds = [...thresholds];
-                        newThresholds[index].comparator = selection;
-                        setThresholds(newThresholds);
-                      }} />
-                      <input type="number" className="border border-gray-300 rounded-md p-1" onChange={(e) => {
-                        const newThresholds = [...thresholds];
-                        newThresholds[index].amount = parseFloat(e.target.value);
-                        setThresholds(newThresholds);
-                      }} />
+                      <h3>{threshold.varName} Threshold:</h3>
+                      <Select options={["greater", "lower"]} selection={threshold.comparator} 
+                        setSelection={(selection: any) => {
+                          const newThresholds = [...thresholds];
+                          newThresholds[index].comparator = selection;
+                          setThresholds(newThresholds);
+                        }} 
+                      />
+                      <input type="number" className="border border-gray-300 rounded-md p-1"
+                        value={threshold.amount ?? ""}
+                        onChange={(e) => {
+                          const newThresholds = [...thresholds];
+                          newThresholds[index].amount = parseFloat(e.target.value);
+                          setThresholds(newThresholds);
+                        }} 
+                      />
                     </div>
-                  ))
+                  )})
                 }
               </div>
             )
