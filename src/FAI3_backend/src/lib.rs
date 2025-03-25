@@ -1,5 +1,5 @@
 pub(crate) mod cycles_management;
-mod types;
+pub mod types;
 mod admin_management;
 mod data_management;
 mod model;

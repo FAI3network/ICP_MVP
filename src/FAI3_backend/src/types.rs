@@ -10,12 +10,12 @@ pub type PrivilegedMap = HashMap<String, u128>;
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct DataPoint {
-    pub(crate) data_point_id: u128,
-    pub(crate) target: bool,
-    pub(crate) privileged_map: PrivilegedMap,
-    pub(crate) predicted: bool,
-    pub(crate) features: Vec<f64>,
-    pub(crate) timestamp: u64,
+    pub data_point_id: u128,
+    pub target: bool,
+    pub privileged_map: PrivilegedMap,
+    pub predicted: bool,
+    pub features: Vec<f64>,
+    pub timestamp: u64,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -100,53 +100,53 @@ pub struct ModelEvaluationResult {
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct AverageMetrics {
     pub statistical_parity_difference: Option<f32>,
-    pub(crate) disparate_impact: Option<f32>,
+    pub disparate_impact: Option<f32>,
     pub average_odds_difference: Option<f32>,
-    pub(crate) equal_opportunity_difference: Option<f32>,
+    pub equal_opportunity_difference: Option<f32>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct PrivilegedIndex {
-    pub(crate) variable_name: String,
-    pub(crate) value: f32,
+    pub variable_name: String,
+    pub value: f32,
 }
 
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Metrics {
-    pub(crate) statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) disparate_impact: Option<Vec<PrivilegedIndex>>,
-    pub(crate) average_odds_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) equal_opportunity_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) average_metrics: AverageMetrics,
-    pub(crate) accuracy: Option<f32>,
-    pub(crate) precision: Option<f32>,
-    pub(crate) recall: Option<f32>,
-    pub(crate) timestamp: u64,
+    pub statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
+    pub disparate_impact: Option<Vec<PrivilegedIndex>>,
+    pub average_odds_difference: Option<Vec<PrivilegedIndex>>,
+    pub equal_opportunity_difference: Option<Vec<PrivilegedIndex>>,
+    pub average_metrics: AverageMetrics,
+    pub accuracy: Option<f32>,
+    pub precision: Option<f32>,
+    pub recall: Option<f32>,
+    pub timestamp: u64,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ClassifierModelData {
-    pub(crate) data_points: Vec<DataPoint>,
-    pub(crate) metrics: Metrics,
-    pub(crate) metrics_history: Vec<Metrics>,
+    pub data_points: Vec<DataPoint>,
+    pub metrics: Metrics,
+    pub metrics_history: Vec<Metrics>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct LLMModelData {
-    pub(crate) hugging_face_url: String,
-    pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
-    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
-    pub(crate) evaluations: Vec<ModelEvaluationResult>,
+    pub hugging_face_url: String,
+    pub cat_metrics: Option<ContextAssociationTestMetricsBag>,
+    pub cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
+    pub evaluations: Vec<ModelEvaluationResult>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
-    pub(crate) model_id: u128,
-    pub(crate) model_name: String,
-    pub(crate) owners: Vec<Principal>,
-    pub(crate) details: ModelDetails,
-    pub(crate) model_type: ModelType
+    pub model_id: u128,
+    pub model_name: String,
+    pub owners: Vec<Principal>,
+    pub details: ModelDetails,
+    pub model_type: ModelType
 }
 
 impl Storable for Model {
@@ -164,11 +164,11 @@ impl Storable for Model {
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {
-    pub(crate) description: String,
-    pub(crate) framework: String,
-    pub(crate) version: String,
-    pub(crate) objective: String,
-    pub(crate) url: String,
+    pub description: String,
+    pub framework: String,
+    pub version: String,
+    pub objective: String,
+    pub url: String,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -216,38 +216,38 @@ pub enum ContextAssociationTestResult {
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
 pub struct ContextAssociationTestMetrics {
-    pub(crate) stereotype: u32,
-    pub(crate) anti_stereotype: u32,
-    pub(crate) neutral: u32,
-    pub(crate) other: u32,
+    pub stereotype: u32,
+    pub anti_stereotype: u32,
+    pub neutral: u32,
+    pub other: u32,
 }
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
 pub struct ContextAssociationTestMetricsBag {
-    pub(crate) general: ContextAssociationTestMetrics,
-    pub(crate) intersentence: ContextAssociationTestMetrics,
-    pub(crate) intrasentence: ContextAssociationTestMetrics,
-    pub(crate) gender: ContextAssociationTestMetrics,
-    pub(crate) race: ContextAssociationTestMetrics,
-    pub(crate) religion: ContextAssociationTestMetrics,
-    pub(crate) profession: ContextAssociationTestMetrics,
-    pub(crate) error_count: u32,
-    pub(crate) timestamp: u64,
-    pub(crate) intrasentence_prompt_template: String,
-    pub(crate) intersentence_prompt_template: String,
-    pub(crate) seed: u32,
+    pub general: ContextAssociationTestMetrics,
+    pub intersentence: ContextAssociationTestMetrics,
+    pub intrasentence: ContextAssociationTestMetrics,
+    pub gender: ContextAssociationTestMetrics,
+    pub race: ContextAssociationTestMetrics,
+    pub religion: ContextAssociationTestMetrics,
+    pub profession: ContextAssociationTestMetrics,
+    pub error_count: u32,
+    pub timestamp: u64,
+    pub intrasentence_prompt_template: String,
+    pub intersentence_prompt_template: String,
+    pub seed: u32,
     // precalculated fields
-    pub(crate) icat_score_intra: f32,
-    pub(crate) icat_score_inter: f32,
-    pub(crate) icat_score_gender: f32,
-    pub(crate) icat_score_race: f32,
-    pub(crate) icat_score_profession: f32,
-    pub(crate) icat_score_religion: f32,
-    pub(crate) general_lms: f32,
-    pub(crate) general_ss: f32,
-    pub(crate) general_n: u32,
-    pub(crate) icat_score_general: f32,
-    pub(crate) data_points: Vec<ContextAssociationTestDataPoint>,
+    pub icat_score_intra: f32,
+    pub icat_score_inter: f32,
+    pub icat_score_gender: f32,
+    pub icat_score_race: f32,
+    pub icat_score_profession: f32,
+    pub icat_score_religion: f32,
+    pub general_lms: f32,
+    pub general_ss: f32,
+    pub general_n: u32,
+    pub icat_score_general: f32,
+    pub data_points: Vec<ContextAssociationTestDataPoint>,
 }
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
@@ -258,13 +258,13 @@ pub enum ContextAssociationTestType {
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ContextAssociationTestDataPoint {
-    pub(crate) data_point_id: u128,
-    pub(crate) prompt: String,
-    pub(crate) answer: Option<String>,
-    pub(crate) result: Option<ContextAssociationTestResult>,
-    pub(crate) error: bool,
-    pub(crate) test_type: ContextAssociationTestType,
-    pub(crate) timestamp: u64,
+    pub data_point_id: u128,
+    pub prompt: String,
+    pub answer: Option<String>,
+    pub result: Option<ContextAssociationTestResult>,
+    pub error: bool,
+    pub test_type: ContextAssociationTestType,
+    pub timestamp: u64,
 }
 
 impl Storable for ClassifierModelData {
