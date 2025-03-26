@@ -224,6 +224,7 @@ async fn cat_generic_call(prompt: String, option_indices_definition: Vec<Context
             return Ok((definition, ret));  // Include full model response
         },
         Err(e) => {
+            ic_cdk::eprintln!("Error in context association test call: {}", e.to_string());
             return Err(e.to_string())  // Convert the error to a String and return it
         }
     }
