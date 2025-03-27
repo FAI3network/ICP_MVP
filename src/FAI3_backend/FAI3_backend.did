@@ -106,6 +106,12 @@ type LLMDataPoint = record {
     error: bool;
 };
 
+type CounterFactualModelEvaluationResult = record {
+  change_rate_overall: float32;
+  change_rate_sensible_attributes: vec float32;
+  total_sensible_attributes: vec nat32;
+};
+
 type ModelEvaluationResult = record {
     model_evaluation_id: nat;
     dataset: text;
@@ -115,6 +121,7 @@ type ModelEvaluationResult = record {
     data_points: opt vec DataPoint;
     llm_data_points: opt vec LLMDataPoint;
     prompt_template: opt text;
+    counter_factual: opt CounterFactualModelEvaluationResult;
 };
 
 type LLMModelData = record {
@@ -172,6 +179,7 @@ type LLM_MetricsAPIResult = record {
     queries: nat64;
     invalid_responses: nat32;
     call_errors: nat32;
+    counter_factual: opt CounterFactualModelEvaluationResult;
 };
 
 service : () -> {
