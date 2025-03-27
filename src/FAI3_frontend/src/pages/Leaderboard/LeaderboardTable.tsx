@@ -96,6 +96,7 @@ export default function LeaderboardTable() {
         const model_data = row.original.model_type['Classifier'] as ClassifierModelData; 
         const metrics: Metrics = model_data.metrics;
         const cellValue = Number(metrics.average_metrics.statistical_parity_difference[0]);
+        console.log(metrics)
 
         return isNaN(cellValue) ? null : (
             <div
@@ -202,6 +203,87 @@ export default function LeaderboardTable() {
                 ? `text-[#D60E0E] bg-[#FFE0E0]`
                 : `text-[#CE8500] bg-[#FFECCC] bg-opacity-50`
               }`}
+          >
+            {cellValue.toFixed(3)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "Accuracy",
+      header: ({ column }: any) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Accuracy
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['Classifier'] as ClassifierModelData; 
+        const metrics: Metrics = model_data.metrics;
+        const cellValue = Number(metrics.accuracy[0]);
+
+        return isNaN(cellValue) ? null : (
+          <div
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
+          >
+            {cellValue.toFixed(3)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "Precision",
+      header: ({ column }: any) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Precision
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['Classifier'] as ClassifierModelData; 
+        const metrics: Metrics = model_data.metrics;
+        const cellValue = Number(metrics.precision[0]);
+
+        return isNaN(cellValue) ? null : (
+          <div
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
+          >
+            {cellValue.toFixed(3)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "Recall",
+      header: ({ column }: any) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Recall
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }: any) => {
+        const model_data = row.original.model_type['Classifier'] as ClassifierModelData; 
+        const metrics: Metrics = model_data.metrics;
+        const cellValue = Number(metrics.recall[0]);
+
+        return isNaN(cellValue) ? null : (
+          <div
+            className={`ml-4 w-fit py-0.5 px-2 rounded-[10px]`}
           >
             {cellValue.toFixed(3)}
           </div>
