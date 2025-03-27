@@ -1,6 +1,6 @@
 use ic_cdk_macros::*;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
-use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair};
+use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID};
 use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
 use std::collections::HashMap;
@@ -202,10 +202,17 @@ async fn run_metrics_calculation(
 
         // Generating test-specific attributes string
         let mut result_attributes: String = String::from("");
+        let mut result_attributes_cf: String = String::from("");  // for counter factual fairness
 
         for key in keys {
             let value = &result[key];
             if key != predict_attribute {
+                if key == sensible_attribute {
+                    let swapped_value = if (*value).trim() == "1" { "0" } else { "1" };
+                    result_attributes_cf += &format!("{}: {}, ", key, swapped_value);
+                } else {
+                    result_attributes_cf += &format!("{}: {}, ", key, value);
+                }
                 result_attributes += &format!("{}: {}, ", key, value);
             }
         }
@@ -213,9 +220,13 @@ async fn run_metrics_calculation(
         // clean up string formatting (last two characters)
         result_attributes.pop();
         result_attributes.pop();
+        result_attributes_cf.pop();
+        result_attributes_cf.pop();
 
         // Replace placeholder in the prompt with real attributes
         let personalized_prompt = prompt.replace("*?*", &result_attributes);
+        let personalized_prompt_cf = prompt.replace("*?*", &result_attributes_cf);
+        
         
         // Parsing column to f64
         let sensible_attr: f64 = result.get(sensible_attribute).map(|x| x.parse().ok())
@@ -240,13 +251,13 @@ async fn run_metrics_calculation(
                 _ => ic_cdk::api::trap("Invalid reading score"),
             }
         };
-        
-        let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
 
         let timestamp: u64 = ic_cdk::api::time();
         
+        let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
+        
         match res {
-            Ok(r) => {
+            Ok(r) => {   
                 let trimmed_response = r.trim();
                 let response: Result<bool, String> = {
                     ic_cdk::println!("Response: {}", trimmed_response.to_string());
@@ -261,7 +272,71 @@ async fn run_metrics_calculation(
                         }
                     }
                 };
-                    
+
+                let timestamp_cf: u64 = ic_cdk::api::time();
+                let res_cf = call_hugging_face(personalized_prompt_cf.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
+
+                let counter_factual: LLMDataPointCounterFactual = match res_cf {
+                    Ok(val) => {
+                        let trimmed_response_cf = val.trim();
+                        let response_cf: Result<bool, String> = {
+                            ic_cdk::println!("Response CF: {}", trimmed_response_cf.to_string());
+
+                            if trimmed_response_cf == predict_attributes_values[1] {
+                                Result::Ok(true)
+                            } else {
+                                if trimmed_response_cf == predict_attributes_values[0] {
+                                    Result::Ok(false)
+                                } else {
+                                    Result::Err(format!("Unknown response CF '{}'", trimmed_response_cf.to_string()))
+                                }
+                            }
+                        };
+
+                        match response_cf {
+                            Ok(res_cf) => {
+                                LLMDataPointCounterFactual {
+                                    error: false,
+                                    valid: true,
+                                    timestamp: timestamp_cf,
+                                    prompt: Some(personalized_prompt_cf),
+                                    target: expected_result,
+                                    response: Some(String::from(trimmed_response_cf)),
+                                    predicted: Some(res_cf),
+                                    features: features.clone(),
+                                }
+                            },
+                            Err(e) => {
+                                ic_cdk::println!("CF Response error: {}", e);
+                                LLMDataPointCounterFactual {
+                                    error: false,
+                                    valid: false,
+                                    timestamp: timestamp_cf,
+                                    prompt: Some(personalized_prompt_cf),
+                                    target: expected_result,
+                                    predicted: None,
+                                    features: Vec::new(),
+                                    response: None,
+                                }
+                            }
+                        }
+                        
+                    },
+                    Err(e) => {
+                        ic_cdk::println!("CF Call error: {}", e);
+                        LLMDataPointCounterFactual {
+                            error: true,
+                            valid: false,
+                            timestamp: timestamp_cf,
+                            response: None,
+                            predicted: None,
+                            features: Vec::new(),
+                            prompt: Some(personalized_prompt_cf),
+                            target: expected_result,
+                        }
+                    }
+                };
+                
                 match response {
                     Ok(val) => {
                         data_points.push(LLMDataPoint {
@@ -274,6 +349,7 @@ async fn run_metrics_calculation(
                             response: Some(trimmed_response.to_string()),
                             valid: true,
                             error: false,
+                            counter_factual: Some(counter_factual),
                         });
                     },
                     Err(e) => {
@@ -288,6 +364,7 @@ async fn run_metrics_calculation(
                             response: Some(trimmed_response.to_string()),
                             valid: false,
                             error: false,
+                            counter_factual: Some(counter_factual),
                         });
                         wrong_response += 1;
                     },
@@ -305,6 +382,7 @@ async fn run_metrics_calculation(
                     response: None,
                     valid: false,
                     error: true,
+                    counter_factual: None,
                 });
                 call_errors += 1;
             },
@@ -317,6 +395,56 @@ async fn run_metrics_calculation(
     }
 
     Ok((queries, wrong_response, call_errors))
+}
+
+pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f32, f32, f32, u32, u32) {
+    let mut changed_sensible_attr0: u32 = 0;
+    let mut changed_sensible_attr1: u32 = 0;
+    let mut total_sensible_attr0: u32 = 0;
+    let mut total_sensible_attr1: u32 = 0;
+    
+
+    for dp in data_points {
+        // We only calculate counter factual fairness on points that have no call errors,
+        // Either in the original data point or in the CF data point
+        if dp.error {
+            continue;
+        }
+
+        if let Some(cf) = &dp.counter_factual {
+            if cf.error {
+                continue;
+            }
+
+            match cf.target {
+                true => {
+                    total_sensible_attr1 += 1;
+
+                    if dp.valid != cf.valid {
+                        changed_sensible_attr1 += 1;
+                    }
+                    if dp.valid && cf.valid && dp.predicted != cf.predicted {
+                        changed_sensible_attr1 += 1;
+                    }
+                },
+                false => {
+                    total_sensible_attr0 += 1;
+
+                    if dp.valid != cf.valid {
+                        changed_sensible_attr0 += 1;
+                    }
+                    if dp.valid && cf.valid && dp.predicted != cf.predicted {
+                        changed_sensible_attr0 += 1;
+                    }
+                },
+            }
+        }
+    }
+
+    let total_points = total_sensible_attr0 + total_sensible_attr1;
+    let changed = changed_sensible_attr0 + changed_sensible_attr1;
+    
+    (changed as f32 / total_points as f32, changed_sensible_attr0 as f32 / total_sensible_attr0 as f32, changed_sensible_attr1 as f32 / total_sensible_attr1  as f32, total_sensible_attr0, total_sensible_attr1)
 }
 
 /// Calculates metrics for a given (LLM) across the specified dataset.
@@ -362,12 +490,15 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
     let mut prompt_template: String = String::from("");
 
+    let mut sensible_attribute: String = String::from("");
+
     for item in LLMFAIRNESS_DATASETS.iter().enumerate() {
         let (_, ds) = item;
         if ds.name == dataset.as_str() {
             let train_csv = ds.train_csv;
             let test_csv = ds.test_csv;
             let cf_test_csv = ds.cf_test_csv;
+            sensible_attribute = String::from(ds.sensible_attribute);
             prompt_template = String::from(ds.prompt_template);
 
             res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv,
@@ -457,6 +588,15 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 }
             };
 
+            let (change_rate_overall, change_rate_sensible_attr0, change_rate_sensible_attr1, total_sensible_attr0, total_sensible_attr1) = calculate_counter_factual_metrics(&data_points);
+
+            let counter_factual = CounterFactualModelEvaluationResult {
+                change_rate_overall,
+                change_rate_sensible_attributes: vec![change_rate_sensible_attr0, change_rate_sensible_attr1],
+                total_sensible_attributes: vec![total_sensible_attr0, total_sensible_attr1],
+                sensible_attribute,
+            };
+
             // Saving metrics
             MODELS.with(|models| {
                 let mut models = models.borrow_mut();
@@ -478,6 +618,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                         llm_data_points: Some(data_points),
                         privileged_map: privileged_map.into_iter().map( |(key, value)| KeyValuePair { key, value } ).collect(),
                         prompt_template: Some(prompt_template.clone()),
+                        counter_factual: Some(counter_factual.clone()),
                     });
 
                     let current_id = *next_data_point_id.get();
@@ -496,6 +637,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 queries,
                 invalid_responses,
                 call_errors,
+                counter_factual: Some(counter_factual),
             })
         },
         Err(e) => {
