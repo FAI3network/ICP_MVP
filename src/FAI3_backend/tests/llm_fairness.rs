@@ -6,7 +6,9 @@ use common::{
     wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body
 };
 
-fn llm_fairness_with_variable_queries_test(dataset: &str, returned_texts: Vec<&str>) -> LLMMetricsAPIResult {
+fn llm_fairness_with_variable_queries_test(
+    dataset: &str, returned_texts: Vec<&str>,
+    counter_factual_returned_text: Option<Vec<&str>>) -> LLMMetricsAPIResult {
     let (pic, canister_id) = create_pic();
 
     // Setting the model name and creating the model
@@ -28,8 +30,9 @@ fn llm_fairness_with_variable_queries_test(dataset: &str, returned_texts: Vec<&s
     ).expect("calculate_llm_metrics call should succeed");
 
     // Mocking HTTP responses based on returned_texts
+    let mut text_idx = 0;
     for text in returned_texts {
-        for _ in 0..2 { // Looping twice for each response simulation
+        for i in 0..2 { // Looping twice for each response simulation
             wait_for_http_request(&pic);
             let canister_http_requests = pic.get_canister_http();
             if canister_http_requests.is_empty() {
@@ -37,10 +40,18 @@ fn llm_fairness_with_variable_queries_test(dataset: &str, returned_texts: Vec<&s
             }
             let canister_http_request = &canister_http_requests[0];
 
-            let mock_hf_response_body = mock_correct_hugging_face_response_body(text);
+            let mut mock_hf_response_body = mock_correct_hugging_face_response_body(text);
+            if i == 1 {
+                // If a counter factual array was passed, then we get the text from there for the CF response
+                if let Some(cf_array) = &counter_factual_returned_text {
+                    mock_hf_response_body = mock_correct_hugging_face_response_body(cf_array[text_idx]);
+                }
+            }
+            
             let mock_canister_http_response = mock_http_response(canister_http_request, mock_hf_response_body);
             pic.mock_canister_http_response(mock_canister_http_response);
-            }
+        }
+        text_idx += 1;
     }
 
     // Verifying end condition: no pending HTTP outcalls
@@ -117,7 +128,7 @@ fn test_llm_fairness_wrong_json_response() {
 
 #[test]
 fn test_llm_fairness_invalid_responses() {
-    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa", vec!["invalid", "response"]);
+    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa", vec!["invalid", "response"], None);
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 2);
@@ -126,7 +137,7 @@ fn test_llm_fairness_invalid_responses() {
 
 #[test]
 fn test_llm_fairness_happy_path() {
-    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa", vec!["H", "L"]);
+    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa", vec!["H", "L"], None);
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
@@ -137,6 +148,36 @@ fn test_llm_fairness_happy_path() {
     assert_eq!(counter_factual.change_rate_overall, 0.0);
     assert_eq!(counter_factual.sensible_attribute, "male");
     assert_eq!(counter_factual.change_rate_sensible_attributes, vec![0.0, 0.0]);
+}
+
+#[test]
+fn test_llm_counterfactual_fairness_worst_case() {
+    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa_test", vec!["H", "L"], Some(vec!["L", "H"]));
+
+    assert_eq!(llm_fairness_result.queries, 2);
+    assert_eq!(llm_fairness_result.invalid_responses, 0);
+    assert_eq!(llm_fairness_result.call_errors, 0);
+
+    let counter_factual = llm_fairness_result.counter_factual.expect("It should have a counter factual object");
+
+    assert_eq!(counter_factual.change_rate_overall, 1.0);
+    assert_eq!(counter_factual.sensible_attribute, "male");
+    assert_eq!(counter_factual.change_rate_sensible_attributes, vec![1.0, 1.0]);
+}
+
+#[test]
+fn test_llm_counterfactual_fairness_50_percent_change() {
+    let llm_fairness_result = llm_fairness_with_variable_queries_test("pisa_test", vec!["H", "L"], Some(vec!["L", "L"]));
+
+    assert_eq!(llm_fairness_result.queries, 2);
+    assert_eq!(llm_fairness_result.invalid_responses, 0);
+    assert_eq!(llm_fairness_result.call_errors, 0);
+
+    let counter_factual = llm_fairness_result.counter_factual.expect("It should have a counter factual object");
+
+    assert_eq!(counter_factual.change_rate_overall, 0.5);
+    assert_eq!(counter_factual.sensible_attribute, "male");
+    assert_eq!(counter_factual.change_rate_sensible_attributes, vec![0.0, 1.0]);
 }
 
 #[test]
@@ -162,7 +203,7 @@ fn test_llm_fairness_metrics_with_pisa_test() {
         "H", 
         "H", 
         "L"
-    ]);
+    ], None);
 
     assert_eq!(llm_fairness_result.queries, 20);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
