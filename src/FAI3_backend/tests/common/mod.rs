@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use candid::{Principal, encode_one, decode_one, encode_args};
+use candid::{Principal, encode_one, decode_one, encode_args, Error};
 use ic_management_canister_types::CanisterId;
 use pocket_ic::{
     PocketIc,
@@ -9,7 +9,7 @@ use pocket_ic::{
     },
 };
 use FAI3_backend::types::{
-    Model, ModelDetails
+    Model, ModelDetails, KeyValuePair, PrivilegedIndex
 };
 
 // 2T cycles
@@ -102,7 +102,7 @@ pub fn get_model(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> Mod
         canister_id,
         Principal::anonymous(),
         "get_model",
-        encode_one(1 as u128).unwrap()
+        encode_one(model_id).unwrap()
     ).expect("Failed to call get_model with id = 1");
 
     let decoded_reply: Model = decode_one(&get_model_reply).expect("Failed to decode reply after get_model call.");
@@ -153,6 +153,100 @@ pub fn mock_http_response(canister_http_request: &CanisterHttpRequest, body: imp
     }
 }
 
+pub fn add_dataset(
+    pic: &PocketIc, canister_id: CanisterId,
+    model_id: u128, features: Vec<Vec<f64>>, labels: Vec<bool>,
+    predictions: Vec<bool>, privileged: Vec<KeyValuePair>) -> Result<(), candid::Error> {
+
+    let encoded_args = encode_args((model_id, features, labels, predictions, privileged)).unwrap();
+    // Testing add_classifier_model.
+    let create_model_reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "add_dataset",
+        encoded_args
+    ).expect("Failed to call add_classifier_model method");
+
+    return decode_one(&create_model_reply);
+}
+
+pub fn calculate_statistical_parity_difference(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> Vec<PrivilegedIndex> {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_statistical_parity_difference",
+        encode_args((model_id, None::<Vec<(String, (f64, bool))>>)).unwrap()
+    ).expect("Failed to call calculate_statistical_parity_difference method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_statistical_parity_difference")
+}
+
+pub fn calculate_disparate_impact(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> Vec<PrivilegedIndex> {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_disparate_impact",
+        encode_args((model_id, None::<Vec<(String, (f64, bool))>>)).unwrap()
+    ).expect("Failed to call calculate_disparate_impact method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_disparate_impact")
+}
+
+pub fn calculate_average_odds_difference(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> Vec<PrivilegedIndex> {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_average_odds_difference",
+        encode_args((model_id, None::<Vec<(String, (f64, bool))>>)).unwrap()
+    ).expect("Failed to call calculate_average_odds_difference method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_average_odds_difference")
+}
+
+pub fn calculate_equal_opportunity_difference(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> Vec<PrivilegedIndex> {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_equal_opportunity_difference",
+        encode_args((model_id, None::<Vec<(String, (f64, bool))>>)).unwrap()
+    ).expect("Failed to call calculate_equal_opportunity_difference method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_equal_opportunity_difference")
+}
+
+pub fn calculate_accuracy(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> f32 {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_accuracy",
+        encode_one(model_id).unwrap()
+    ).expect("Failed to call calculate_accuracy method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_accuracy")
+}
+
+pub fn calculate_precision(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> f32 {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_precision",
+        encode_one(model_id).unwrap()
+    ).expect("Failed to call calculate_precision method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_precision")
+}
+
+pub fn calculate_recall(pic: &PocketIc, canister_id: CanisterId, model_id: u128) -> f32 {
+    let reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "calculate_recall",
+        encode_one(model_id).unwrap()
+    ).expect("Failed to call calculate_recall method");
+
+    decode_one(&reply).expect("Failed to decode reply after calling calculate_recall")
+}
+
 pub fn mock_correct_hugging_face_response_body(generated_text: &str) -> String {
     serde_json::json!([
         {
@@ -166,7 +260,7 @@ pub fn mock_correct_hugging_face_response_body(generated_text: &str) -> String {
                     {
                         "id": 1424, 
                         "text": generated_text, 
-                        "logprob": -0.37548828, 
+                        "logprob": -0.37548828,
                         "special": false
                     }
                 ]

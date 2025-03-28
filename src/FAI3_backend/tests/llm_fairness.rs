@@ -214,7 +214,6 @@ fn test_llm_fairness_metrics_with_pisa_test() {
     assert!(llm_fairness_result.metrics.recall.expect("It should return recall") - 0.8181818181818182 < 1e-6);
     
     assert!( (llm_fairness_result.metrics.average_metrics.disparate_impact.expect("It should return disparate_impact") - 0.763888888888889).abs() < 1e-6);
-    println!("AOID: {:?}", llm_fairness_result.metrics.average_metrics.average_odds_difference);
     assert!( (llm_fairness_result.metrics.average_metrics.average_odds_difference.expect("It should return average_odds_difference") - 0.10357143).abs()  < 1e-6);
     assert!( (llm_fairness_result.metrics.average_metrics.equal_opportunity_difference.expect("It should return equal_opportunity_difference") - (-0.1071428571428571)).abs() < 1e-6);
     assert!( (llm_fairness_result.metrics.average_metrics.statistical_parity_difference.expect("It should return statistical_parity_difference") - (-0.1717171717171717)).abs() < 1e-6);

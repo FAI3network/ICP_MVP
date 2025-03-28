@@ -69,9 +69,9 @@ impl LLMDataPoint {
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
-pub(crate) struct KeyValuePair {
-    pub(crate) key: String,
-    pub(crate) value: u128,
+pub struct KeyValuePair {
+    pub key: String,
+    pub value: u128,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]

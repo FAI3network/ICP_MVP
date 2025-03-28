@@ -2,7 +2,7 @@ use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS,
     NEXT_DATA_POINT_ID
 };
-use candid::{Principal};
+use candid::Principal;
 use crate::types::get_classifier_model_data;
 use crate::types::{ModelType, KeyValuePair};
 use std::collections::HashMap;
