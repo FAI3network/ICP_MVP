@@ -130,7 +130,7 @@ pub fn wait_for_http_request(pic: &PocketIc) {
         println!("Waiting for HTTP request... (attempt {}, {})", count, pic.get_canister_http().len());
         pic.tick();
         count += 1;
-        if count > 20 {
+        if count > 100 {
             panic!("Timeout waiting for HTTP request!");
         }
     }

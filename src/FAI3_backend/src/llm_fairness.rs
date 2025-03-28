@@ -68,7 +68,20 @@ const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     predict_attributes_values: &["L", "H"],
 };
 
-const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET];
+// Reduced version for testing purposes
+const PISA_TEST_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
+    prompt_template: PISA_PROMPT,
+    train_csv: include_str!("./data/pisa2009_train_processed.csv"),
+    test_csv: include_str!("data/pisa2009_test_processed_curated.csv"),
+    cf_test_csv: include_str!("data/pisa2009_cf_test_processed.csv"),
+    sensible_attribute: "male",
+    name: "pisa_test",
+    predict_attribute: "readingScore",
+    sensible_attribute_values: &["0", "1"],
+    predict_attributes_values: &["L", "H"],
+};
+
+const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET, PISA_TEST_DATASET];
 
 /// Asynchronously runs metrics calculation based on provided parameters.
 ///

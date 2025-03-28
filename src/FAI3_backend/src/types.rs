@@ -76,10 +76,10 @@ pub(crate) struct KeyValuePair {
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct CounterFactualModelEvaluationResult {
-    pub(crate) change_rate_overall: f32,
-    pub(crate) change_rate_sensible_attributes: Vec<f32>,
-    pub(crate) total_sensible_attributes: Vec<u32>,
-    pub(crate) sensible_attribute: String,
+    pub change_rate_overall: f32,
+    pub change_rate_sensible_attributes: Vec<f32>,
+    pub total_sensible_attributes: Vec<u32>,
+    pub sensible_attribute: String,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
