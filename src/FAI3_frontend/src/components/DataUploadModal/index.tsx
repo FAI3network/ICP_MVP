@@ -9,7 +9,7 @@ import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal({ fetchModel, latestVars, onClose = () => { } }: { fetchModel: () => Promise<any>, latestVars: any, onClose: () => void }) {
+export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, cachedSelections, onClose = () => { } }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
@@ -33,11 +33,16 @@ export default function DataUploadModal({ fetchModel, latestVars, onClose = () =
         complete: (result: Papa.ParseResult<any>) => {
           //Do not accept filelds that are empty strings
           //Remove the empty string field
+          console.log(result)
           if (result.data[0][""] !== undefined) {
             result.data.forEach((element: any) => {
               delete element[""];
             });
           }
+
+          result.data = result.data.filter((row: any) => {
+            return !Object.values(row).every(value => value === null || value === '');
+          });
 
           setData(result.data);
           createColumns(result.data);
@@ -88,7 +93,7 @@ export default function DataUploadModal({ fetchModel, latestVars, onClose = () =
   const steps = [
     <UploadDataFile />,
     <CSVTableView />,
-    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} />,
+    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={cachedThresholds} cachedSelections={cachedSelections} />,
     <ImageUploader />
   ];
 

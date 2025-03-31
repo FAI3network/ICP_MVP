@@ -1,9 +1,8 @@
+import { flexRender } from "@tanstack/react-table";
+
 import {
-  ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -11,12 +10,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import {
-  ArrowUpDown,
-  ChevronDown,
-  ExternalLink,
-  MoreHorizontal,
-} from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 
 import {
   Button,
@@ -44,14 +38,13 @@ import { FAI3_backend } from "../../../../declarations/FAI3_backend"
 import { Model as ModelAsType, ClassifierModelData, Metrics } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { useAuthClient, useDataContext } from "../../utils";
 
-
-export default function LeaderboardTable() {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
-  const { webapp, connected, isAdmin } = useAuthClient();
-  const { Models } = useDataContext();
+export default function ClassifierTable() {
+    const { ClassifierModels } = useDataContext();
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState({});
+    const [rowSelection, setRowSelection] = useState({});
+  
 
   const columns = [
     {
@@ -162,7 +155,7 @@ export default function LeaderboardTable() {
         const model_data = row.original.model_type['Classifier'] as ClassifierModelData; 
         const metrics: Metrics = model_data.metrics;
         const cellValue = Number(metrics.average_metrics.average_odds_difference[0]);
-
+        
         return isNaN(cellValue) ? null : (
           <div
             className={`ml-4 w-fit py-0.5 px-2 rounded-[10px] ${cellValue < 0.1 && cellValue > -0.1
@@ -293,7 +286,7 @@ export default function LeaderboardTable() {
   ];
 
   const table = useReactTable({
-    data: Models,
+    data: ClassifierModels,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -312,87 +305,61 @@ export default function LeaderboardTable() {
   });
 
   return (
-    <div className="w-full">
-      {Models && (
-        <>
-          <AddModelModal />
-
-          <div className="flex items-center justify-center py-4 mb-4 gap-3">
-            {
-              isAdmin && (
-                <Button onClick={openModal}>
-                  Add Model
-                </Button>
-              )
-            }
-            <Input
-              placeholder="Search your favorite model..."
-              value={table.getColumn("name")?.getFilterValue() ?? ""}
-              onChange={(event: any) => {
-                table.getColumn("name")?.setFilterValue(event.target.value);
-              }}
-              className="max-w-sm"
-            />
-            <DropdownMenuCheckboxes />
-          </div>
-          <div className="rounded-md border bg-[#fffaeb] shadow-lg overflow-hidden mb-3">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="hover:bg-[#ECE8EF] hover:bg-opacity-30"
-                  >
-                    <TableHead>#</TableHead>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
+    <div className="rounded-md border bg-[#fffaeb] shadow-lg overflow-hidden mb-3">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup: any) => (
+            <TableRow
+              key={headerGroup.id}
+              className="hover:bg-[#ECE8EF] hover:bg-opacity-30"
+            >
+              <TableHead>#</TableHead>
+              {headerGroup.headers.map((header: any) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row: any) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                <TableCell>
+                  {/* number of row */}
+                  {row.index + 1}
+                </TableCell>
+                {row.getVisibleCells().map((cell: any) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
                 ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      <TableCell>
-                        {/* number of row */}
-                        {row.index + 1}
-                      </TableCell>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </>
-      )}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

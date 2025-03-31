@@ -141,12 +141,19 @@ pub struct LLMModelData {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub(crate) struct CachedThresholds {
+    pub(crate) thresholds: Option<HashMap<String, (f64, bool)>>
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
     pub(crate) model_id: u128,
     pub(crate) model_name: String,
     pub(crate) owners: Vec<Principal>,
     pub(crate) details: ModelDetails,
-    pub(crate) model_type: ModelType
+    pub(crate) model_type: ModelType,
+    pub(crate) cached_thresholds: Option<CachedThresholds>,
+    pub(crate) cached_selections: Option<Vec<String>>
 }
 
 impl Storable for Model {
@@ -232,6 +239,8 @@ pub struct ContextAssociationTestMetricsBag {
     pub(crate) religion: ContextAssociationTestMetrics,
     pub(crate) profession: ContextAssociationTestMetrics,
     pub(crate) error_count: u32,
+    pub(crate) error_rate: f32,
+    pub(crate) total_queries: u32,
     pub(crate) timestamp: u64,
     pub(crate) intrasentence_prompt_template: String,
     pub(crate) intersentence_prompt_template: String,

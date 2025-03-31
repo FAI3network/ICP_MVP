@@ -9,7 +9,7 @@ use num_traits::cast::ToPrimitive;
 use crate::types::HuggingFaceResponseItem;
 
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models";
-const HUGGING_FACE_BEARER_TOKEN: &str = "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";
+const HUGGING_FACE_BEARER_TOKEN: &str = "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";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HuggingFaceRequestParameters {

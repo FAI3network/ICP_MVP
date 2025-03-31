@@ -1,6 +1,7 @@
-import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "../ui";
-import { useState } from "react";
-import { useAuthClient, useDataContext } from "../../utils";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFooter, Button, closeModal, CircularProgress } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { useAuthClient, useDataContext } from "@/utils";
+import { Toggle } from "@/components/ui/toggle";
 
 interface ModelDetails {
   description: string;
@@ -10,8 +11,8 @@ interface ModelDetails {
   url: string;
 }
 
-export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any> }) {
-  const [newModel, setNewModel] = useState<{ name: String, details: ModelDetails }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" } });
+export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel, is_llm, hf_url }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any>, is_llm?: boolean, hf_url?: string }) {
+  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
@@ -27,14 +28,23 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
 
     setLoading(true);
 
+    const modelName = newModel.name;
+    const details = newModel.details;
+
     // const model = await FAI3_backend.add_model(newModel.name, newModel.details);
-    const model = await webapp?.add_classifier_model(newModel.name, newModel.details);
+    const model = await (update? 
+        webapp?.update_model(modelId, newModel.name, newModel.details)
+      : newModel.is_llm ? 
+        webapp?.add_llm_model(modelName, newModel.hf_url, details)
+      : webapp?.add_classifier_model(modelName, details));
 
     if (model) {
+      console.log("fetching and clearing");
       fetchModels();
       clearModelForm();
 
       if (fetchModel) {
+        console.log("refetching model ");
         fetchModel();
       }
     }
@@ -44,8 +54,12 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
     }, 1000);
   }
 
+  useEffect(() => {
+    console.log(newModel);
+  }, [newModel]);
+
   const clearModelForm = () => {
-    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" } });
+    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
     closeModal();
   }
 
@@ -67,6 +81,14 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
               <h3 className="text-lg font-bold mb-4">
                 Model Information
               </h3>
+
+              {
+                !update && (
+                  <Toggle variant="outline" size="default" className="mb-4" onPressedChange={() => setNewModel({ ...newModel, is_llm: !newModel.is_llm })}>
+                  Is LLM
+                </Toggle>)
+              }
+
               <div>
                 <h4 className="text-sm font-bold mb-2">
                   Model Name
@@ -139,6 +161,22 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
                 />
               </div>
 
+              {
+                newModel.is_llm && (
+                  <div>
+                    <h4 className="text-sm font-bold mb-2">
+                      Hugging Face URL
+                    </h4>
+
+                    <Input
+                      placeholder="hf_url"
+                      className="mb-4"
+                      value={newModel.hf_url}
+                      onChange={(event: any) => setNewModel({ ...newModel, hf_url: event.target.value })}
+                    />
+                  </div>
+                ) 
+              }
             </ModalBody>
             <ModalFooter className="flex-col">
               <div className="text-red-500 text-sm w-full text-center">

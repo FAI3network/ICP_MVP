@@ -49,6 +49,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       },
       fairRange: [-0.1, 0.1],
       unfairRange: [-0.4, 0.4],
+      key: "average.SPD",
     },
     DI: {
       label: "Disparate Impact",
@@ -62,6 +63,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       },
       fairRange: [0.8, 1.25],
       unfairRange: [0.8, 1.25],
+      key: "average.DI",
     },
     AOD: {
       label: "Average Odds Difference",
@@ -74,6 +76,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       },
       fairRange: [-0.1, 0.1],
       unfairRange: [-0.2, 0.2],
+      key: "average.AOD",
     },
     EOD: {
       label: "Equal Opportunity Difference",
@@ -86,6 +89,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
       },
       unfairRange: [-0.2, 0.2],
       fairRange: [-0.1, 0.1],
+      key: "average.EOD",
     },
   };
 
@@ -106,7 +110,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
         )
       }
       {model && metrics && !loading && (
-        <section className="grid gap-8 p-6 md:p-10">
+        <section className="grid gap-8 p-6 md:p-10"> 
           <div className="text-center relative w-full">
             <h1 className="text-4xl font-bold pb-3">{model.model_name}</h1>
             <h3>
@@ -126,7 +130,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                       editOrUpload === "edit" ? (
                         <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
                       ) : editOrUpload == "upload" ? (
-                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} onClose={() => setEditOrUpload(null)} />
+                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} cachedSelections={model.cached_selections} onClose={() => setEditOrUpload(null)} />
                       ) : null
                     }
 
@@ -175,7 +179,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
             </Card>
             {
               metrics.length > 0 && (
-                <TabChart chartData={metrics} />
+                <TabChart chartData={metrics} chartConfig={chartConfig} />
               )
             }
           </div>

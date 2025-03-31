@@ -5,5 +5,5 @@ import TabChart from './TabChart';
 export { 
   BarChartchart, 
   LineChartchart, 
-  TabChart 
+  TabChart
 };

@@ -19,6 +19,8 @@ type PrivilegedIndex = record {
   value: float32;
 };
 
+type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
+
 type Metrics = record {
   statistical_parity_difference: opt vec PrivilegedIndex;
   disparate_impact: opt vec PrivilegedIndex;
@@ -75,6 +77,8 @@ type ContextAssociationTestMetricsBag = record {
     religion: ContextAssociationTestMetrics;
     profession: ContextAssociationTestMetrics;
     error_count: nat32;
+    error_rate: float32;
+    total_queries: nat32;
     timestamp: nat64;
     intrasentence_prompt_template: text;
     intersentence_prompt_template: text;
@@ -126,7 +130,7 @@ type ModelEvaluationResult = record {
 
 type LLMModelData = record {
      hugging_face_url: text;
-     cat_metrics: opt vec ContextAssociationTestMetricsBag;
+     cat_metrics: opt ContextAssociationTestMetricsBag;
      cat_metrics_history: vec ContextAssociationTestMetricsBag;
      evaluations: vec ModelEvaluationResult;
 };
@@ -136,12 +140,18 @@ type ModelType = variant {
     LLM : LLMModelData;
 };
 
+type CachedThresholds = record {
+  thresholds: PrivilegedThreshold;
+};
+
 type Model = record {
   model_id: nat;
   model_name: text;
   owners: vec principal;
   details: ModelDetails;
   model_type: ModelType;
+  cached_thresholds: opt CachedThresholds;
+  cached_selections: opt vec text;
 };
 
 type ModelDetails = record {
@@ -156,8 +166,6 @@ type User = record {
   user_id: principal;
   models: vec record { nat; Model };
 };
-
-type PrivilegedThreshold = opt vec record { text; record { float64; bool } };
 
 type ContextAssociationTestAPIResult = record {
   error_count: nat32;
@@ -174,12 +182,11 @@ type ContextAssociationTestAPIResult = record {
   icat_score_inter: float32;
 };
 
-type LLM_MetricsAPIResult = record {
-    metrics: Metrics;
-    queries: nat64;
-    invalid_responses: nat32;
-    call_errors: nat32;
-    counter_factual: opt CounterFactualModelEvaluationResult;
+type GenericError = record {
+    category: nat16;   // The error category (e.g., 100 for Input Errors)
+    code: nat16;       // A specific error within the category
+    message: text;     // Human-readable error message
+    details: vec record { key: text; value: text }; // Additional info as key-value pairs  
 };
 
 service : () -> {
@@ -198,7 +205,7 @@ service : () -> {
     "update_model": (nat, text, ModelDetails) -> (bool);
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap) -> (); //New call for custom privileged fields
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap, vec text) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 
@@ -225,8 +232,7 @@ service : () -> {
 
     "get_classifier_model_data": (Model) -> (ClassifierModelData) query;
     "get_llm_model_data": (Model) -> (LLMModelData) query;
+    "get_llm_model_data_id": (nat) -> (LLMModelData) query;
 
-    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: text });
-
-    "calculate_llm_metrics": (nat, text, nat64, nat32) -> ( variant { Ok: LLM_MetricsAPIResult; Err: text} );
+    "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: GenericError });
 }

@@ -8,6 +8,7 @@ mod hugging_face;
 mod context_association_test;
 mod llm_fairness;
 mod utils;
+mod errors;
 
 use candid::Principal;
 
