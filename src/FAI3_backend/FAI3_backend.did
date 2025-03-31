@@ -96,10 +96,43 @@ type ContextAssociationTestMetricsBag = record {
     data_points: vec ContextAssociationTestDataPoint;
 };
 
+type HashMap = vec record { key: text; value: nat };
+
+type LLMDataPoint = record {
+    data_point_id: nat;
+    target: bool;
+    predicted: opt bool;
+    features: vec float64;
+    timestamp: nat64;
+    prompt: text;
+    response: opt text;
+    valid: bool;
+    error: bool;
+};
+
+type CounterFactualModelEvaluationResult = record {
+  change_rate_overall: float32;
+  change_rate_sensible_attributes: vec float32;
+  total_sensible_attributes: vec nat32;
+};
+
+type ModelEvaluationResult = record {
+    model_evaluation_id: nat;
+    dataset: text;
+    timestamp: nat64;
+    metrics: Metrics;
+    privileged_map: HashMap;
+    data_points: opt vec DataPoint;
+    llm_data_points: opt vec LLMDataPoint;
+    prompt_template: opt text;
+    counter_factual: opt CounterFactualModelEvaluationResult;
+};
+
 type LLMModelData = record {
      hugging_face_url: text;
      cat_metrics: opt ContextAssociationTestMetricsBag;
      cat_metrics_history: vec ContextAssociationTestMetricsBag;
+     evaluations: vec ModelEvaluationResult;
 };
 
 type ModelType = variant {

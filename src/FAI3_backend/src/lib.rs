@@ -6,6 +6,7 @@ mod model;
 mod metrics_calculation;
 mod hugging_face;
 mod context_association_test;
+mod llm_fairness;
 mod utils;
 mod errors;
 
@@ -61,6 +62,13 @@ thread_local! {
     static NEXT_LLM_DATA_POINT_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
         Cell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+            1
+        ).unwrap()
+    );
+
+    static NEXT_LLM_MODEL_EVALUATION_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
             1
         ).unwrap()
     );

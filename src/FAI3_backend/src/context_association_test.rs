@@ -221,7 +221,7 @@ fn get_test_result_from_gold_label(gold_label: &str) -> ContextAssociationTestRe
 async fn cat_generic_call(prompt: String, option_indices_definition: Vec<ContextAssociationTestResult>, hf_model: String, seed: u32) -> Result<(ContextAssociationTestResult, String), String> {
     ic_cdk::println!("Prompt: {}", prompt);
 
-    let response = call_hugging_face(prompt, hf_model, seed).await;
+    let response = call_hugging_face(prompt, hf_model, seed, None).await;
 
     match response {
         Ok(ret) => {
