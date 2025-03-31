@@ -146,7 +146,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                       Run test
                     </Button>
 
-                    <AddModelModal modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
+                    <AddModelModal modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} is_llm hf_url={model.model_type.LLM.hugging_face_url} />
 
                     <Button onClick={openModal}>
                       Edit Model

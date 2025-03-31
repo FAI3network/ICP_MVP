@@ -11,8 +11,8 @@ interface ModelDetails {
   url: string;
 }
 
-export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any> }) {
-  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
+export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel, is_llm, hf_url }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any>, is_llm?: boolean, hf_url?: string }) {
+  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
