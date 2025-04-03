@@ -23,7 +23,7 @@ export default function UploadDataFile() {
   return (
     <ModalContent>
       <ModalHeader>
-        <ModalTitle>Upload Data</ModalTitle>
+        <ModalTitle>Evaluate</ModalTitle>
       </ModalHeader>
       <ModalBody>
         <p>Upload your data to retrain the model.</p>

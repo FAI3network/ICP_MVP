@@ -153,7 +153,8 @@ pub struct Model {
     pub(crate) details: ModelDetails,
     pub(crate) model_type: ModelType,
     pub(crate) cached_thresholds: Option<CachedThresholds>,
-    pub(crate) cached_selections: Option<Vec<String>>
+    pub(crate) cached_selections: Option<Vec<String>>,
+    pub(crate) version: u128,
 }
 
 impl Storable for Model {
@@ -173,7 +174,6 @@ impl Storable for Model {
 pub struct ModelDetails {
     pub(crate) description: String,
     pub(crate) framework: String,
-    pub(crate) version: String,
     pub(crate) objective: String,
     pub(crate) url: String,
 }
