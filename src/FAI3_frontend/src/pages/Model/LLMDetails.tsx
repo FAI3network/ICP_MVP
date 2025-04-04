@@ -20,11 +20,10 @@ import {
 } from "../../components/charts";
 import { DataUploadModal, AddModelModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
-import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 import { useParams } from "react-router-dom";
-import { useAuthClient, useDataContext } from "../../utils";
+import { useAuthClient, useDataContext, toasts } from "../../utils";
 import { Principal } from "@dfinity/principal";
-import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics, GenericError } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
 export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const { modelId } = useParams();
@@ -46,8 +45,15 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
 
   const runCAT = async () => {
     setLoading(true);
-    const res = await webapp?.context_association_test(BigInt(modelId!), 20, 1, false);
-    console.log(res);
+    const res = await webapp?.context_association_test(BigInt(modelId!), 5, 1, false);
+
+    if (res && typeof res === 'object' && res !== null && 'Err' in res) {
+      console.error("Failed to run context association test:", res.Err);
+      const err = res.Err as GenericError;
+      toasts.genericErrorToast(err);
+    } else {
+      console.log(res);
+    }
     fetchModel();
     fetchModels();
     setLoading(false);

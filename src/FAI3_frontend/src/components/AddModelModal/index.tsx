@@ -2,6 +2,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFo
 import { useEffect, useState } from "react";
 import { useAuthClient, useDataContext } from "@/utils";
 import { Toggle } from "@/components/ui/toggle";
+import { toast } from "sonner";
 
 interface ModelDetails {
   description: string;
@@ -23,6 +24,9 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
 
     if (newModel.name === "") {
       setErrorMessage("Please enter a model name.");
+      return;
+    } else if (newModel.is_llm && newModel.hf_url === "") {
+      setErrorMessage("Please enter a Hugging Face URL.");
       return;
     }
 
