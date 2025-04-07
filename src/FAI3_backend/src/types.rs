@@ -111,7 +111,6 @@ pub struct PrivilegedIndex {
     pub value: f32,
 }
 
-
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct Metrics {
     pub statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
@@ -133,11 +132,174 @@ pub struct ClassifierModelData {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct AverageLLMFairnessMetrics {
+    pub model_id: u128,
+    pub statistical_parity_difference: f32,
+    pub disparate_impact: f32,
+    pub average_odds_difference: f32,
+    pub equal_opportunity_difference: f32,
+    pub accuracy: f32,
+    pub precision: f32,
+    pub recall: f32,
+    pub counter_factual_overall_change_rate: f32,
+    // evaluation ids used to calculate this metrics
+    pub model_evaluation_ids: Vec<u128>,
+}
+
+impl AverageLLMFairnessMetrics {
+    // New function initializing with last_computed_evaluation_id as None
+    pub fn new(model_id: u128) -> Self {
+        AverageLLMFairnessMetrics {
+            model_id,
+            statistical_parity_difference: 0.0,
+            disparate_impact: 0.0,
+            average_odds_difference: 0.0,
+            equal_opportunity_difference: 0.0,
+            accuracy: 0.0,
+            precision: 0.0,
+            recall: 0.0,
+            counter_factual_overall_change_rate: 0.0,
+            model_evaluation_ids: Vec::new(),
+        }
+    }
+    
+    /// Adds a new dataset's metrics to the averages, updating each metric and the count.
+    pub fn add_metrics(&mut self, model_evaluation: &ModelEvaluationResult) {
+        self.model_evaluation_ids.push(model_evaluation.model_evaluation_id);
+
+        let metrics = &model_evaluation.metrics;
+
+        // This iterates over the PrivilegedIndex
+        // But normally for LLMs, it should have length 1
+        if let Some(spd) = &metrics.statistical_parity_difference {
+            if !spd.is_empty() {
+                self.statistical_parity_difference += spd.iter().map(|index| index.value).sum::<f32>() / spd.len() as f32;
+            }
+        }
+        if let Some(di) = &metrics.disparate_impact {
+            if !di.is_empty() {
+                self.disparate_impact += di.iter().map(|index| index.value).sum::<f32>() / di.len() as f32;
+            }
+        }
+        if let Some(aod) = &metrics.average_odds_difference {
+            if !aod.is_empty() {
+                self.average_odds_difference += aod.iter().map(|index| index.value).sum::<f32>() / aod.len() as f32;
+            }
+        }
+        if let Some(eod) = &metrics.equal_opportunity_difference {
+            if !eod.is_empty() {
+                self.equal_opportunity_difference += eod.iter().map(|index| index.value).sum::<f32>() / eod.len() as f32;
+            }
+        }
+        if let Some(acc) = metrics.accuracy {
+            self.accuracy += acc;
+        }
+        if let Some(prec) = metrics.precision {
+            self.precision += prec;
+        }
+        if let Some(rec) = metrics.recall {
+            self.recall += rec;
+        }
+        if let Some(counter_factual) = &model_evaluation.counter_factual {
+            self.counter_factual_overall_change_rate += counter_factual.change_rate_overall;
+        }
+    }
+
+    pub fn count(&self) -> usize {
+        self.model_evaluation_ids.len()
+    }
+    
+    /// Finalizes the averages by dividing each summed metric by the count of contributing datasets.
+    pub fn finalize_averages(&mut self) {
+        let count = self.count() as f32;
+        if count > 0.0 {
+            self.statistical_parity_difference /= count ;
+            self.disparate_impact /= count ;
+            self.average_odds_difference /= count ;
+            self.equal_opportunity_difference /= count ;
+            self.accuracy /= count ;
+            self.precision /= count ;
+            self.recall /= count ;
+            self.counter_factual_overall_change_rate /= count ;
+        }
+    }
+
+    /// Returns the last computed evaluation id
+    pub fn last_computed_evaluation_id(&self) -> u128 {
+        // Returns the max of the model_evaluation_ids linked to this type
+        self.model_evaluation_ids.iter().copied().max().unwrap_or(0)
+    }
+
+    /// Given a vector of ModelEvaluationResult, it returns the one that was calculated last, ordered by id and filtering by dataset
+    /// If no one is found, it returns an error
+    pub fn last_computed_evaluation_id_for_dataset(evaluations: &Vec<ModelEvaluationResult>, dataset: String) -> Result<ModelEvaluationResult, String> {
+        evaluations.iter()
+            .filter(|e| e.dataset == dataset)
+            .max_by(|a, b| a.model_evaluation_id.cmp(&b.model_evaluation_id))
+            .cloned()
+            .ok_or_else(|| format!("No evaluations found for the dataset `{}`.", dataset))
+    }
+}
+
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LLMModelData {
     pub hugging_face_url: String,
     pub cat_metrics: Option<ContextAssociationTestMetricsBag>,
     pub cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
     pub evaluations: Vec<ModelEvaluationResult>,
+    pub average_fairness_metrics: Option<AverageLLMFairnessMetrics>,
+}
+
+impl Default for LLMModelData {
+    fn default() -> Self {
+        Self {
+            hugging_face_url: String::from(""),
+            cat_metrics: None,
+            cat_metrics_history: Vec::new(),
+            evaluations: Vec::new(),
+            average_fairness_metrics: None,
+        }
+    }
+}
+
+impl LLMModelData {
+    /// Returns last model evaluations for some datasets
+    pub fn get_last_model_evaluations(&self, datasets: Vec<String>) -> Result<Vec<ModelEvaluationResult>, String> {
+        if datasets.len() == 0 {
+            return Err("Datasets length cannot be zero".to_string());
+        }
+        
+        let mut ret = Vec::new();
+
+        let mut found = HashMap::<String, ModelEvaluationResult>::new();
+        let mut count = 0;
+
+        for evaluation in &self.evaluations {
+            if !datasets.contains(&evaluation.dataset) {
+                continue;
+            }
+            
+            if found.contains_key(&evaluation.dataset) {
+                if found.get(&evaluation.dataset).unwrap().model_evaluation_id < evaluation.model_evaluation_id {
+                    found.insert(evaluation.dataset.clone(), evaluation.clone());
+                }
+            } else {
+                found.insert(evaluation.dataset.clone(), evaluation.clone());
+                count+=1;
+            }
+        }
+
+        if count < datasets.len() {
+            return Err("Not all required datasets have been found".to_string());
+        }
+
+        for key in found.keys() {
+            ret.push(found.get(key).unwrap().clone());
+        }
+        
+        return Ok(ret);
+    }
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -153,6 +315,7 @@ pub struct Model {
     pub details: ModelDetails,
     pub model_type: ModelType,
     pub cached_thresholds: Option<CachedThresholds>,
+    pub version: u128,
     pub cached_selections: Option<Vec<String>>
 }
 
