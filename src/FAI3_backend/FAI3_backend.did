@@ -152,12 +152,12 @@ type Model = record {
   model_type: ModelType;
   cached_thresholds: opt CachedThresholds;
   cached_selections: opt vec text;
+  version: nat;
 };
 
 type ModelDetails = record {
   description: text;
   framework: text;
-  version: text;
   objective: text;
   url: text;
 };

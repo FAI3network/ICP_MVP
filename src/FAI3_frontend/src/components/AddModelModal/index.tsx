@@ -2,17 +2,10 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFo
 import { useEffect, useState } from "react";
 import { useAuthClient, useDataContext } from "@/utils";
 import { Toggle } from "@/components/ui/toggle";
-
-interface ModelDetails {
-  description: string;
-  framework: string;
-  version: string;
-  objective: string;
-  url: string;
-}
+import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
 export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel, is_llm, hf_url }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any>, is_llm?: boolean, hf_url?: string }) {
-  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
+  const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { webapp } = useAuthClient();
@@ -59,7 +52,7 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
   }, [newModel]);
 
   const clearModelForm = () => {
-    setNewModel({ name: "", details: { description: "", framework: "", version: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
+    setNewModel({ name: "", details: { description: "", framework: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
     closeModal();
   }
 
@@ -122,18 +115,6 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
                   className="mb-4"
                   value={newModel.details.framework}
                   onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, framework: event.target.value } })}
-                />
-              </div>
-
-              <div>
-                <h4 className="text-sm font-bold mb-2">
-                  Model Version
-                </h4>
-                <Input
-                  placeholder="version"
-                  className="mb-4"
-                  value={newModel.details.version}
-                  onChange={(event: any) => setNewModel({ ...newModel, details: { ...newModel.details, version: event.target.value } })}
                 />
               </div>
 
