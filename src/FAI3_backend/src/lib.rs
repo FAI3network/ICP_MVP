@@ -9,6 +9,7 @@ mod context_association_test;
 mod llm_fairness;
 mod utils;
 mod errors;
+mod config_management;
 
 use candid::Principal;
 
@@ -71,6 +72,12 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
             1
         ).unwrap()
+    );
+
+    static CONFIGURATION: RefCell<StableBTreeMap<String, String, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(6)))
+        )
     );
 }
 
