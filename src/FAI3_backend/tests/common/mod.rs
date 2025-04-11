@@ -69,6 +69,21 @@ pub fn create_llm_model(pic: &PocketIc, canister_id: CanisterId, model_name: Str
     return decoded_reply;
 }
 
+/// Adds a mock Hugging Face API key to a model
+pub fn add_hf_api_key(pic: &PocketIc, canister_id: CanisterId, model_id: u128) {
+    let encoded_args = encode_args(("hugging_face_api_key", "fake-hf-api-key-value")).unwrap();
+    
+    // Testing add_classifier_model.
+    let update_call_reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "set_config",
+        encoded_args
+    ).expect("Failed to add a mocked Hugging Face API key");
+
+    decode_one::<()>(&update_call_reply).expect("Failed to decode create model reply");
+}
+
 pub fn get_all_models(pic: &PocketIc, canister_id: CanisterId) -> Vec<Model> {
     // Testing get_all_models method.
     let reply = pic.query_call(
