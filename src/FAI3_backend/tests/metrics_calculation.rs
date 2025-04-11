@@ -1,4 +1,3 @@
-use candid::{Principal, decode_one, encode_args};
 use FAI3_backend::types::{
     Model, ClassifierModelData, get_classifier_model_data, KeyValuePair,
 };

@@ -189,6 +189,27 @@ type GenericError = record {
     details: vec record { key: text; value: text }; // Additional info as key-value pairs  
 };
 
+type LLMMetricsAPIResult = record {
+  "metrics": Metrics;
+  "queries": nat64;
+  "invalid_responses": nat32;
+  "call_errors": nat32;
+  "counter_factual": opt CounterFactualModelEvaluationResult;
+};
+
+type AverageLLMFairnessMetrics = record {
+  model_id: nat;
+  statistical_parity_difference: float32;
+  disparate_impact: float32;
+  average_odds_difference: float32;
+  equal_opportunity_difference: float32;
+  accuracy: float32;
+  precision: float32;
+  recall: float32;
+  counter_factual_overall_change_rate: float32;
+  model_evaluation_ids: vec nat;
+};
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -219,6 +240,11 @@ service : () -> {
     "calculate_all_metrics": (nat, PrivilegedThreshold) ->  (
       vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
+
+    "calculate_llm_metrics": (nat, text, nat64, nat32) -> (variant { Ok: LLMMetricsAPIResult; Err: text });
+    "average_llm_metrics": (nat, vec text) -> (variant {Ok: AverageLLMFairnessMetrics; Err: GenericError });
+    "llm_fairness_datasets": () -> (vec text) query;
+    "calculate_all_llm_metrics": (nat, nat64, nat32) -> (variant { Ok: LLMMetricsAPIResult; Err: text }); 
 
     // Example data
     //"add_example_data_points": (nat) -> ();

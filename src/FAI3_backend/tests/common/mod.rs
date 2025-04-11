@@ -9,7 +9,7 @@ use pocket_ic::{
     },
 };
 use FAI3_backend::types::{
-    Model, ModelDetails, KeyValuePair, PrivilegedIndex, CachedThresholds,
+    Model, ModelDetails, KeyValuePair, PrivilegedIndex,
 };
 
 // 2T cycles

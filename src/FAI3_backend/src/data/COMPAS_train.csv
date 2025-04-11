@@ -1,0 +1,3696 @@
+,sex,age,race,juv_fel_count,juv_misd_count,priors_count,c_charge_desc,c_charge_degree,decile_score,two_year_recid,binarized_race
+4385,Male,30,Black,0,0,2,Forgery,F,8,1,0
+4185,Male,22,Black,0,0,0,Dealing Controlled Substances,F,7,0,0
+3305,Male,42,Black,0,0,0,Driving with a Revoked License,F,1,0,0
+1276,Male,27,White,0,0,4,Possession of Ecstasy,F,7,1,1
+6166,Male,20,Black,0,0,0,Possession of Cocaine,F,9,0,0
+5106,Male,25,Black,0,0,5,Assault,F,5,0,0
+4936,Male,41,White,0,0,5,Battery,M,4,1,1
+2922,Male,24,Black,0,0,1,Possession of Ecstasy,F,6,1,0
+675,Male,63,Black,0,0,0,Driving Under the Influence,M,1,0,0
+4040,Male,32,Black,0,0,3,Grand Theft,F,4,0,0
+1993,Male,22,White,0,0,1,Grand Theft,F,9,0,1
+3419,Female,48,Black,0,0,0,Driving Under the Influence,M,1,0,0
+2220,Male,30,Black,0,0,7,Driving with a Revoked License,F,3,0,0
+4791,Female,26,Black,0,0,0,Robbery,M,9,0,0
+2117,Male,32,Black,0,0,16,Driving with a Revoked License,F,10,1,0
+821,Male,29,Black,0,0,10,Dealing Cannabis/Marijuana,F,7,1,0
+1131,Male,20,Black,0,0,0,Possession of Cannabis/Marijuana,F,7,1,0
+1865,Male,23,Black,0,0,2,arrest case no charge,F,6,0,0
+5840,Male,49,Black,0,0,2,Child Neglect,F,1,0,0
+4067,Male,64,Black,0,0,13,Possession of Cocaine,M,6,0,0
+5053,Male,23,Black,0,0,0,arrest case no charge,F,2,0,0
+2659,Male,40,White,0,0,1,Grand Theft,F,3,0,1
+5356,Male,26,White,0,0,0,Driving Under the Influence,M,4,0,1
+4120,Male,22,Black,0,0,1,Possession of a Controlled Substance,F,4,1,0
+7,Male,27,White,0,0,0,Possession of Ecstasy,F,4,0,1
+4475,Male,41,Black,0,0,14,Possession of Cocaine,F,6,1,0
+5428,Female,28,Black,0,0,0,Battery,M,2,0,0
+1514,Male,22,Black,0,0,0,Grand Theft,F,4,0,0
+1001,Female,32,Black,0,0,6,arrest case no charge,F,4,1,0
+5605,Male,27,Black,0,0,5,Driving with a Suspended License,M,5,0,0
+5891,Male,39,White,0,0,1,Possession of a Controlled Substance,F,1,0,1
+5119,Male,26,Black,0,0,2,Battery,F,6,0,0
+2434,Female,35,Black,0,0,3,Battery,M,6,1,0
+1715,Female,25,Black,0,0,1,Grand Theft,F,4,0,0
+249,Male,39,Black,0,0,6,Assault,F,3,1,0
+5487,Male,36,Black,0,0,0,Possession of Cannabis/Marijuana,F,6,0,0
+2401,Male,21,Black,0,0,1,Possession of Cocaine,F,8,0,0
+1580,Male,23,White,0,0,1,Possession of Cocaine,F,3,1,1
+4422,Female,37,Black,0,0,0,Grand Theft,F,3,0,0
+35,Female,21,Black,0,0,2,arrest case no charge,F,8,0,0
+3962,Male,31,Black,0,0,8,Driving with a Revoked License,F,9,1,0
+2700,Male,50,White,0,0,3,Reckless Driving,M,4,1,1
+3529,Male,20,White,0,0,0,Grand Theft,F,6,1,1
+3404,Male,27,Black,0,0,0,Tampering With Physical Evidence,F,2,0,0
+2963,Male,50,White,0,0,0,Carrying a Concealed Weapon,F,1,0,1
+4610,Male,51,White,0,0,8,Possession of Cocaine,F,5,1,1
+1365,Male,43,White,0,0,9,Possession of a Controlled Substance,F,6,0,1
+2156,Male,35,Black,0,0,4,Driving with a Suspended License,M,5,0,0
+3445,Male,31,Black,0,0,6,arrest case no charge,F,4,0,0
+3966,Female,24,White,0,0,0,Possession of a Controlled Substance,F,5,0,1
+2906,Female,37,White,0,0,2,Tampering With Physical Evidence,F,8,1,1
+5089,Male,50,White,0,0,5,arrest case no charge,F,7,0,1
+952,Male,37,White,0,0,0,Driving with a Suspended License,M,2,0,1
+5770,Male,50,Black,0,0,7,arrest case no charge,F,5,1,0
+5190,Female,55,White,0,0,0,Battery,M,1,0,1
+649,Male,26,Black,0,0,5,Grand Theft,F,7,1,0
+5524,Male,46,Black,0,0,0,Battery,M,1,0,0
+5473,Male,28,Black,0,0,11,Child Neglect,F,6,1,0
+3984,Male,54,White,0,0,2,arrest case no charge,F,4,1,1
+2785,Male,33,Black,0,0,2,Grand Theft,F,8,1,0
+2743,Male,28,Black,0,2,21,Driving with a Revoked License,F,10,0,0
+2817,Male,23,Black,0,0,3,Grand Theft,F,10,1,0
+4691,Male,31,Black,0,0,2,Grand Theft,F,1,0,0
+2444,Male,21,Black,0,0,1,Possession of Cannabis/Marijuana,F,9,1,0
+4923,Male,32,White,0,0,4,Battery,M,2,1,1
+3968,Male,38,White,0,0,2,arrest case no charge,F,1,0,1
+1346,Male,28,White,0,0,0,Battery,M,2,1,1
+4575,Male,21,White,0,0,0,Trespassing,F,4,0,1
+4672,Male,43,Black,0,0,15,Resisting an Officer,M,9,1,0
+40,Male,25,White,0,0,9,Battery,M,10,1,1
+3023,Male,27,Black,0,0,0,Grand Theft,F,2,0,0
+1356,Male,24,Black,0,2,8,arrest case no charge,F,9,1,0
+3583,Male,53,White,0,0,1,Dealing Controlled Substances,F,1,0,1
+1238,Male,24,White,0,0,3,Grand Theft,F,8,1,1
+3460,Male,27,Black,0,0,3,arrest case no charge,F,9,1,0
+3362,Male,31,Black,0,0,11,Possession of a Controlled Substance,F,10,1,0
+5363,Female,25,Black,0,0,2,Battery,M,4,0,0
+3259,Male,31,White,0,0,3,Battery,M,5,0,1
+2317,Male,35,Black,0,1,14,Battery,M,8,1,0
+3321,Female,28,White,0,0,1,arrest case no charge,F,7,0,1
+3148,Male,37,Black,0,0,0,Trespassing,M,2,0,0
+4219,Male,44,White,0,0,3,Grand Theft,F,5,0,1
+96,Male,33,Black,0,0,5,Possession of a Controlled Substance,F,5,1,0
+5348,Male,21,Black,0,1,2,Assault with a Deadly Weapon,F,5,1,0
+4836,Male,30,Black,0,0,3,Grand Theft,F,5,0,0
+3275,Male,34,White,0,0,16,Battery,F,6,1,1
+1053,Male,22,Black,0,0,1,arrest case no charge,F,3,1,0
+431,Female,48,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+4460,Female,41,Black,0,0,8,arrest case no charge,F,8,1,0
+1462,Female,29,Black,0,0,1,Refusing to Supply DNA Sample,M,2,0,0
+1496,Male,23,Black,0,1,1,Burglary,F,2,0,0
+4897,Male,51,White,0,0,4,Driving with a Suspended License,F,1,1,1
+993,Female,23,Black,0,0,0,Battery,M,3,0,0
+242,Male,21,Black,0,0,0,Theft,M,9,1,0
+548,Female,45,White,0,0,1,Driving with a Suspended License,F,6,0,1
+2582,Male,69,White,0,0,0,Driving Under the Influence,M,1,1,1
+1656,Male,46,White,0,0,9,Battery,M,5,0,1
+2368,Male,35,Black,0,0,7,Driving with a Suspended License,F,2,1,0
+787,Male,63,Black,0,0,3,Trespassing,M,9,0,0
+1775,Male,22,White,0,0,0,Grand Theft,F,7,1,1
+5466,Male,30,Black,0,0,3,Battery,M,7,0,0
+343,Female,22,Black,0,0,0,Possession of Ecstasy,F,7,0,0
+3000,Male,38,Black,0,0,4,Driving with a Suspended License,M,1,0,0
+141,Male,46,White,0,0,6,Driving with a Revoked License,F,1,1,1
+4298,Male,41,Black,0,0,1,Grand Theft,F,4,0,0
+3200,Male,57,White,0,0,1,Driving Under the Influence,M,4,0,1
+4587,Male,30,White,0,0,0,Grand Theft,F,3,0,1
+3428,Male,60,Black,0,0,3,Driving Under the Influence,M,1,0,0
+6130,Male,30,White,0,0,2,Battery,M,9,0,1
+3393,Male,57,Black,0,0,19,Possession of Cocaine,F,6,0,0
+5643,Female,36,White,0,0,0,Possession of Cocaine,F,2,0,1
+4770,Female,47,Black,0,0,7,Possession of Cocaine,F,9,1,0
+1982,Male,24,Black,0,0,1,Burglary,F,2,1,0
+5810,Female,46,White,0,0,0,Driving Under the Influence,M,1,0,1
+3739,Female,23,White,0,0,0,Grand Theft,F,6,1,1
+5968,Male,31,Black,0,0,0,Driving with a Revoked License,F,7,0,0
+2784,Male,33,White,0,0,1,arrest case no charge,F,2,0,1
+3569,Male,28,Black,0,0,2,arrest case no charge,F,2,0,0
+873,Male,46,White,0,0,0,Fleeing the Scene of an Accident,F,1,0,1
+5788,Female,34,White,0,0,0,Possession of Cocaine,F,2,1,1
+2268,Male,23,White,0,0,4,Possession of a Controlled Substance,F,6,1,1
+1980,Male,20,White,0,0,0,arrest case no charge,F,6,1,1
+2853,Male,40,Black,0,0,1,Driving with a Suspended License,F,1,0,0
+2679,Male,57,Black,0,0,23,arrest case no charge,F,8,1,0
+5548,Male,26,Black,0,0,1,Battery,M,1,0,0
+3376,Male,23,White,0,0,2,Grand Theft,F,7,1,1
+1992,Male,27,Black,0,0,8,Possession of Cocaine,F,7,1,0
+1410,Male,51,White,0,0,0,Battery,M,1,0,1
+1270,Male,32,Black,0,0,1,Possession of Cannabis/Marijuana,F,2,1,0
+336,Male,27,Black,0,0,9,Assault,F,8,1,0
+1614,Male,33,Black,0,0,14,Driving with a Revoked License,F,8,1,0
+4189,Male,53,White,0,0,3,Battery,M,2,1,1
+4045,Male,43,White,0,0,6,Possession of Cocaine,F,4,1,1
+4704,Male,24,Black,0,0,0,Driving Under the Influence,M,3,0,0
+1776,Male,25,Black,0,0,2,Possession of Cannabis/Marijuana,F,5,0,0
+3874,Male,30,Black,0,1,9,Criminal Damage of less than $1000,F,7,1,0
+818,Male,23,Black,0,0,2,Possession of Cannabis/Marijuana,F,6,1,0
+4425,Male,19,Black,0,0,1,Dealing Controlled Substances,F,4,1,0
+2145,Male,21,White,0,0,0,arrest case no charge,F,8,1,1
+376,Male,38,Black,0,0,5,Possession of Cannabis/Marijuana,F,3,0,0
+6076,Male,33,Black,0,0,4,Child Abuse,M,7,1,0
+2337,Male,59,White,0,0,0,Grand Theft,F,1,0,1
+2283,Male,26,White,0,0,0,Driving Under the Influence,M,2,0,1
+6006,Male,32,White,0,0,4,Dealing Controlled Substances,F,10,1,1
+3918,Male,30,Black,0,0,2,Dealing Cocaine,F,3,1,0
+856,Male,25,Black,0,0,2,Grand Theft,F,5,0,0
+4289,Male,21,Black,0,0,4,Burglary,F,8,0,0
+2633,Female,30,White,0,0,9,arrest case no charge,F,4,1,1
+1286,Male,22,White,0,0,0,Grand Theft,F,5,1,1
+5654,Male,20,White,0,0,0,Possession of Cannabis/Marijuana,M,3,0,1
+4851,Female,21,Black,0,1,2,Dealing Cannabis/Marijuana,F,6,0,0
+686,Male,30,Black,0,0,17,arrest case no charge,F,10,1,0
+5845,Male,41,White,0,0,3,Driving Under the Influence,M,1,0,1
+2282,Male,41,Black,0,0,0,Assault with a Deadly Weapon,F,1,0,0
+2526,Male,45,White,0,0,1,Driving Under the Influence,M,1,1,1
+5649,Female,44,White,0,0,3,Possession of a Controlled Substance,F,2,1,1
+2587,Female,20,Black,0,0,1,Battery,F,6,1,0
+3869,Female,23,Black,0,0,1,arrest case no charge,F,4,0,0
+3013,Male,57,White,0,0,0,Battery,F,1,0,1
+5304,Male,36,Black,0,2,17,arrest case no charge,F,8,1,0
+3904,Female,49,White,0,0,2,Possession of Cocaine,F,2,0,1
+2839,Male,25,White,0,0,6,Theft,M,5,1,1
+2221,Male,28,White,0,0,1,Assault,M,2,0,1
+4658,Female,39,White,0,0,3,arrest case no charge,F,3,0,1
+138,Male,30,Black,0,0,1,Burglary,F,7,0,0
+1192,Male,45,White,0,0,1,Robbery,F,5,1,1
+3035,Male,20,Black,0,0,1,Grand Theft,F,10,1,0
+4413,Female,21,White,0,0,0,Grand Theft,F,5,0,1
+1518,Male,33,White,0,0,0,Grand Theft,F,1,1,1
+5472,Male,32,Black,0,0,4,Burglary,F,4,1,0
+5422,Male,25,Black,0,0,0,Assault,M,4,0,0
+3502,Male,45,White,0,0,1,Battery,M,1,0,1
+1878,Male,24,Black,0,0,17,arrest case no charge,F,9,1,0
+537,Male,38,Black,0,0,0,Battery,F,1,0,0
+5303,Male,25,Black,0,0,1,Possession of Cannabis/Marijuana,F,8,1,0
+890,Male,32,White,0,0,2,Battery,M,2,1,1
+2008,Male,34,Black,0,0,1,arrest case no charge,F,1,0,0
+1733,Male,46,White,0,0,0,Driving Under the Influence,M,1,0,1
+2530,Female,27,White,0,0,0,,F,5,0,1
+4832,Male,27,Black,0,0,7,Driving with a Revoked License,F,4,1,0
+701,Female,23,Black,0,0,1,arrest case no charge,F,3,0,0
+3251,Male,22,Black,0,0,1,Grand Theft,F,7,1,0
+3790,Female,36,White,0,0,0,Battery,M,2,0,1
+3344,Male,22,Black,0,1,1,Burglary,F,6,0,0
+5609,Male,29,Black,0,0,9,arrest case no charge,F,7,1,0
+4911,Male,37,White,0,0,3,Possession of Cocaine,F,4,0,1
+5483,Male,38,Black,0,0,4,Battery,M,2,0,0
+2676,Female,30,Black,0,3,10,Possession of Cocaine,F,10,1,0
+1183,Female,28,White,0,0,0,Possession of Cocaine,F,4,1,1
+4839,Male,34,Black,0,0,1,Purchasing Cannabis/Marijuana,F,2,0,0
+2292,Male,26,Black,0,0,13,Battery,M,10,1,0
+1468,Male,27,Black,0,0,3,arrest case no charge,F,3,0,0
+4444,Male,31,Black,0,0,7,Child Abuse,M,4,0,0
+3201,Male,22,Black,0,0,2,Possession of Cocaine,F,3,1,0
+648,Female,23,Black,0,0,0,Battery with a Deadly Weapon,F,7,0,0
+1914,Male,27,Black,0,0,7,arrest case no charge,F,5,1,0
+1781,Male,37,White,0,0,0,Possession of Cannabis/Marijuana,M,1,0,1
+2494,Female,45,White,0,1,7,arrest case no charge,F,2,1,1
+4319,Male,37,Black,0,0,0,Tampering with a Witness,F,8,0,0
+2655,Male,24,White,0,0,1,Possession of a Controlled Substance,F,3,0,1
+2069,Male,46,White,0,0,5,,F,8,1,1
+5432,Male,22,White,0,1,4,Battery,M,8,1,1
+2810,Female,26,White,0,0,0,Driving Under the Influence,M,2,0,1
+2030,Male,29,Black,0,0,0,Resisting an Officer with Violence,M,2,0,0
+2262,Male,24,White,0,0,3,Battery,M,8,1,1
+3564,Male,60,Black,0,0,2,Possession of Cocaine,F,1,0,0
+4046,Male,50,White,0,0,3,Dealing Cocaine,F,2,0,1
+1287,Female,22,Black,0,0,0,Grand Theft,F,4,1,0
+3231,Male,38,White,0,0,5,Grand Theft,F,7,1,1
+5349,Male,49,Black,0,0,29,Driving with a Suspended License,F,6,1,0
+1280,Male,55,White,0,0,11,arrest case no charge,M,7,0,1
+5426,Male,21,Black,0,0,0,Robbery,F,8,0,0
+2239,Male,26,Black,0,0,12,Battery,M,9,1,0
+2259,Male,28,White,0,0,2,Child Abuse,M,4,0,1
+1794,Male,26,White,0,0,0,Assault,F,2,0,1
+2291,Male,55,White,0,0,1,Possession of Cocaine,F,3,0,1
+3856,Female,54,White,0,0,1,Theft,M,2,0,1
+522,Male,29,White,0,0,2,Battery,M,2,1,1
+4902,Male,36,White,0,0,12,arrest case no charge,F,1,0,1
+6136,Male,60,White,0,0,0,Theft,M,1,1,1
+6003,Male,36,Black,1,2,14,Possession of Cocaine,F,10,1,0
+71,Male,30,Black,0,0,8,Possession of Cannabis/Marijuana,M,10,1,0
+2977,Male,32,White,0,0,0,Burglary,F,1,0,1
+117,Male,31,White,0,0,2,Resisting an Officer,M,3,1,1
+4211,Male,44,White,0,0,1,Battery,M,1,0,1
+1482,Male,32,White,0,0,0,Assault,F,1,0,1
+3127,Male,22,White,0,0,3,Battery,M,10,1,1
+2348,Male,22,White,1,0,2,arrest case no charge,F,4,0,1
+1598,Male,25,Black,0,0,2,Burglary,F,9,0,0
+2107,Female,36,Black,0,0,1,Battery,M,1,0,0
+3768,Male,34,White,0,0,3,Restraining Order Violation,M,5,0,1
+2371,Male,37,Black,0,0,0,Contributing to the Delinquency Of A Minor,M,3,0,0
+1672,Male,51,Black,0,0,5,arrest case no charge,M,3,0,0
+5576,Male,24,White,0,0,0,arrest case no charge,F,2,1,1
+3412,Male,27,White,0,0,0,Battery,M,2,0,1
+2303,Female,48,White,0,0,1,Driving Under the Influence,M,1,0,1
+2388,Male,29,Black,0,0,4,Battery,M,4,0,0
+2882,Female,27,Black,0,0,0,Battery,M,3,1,0
+3764,Female,25,Black,0,0,0,Battery,M,5,0,0
+4033,Male,30,White,0,0,3,Battery,M,3,0,1
+2386,Male,21,Black,0,0,0,Battery,F,4,1,0
+4858,Male,25,Black,0,0,6,Criminal Damage of less than $1000,M,7,1,0
+4732,Female,23,Black,0,0,0,Battery,M,7,0,0
+767,Male,32,Black,0,0,3,Burglary,F,1,1,0
+2114,Male,28,White,0,0,1,Driving Under the Influence,M,2,1,1
+3689,Female,27,Black,0,0,1,Fraud,F,5,1,0
+1179,Male,23,Black,1,0,1,Battery,M,9,0,0
+1688,Male,50,White,0,0,0,Battery,M,2,1,1
+5291,Male,45,Black,0,0,0,Possession of Cocaine,F,3,1,0
+2473,Male,22,White,0,0,0,Possession of a Tobacco Product Under 18 Years of Age,M,7,0,1
+4495,Male,31,White,0,0,9,Burglary,F,6,1,1
+1439,Male,23,White,0,0,2,Unlawful Possession of Firearm,F,7,0,1
+3794,Female,28,White,0,0,0,Assault,M,2,0,1
+1685,Male,58,White,0,0,0,Driving Under the Influence,M,1,0,1
+1646,Male,27,Black,0,1,1,Grand Theft,F,4,0,0
+3194,Male,52,White,0,0,2,Grand Theft,F,9,1,1
+568,Female,31,Black,0,0,0,Battery,M,1,0,0
+598,Male,28,Black,0,0,0,Driving with a Suspended License,F,1,0,0
+2272,Male,37,Black,0,0,3,Battery,M,2,0,0
+4427,Male,25,Black,0,0,0,Possession of Cannabis/Marijuana,M,3,0,0
+5484,Male,22,Black,0,0,3,Burglary,F,6,1,0
+3381,Male,37,White,0,0,4,Battery,M,4,1,1
+2481,Female,54,White,0,0,1,Resisting an Officer,M,2,0,1
+639,Male,22,Black,0,0,2,Possession of Cocaine,F,5,1,0
+4374,Male,41,Black,0,0,2,Driving with a Revoked License,F,1,0,0
+3174,Male,47,White,0,0,5,Domestic Violence,M,3,1,1
+1306,Male,47,White,0,0,0,Battery,M,1,0,1
+417,Male,54,Black,0,0,0,Battery,M,1,0,0
+375,Male,30,Black,0,0,1,Battery,M,1,0,0
+3688,Male,21,Black,0,0,0,Resisting an Officer with Violence,F,4,0,0
+3540,Male,51,Black,0,0,0,Possession of Cocaine,F,4,1,0
+1642,Male,36,Black,0,0,2,Possession of Cocaine,F,2,0,0
+2808,Male,39,Black,0,0,3,arrest case no charge,F,2,0,0
+388,Male,28,Black,0,0,5,Possession of a Controlled Substance,F,10,0,0
+4393,Male,27,Black,0,5,27,Possession of Cannabis/Marijuana,M,10,1,0
+2148,Male,53,Black,0,0,1,Driving with a Suspended License,M,1,0,0
+2373,Female,27,Black,0,0,0,Grand Theft,F,3,0,0
+910,Male,30,Black,0,0,8,Possession of Cocaine,F,10,1,0
+593,Male,26,Black,0,0,10,arrest case no charge,M,6,1,0
+668,Female,37,Black,0,0,3,Resisting an Officer with Violence,F,7,0,0
+529,Male,29,Black,0,0,0,Driving Under the Influence,M,1,0,0
+3886,Female,33,Black,0,0,0,Assault with a Deadly Weapon,F,3,0,0
+5251,Male,21,White,0,0,2,arrest case no charge,F,6,0,1
+4787,Male,29,Black,0,0,6,Driving with a Suspended License,F,6,1,0
+2993,Male,45,Black,0,0,0,Interference with Traffic Control Railroad Divide,M,1,0,0
+5249,Male,48,Black,0,0,5,Possession of Cocaine,F,4,1,0
+2305,Male,39,White,0,0,2,Battery,M,1,0,1
+4306,Male,43,Black,0,0,0,Driving Under the Influence,M,1,0,0
+4037,Male,41,Black,0,0,7,Battery,M,7,1,0
+3441,Male,32,Black,0,0,1,Driving Under the Influence,M,3,0,0
+4774,Female,31,White,0,0,0,Battery,M,2,0,1
+369,Male,34,White,0,0,0,Driving Under the Influence,M,1,0,1
+1799,Male,43,White,0,0,1,arrest case no charge,F,6,1,1
+1653,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,3,0,0
+1229,Female,27,Black,0,0,1,Battery,M,2,0,0
+2363,Male,22,White,0,1,2,Possession of a Controlled Substance,F,8,1,1
+4693,Female,28,Black,1,0,1,Battery,M,4,1,0
+865,Female,54,Black,0,0,0,Assault with a Deadly Weapon,F,1,0,0
+2209,Male,38,White,0,0,3,Possession of Cocaine,F,9,1,1
+2731,Male,24,Black,0,0,0,Possession of a Controlled Substance,F,9,0,0
+4391,Female,55,White,0,0,0,Grand Theft,F,7,1,1
+6121,Male,21,Black,0,0,1,Robbery,F,6,0,0
+1816,Male,27,Black,0,0,0,Battery,M,2,0,0
+2980,Female,35,Black,0,0,0,Battery,M,1,1,0
+3727,Female,42,Black,0,0,1,arrest case no charge,F,1,0,0
+2372,Male,25,Black,0,0,3,Operating Motorcycle without a Valid Drivers License,M,6,0,0
+171,Male,44,White,0,0,4,Battery,M,4,0,1
+2158,Female,37,Black,1,0,7,Dealing Cocaine,F,3,0,0
+1159,Male,31,White,0,0,10,Driving with a Revoked License,F,2,1,1
+3778,Male,21,Black,0,0,1,Resisting an Officer,M,4,0,0
+3860,Female,36,Black,0,0,0,arrest case no charge,M,6,0,0
+1003,Male,52,Black,0,0,3,arrest case no charge,F,1,0,0
+1037,Male,22,Black,0,0,0,Battery,F,9,0,0
+2144,Female,26,Black,0,0,0,Battery,M,2,0,0
+4999,Male,36,White,0,0,1,Burglary,F,2,0,1
+127,Male,27,Black,0,0,2,Tampering With Physical Evidence,F,9,1,0
+8,Male,23,Black,0,0,3,Battery,M,6,1,0
+2658,Male,39,White,0,0,3,Possession of Cocaine,F,2,0,1
+2952,Male,28,White,0,1,9,Driving with a Suspended License,M,4,0,1
+3282,Male,50,Black,0,0,13,Grand Theft,F,1,1,0
+54,Male,22,Black,0,0,1,Unlawful Possession of Firearm,F,4,1,0
+4725,Male,28,White,0,0,0,Manufacturing Cannabis/Marijuana,F,3,1,1
+4702,Male,31,White,0,0,5,Tampering With Physical Evidence,F,6,1,1
+5027,Male,21,Black,0,0,0,Burglary,F,7,0,0
+4554,Male,69,Black,0,0,1,Carrying a Concealed Weapon,F,1,1,0
+5145,Female,20,White,0,0,0,Fraud,F,8,1,1
+2636,Male,39,White,0,0,1,Burglary,F,1,0,1
+2014,Male,61,White,0,0,10,Burglary,F,6,0,1
+5045,Male,20,Black,0,0,1,arrest case no charge,F,2,0,0
+5225,Male,61,Black,0,0,2,Battery,M,8,0,0
+4514,Male,31,Black,0,1,5,Battery,M,9,1,0
+4204,Male,36,White,0,0,1,Possession of Oxycodone,F,5,0,1
+1149,Male,22,Black,0,0,1,Battery,M,6,1,0
+715,Male,28,Black,0,0,1,Possession of Cannabis/Marijuana,F,4,1,0
+6044,Male,66,White,0,0,0,Battery,M,1,0,1
+2400,Male,22,Black,0,1,3,arrest case no charge,F,10,1,0
+6014,Male,50,White,0,0,4,Disorderly Intoxication,M,2,0,1
+2832,Female,24,Black,0,0,0,Child Abuse,M,5,0,0
+4545,Female,36,Black,0,0,1,Battery with a Deadly Weapon,M,5,0,0
+2761,Male,22,White,0,0,0,Battery,M,4,1,1
+1246,Male,21,Black,0,0,1,arrest case no charge,F,8,0,0
+2758,Male,33,Black,0,0,4,Driving with a Suspended License,F,2,1,0
+5598,Male,22,Black,0,0,3,Burglary,F,3,1,0
+1156,Female,48,White,0,0,0,Battery,M,1,0,1
+3464,Male,42,Black,0,0,1,arrest case no charge,M,5,0,0
+4733,Female,31,White,0,0,2,Burglary,F,8,1,1
+5421,Male,27,Black,1,2,6,arrest case no charge,M,10,0,0
+1675,Male,55,White,0,0,0,Driving Under the Influence,M,1,0,1
+2772,Male,39,White,6,1,17,Possession of Cocaine,F,7,1,1
+5331,Male,34,Black,0,0,22,Driving with a Revoked License,F,7,1,0
+814,Male,54,Black,0,0,0,Possession of Cocaine,F,1,0,0
+3914,Male,39,White,0,0,0,Resisting an Officer with Violence,F,1,1,1
+490,Female,49,White,0,0,2,Driving Under the Influence,M,1,1,1
+2518,Male,22,White,0,0,0,Possession of Cannabis/Marijuana,F,6,0,1
+2512,Male,32,Black,0,0,9,Burglary,F,9,0,0
+1234,Female,21,White,0,0,1,Grand Theft,F,6,0,1
+5599,Male,24,Black,0,0,0,Grand Theft,F,8,0,0
+1800,Male,26,White,0,0,2,Driving Under the Influence,F,5,0,1
+3755,Male,27,Black,0,0,12,Grand Theft,F,8,1,0
+5458,Female,64,Black,0,0,0,Purchasing Cocaine,F,1,0,0
+5997,Male,33,Black,2,0,9,Assault,M,9,1,0
+508,Male,27,Black,0,0,3,Battery,M,7,1,0
+3094,Female,22,Black,0,1,2,Battery,M,8,1,0
+4240,Male,37,Black,0,0,0,Forgery,F,1,0,0
+3089,Female,28,White,0,0,0,Possession of Cocaine,F,6,0,1
+2462,Male,34,White,0,0,0,Battery,M,2,0,1
+5696,Male,30,Black,0,0,1,Battery,M,8,0,0
+1682,Male,42,Black,0,0,1,Tampering With Physical Evidence,F,4,0,0
+2800,Male,27,Black,0,0,6,Theft,F,4,1,0
+4803,Female,46,White,0,0,1,arrest case no charge,F,1,0,1
+4812,Female,42,White,0,0,0,Driving Under the Influence,M,2,0,1
+763,Male,52,White,0,0,1,Burglary,F,1,1,1
+4827,Male,35,Black,0,0,6,arrest case no charge,F,3,0,0
+662,Male,24,White,0,0,1,Battery,M,4,1,1
+5462,Female,22,Black,0,0,1,Battery,M,4,0,0
+1209,Female,26,Black,0,0,1,Grand Theft,F,6,1,0
+2795,Female,31,White,0,0,2,arrest case no charge,F,5,1,1
+659,Male,47,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+2904,Female,31,Black,0,2,10,Forgery,F,8,0,0
+3674,Male,34,White,0,0,0,Grand Theft,F,3,0,1
+3421,Male,46,Black,0,0,1,Battery,M,6,1,0
+707,Male,25,Black,0,1,3,Animal Cruelty,F,8,1,0
+3611,Male,59,Black,0,0,15,arrest case no charge,M,6,1,0
+3930,Male,23,White,0,0,0,Forgery,F,2,0,1
+5294,Male,52,White,0,0,7,Battery,M,2,0,1
+2446,Male,28,Black,0,1,6,Grand Theft,F,9,1,0
+3229,Male,65,Black,0,0,7,Possession of Cannabis/Marijuana,M,5,0,0
+6132,Male,22,Black,0,0,0,Battery,M,5,0,0
+3649,Male,22,Black,0,1,3,Grand Theft,F,4,1,0
+6088,Female,43,White,0,0,0,Driving Under the Influence,M,1,0,1
+2427,Male,24,Black,0,0,0,Grand Theft,F,6,1,0
+1613,Male,50,White,0,0,8,Driving Under the Influence,F,3,0,1
+4357,Male,53,White,0,0,8,Battery,M,2,1,1
+2380,Male,25,Black,0,0,1,Possession of Cocaine,F,4,1,0
+857,Male,31,Black,0,0,0,Driving with a Revoked License,F,10,0,0
+5856,Male,48,Black,0,0,11,Resisting an Officer,M,4,1,0
+3821,Male,24,White,0,0,1,Possession of Morphine,F,4,0,1
+5480,Male,29,White,0,0,6,Forgery,F,4,1,1
+5254,Male,20,White,0,4,4,Grand Theft,F,10,0,1
+6024,Female,29,Black,0,0,0,Robbery,F,2,0,0
+4132,Male,57,Black,0,0,8,False 911 Call,M,7,0,0
+2545,Female,33,Black,0,0,3,Battery,M,4,0,0
+4633,Male,24,Black,0,0,5,Armed Robbery,F,9,1,0
+1202,Male,21,Black,0,0,1,Grand Theft,F,8,0,0
+3054,Female,21,Black,0,0,0,Grand Theft,F,10,1,0
+5984,Female,45,Black,0,0,0,Grand Theft,F,1,0,0
+1885,Female,45,Black,0,0,1,Battery with a Deadly Weapon,F,4,0,0
+5586,Male,20,White,0,0,1,Possession of Cannabis/Marijuana,F,4,0,1
+418,Male,29,Black,0,0,4,Fraud,F,4,1,0
+2678,Male,35,Black,0,0,0,Possession of Ecstasy,F,7,1,0
+6117,Male,26,Black,0,0,2,Fraud,M,2,0,0
+2875,Female,41,White,0,0,0,Battery,F,3,0,1
+664,Male,22,White,0,0,0,Burglary,F,4,1,1
+4874,Male,40,White,0,0,5,Possession of Cannabis/Marijuana,F,3,0,1
+724,Male,21,Black,0,1,1,Burglary,F,9,1,0
+3736,Female,24,Black,0,0,1,Grand Theft,F,4,0,0
+1345,Male,46,White,0,0,0,Child Abuse,F,1,0,1
+4761,Male,23,Black,0,0,2,Burglary,F,4,1,0
+3020,Male,21,Black,0,0,1,arrest case no charge,F,6,1,0
+826,Male,52,Black,0,0,6,Battery,M,1,1,0
+411,Female,24,White,0,0,6,Possession of a Controlled Substance,F,9,1,1
+5758,Male,21,Black,0,0,0,Carrying a Concealed Weapon,F,8,0,0
+5000,Male,30,Black,0,0,0,Computer Pornography,F,1,0,0
+739,Male,24,Black,0,0,0,Robbery,F,4,0,0
+5379,Male,54,White,0,0,0,Threatening a Public Servant,F,2,0,1
+3961,Female,27,White,0,0,0,Driving Under the Influence,M,2,1,1
+3095,Male,29,Black,0,0,6,Possession of Cocaine,F,8,1,0
+1265,Male,33,White,0,0,0,Battery,M,1,0,1
+929,Male,25,White,0,0,2,Driving with a Suspended License,M,8,0,1
+3711,Female,28,White,0,0,1,Battery,M,5,1,1
+4698,Female,21,Black,0,0,0,Forgery,F,6,0,0
+2692,Female,27,Black,0,0,3,Robbery,F,5,0,0
+4646,Male,34,Black,0,0,8,Battery,M,7,0,0
+1547,Male,21,Black,0,0,3,arrest case no charge,F,7,1,0
+3728,Female,40,Black,0,0,15,arrest case no charge,F,7,1,0
+2076,Male,25,Black,0,0,1,Fleeing a Law Enforcement Officer,F,6,1,0
+5569,Male,27,Black,2,0,14,False Imprisonment,F,10,1,0
+768,Male,27,Black,0,0,5,Driving with an Expired License,M,3,1,0
+1838,Male,29,Black,0,0,3,arrest case no charge,F,2,1,0
+1148,Male,19,Black,3,0,2,arrest case no charge,F,8,1,0
+3659,Male,21,White,1,0,1,arrest case no charge,F,3,1,1
+1214,Female,27,White,0,0,6,Grand Theft,F,3,1,1
+3206,Female,39,Black,0,2,22,Possession of Cocaine,F,10,1,0
+908,Female,49,White,0,0,4,arrest case no charge,F,5,0,1
+2592,Male,32,Black,0,1,12,Battery,M,10,1,0
+5047,Male,33,White,0,0,9,Theft,F,9,1,1
+4267,Male,31,Black,0,0,11,Grand Theft,F,7,1,0
+755,Male,51,Black,0,0,3,Grand Theft,F,2,0,0
+1340,Female,45,White,0,0,1,Battery,M,1,0,1
+5869,Male,45,White,0,0,2,Driving Under the Influence,M,1,0,1
+1471,Male,37,Black,0,0,8,Burglary,F,2,0,0
+5369,Male,35,Black,0,0,10,arrest case no charge,F,6,1,0
+3474,Male,38,Black,0,0,0,Extradition of Defendants,M,8,1,0
+1070,Male,44,White,0,0,0,Possession of Cannabis/Marijuana,M,1,0,1
+202,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,4,0,0
+6047,Female,45,Black,0,0,9,Battery,M,7,0,0
+2650,Male,47,White,0,0,1,Grand Theft,F,1,0,1
+1245,Female,56,White,0,0,1,Driving Under the Influence,F,8,0,1
+601,Male,23,Black,0,0,0,Fraud,F,5,1,0
+517,Male,28,Black,0,0,5,Battery,M,7,1,0
+2075,Male,28,White,0,0,0,Burglary,F,2,1,1
+301,Female,60,White,0,0,0,Battery,M,1,0,1
+4314,Male,58,White,0,0,2,Battery,M,3,1,1
+4581,Male,61,White,0,0,0,Driving Under the Influence,M,1,0,1
+1899,Male,35,Black,3,0,13,Possession of Cocaine,F,10,0,0
+661,Female,35,Black,0,0,4,Assault with a Deadly Weapon,F,5,0,0
+4826,Female,22,Black,0,0,0,Robbery,F,6,0,0
+4593,Male,25,Black,0,0,0,arrest case no charge,M,3,0,0
+1260,Male,25,White,0,0,5,arrest case no charge,M,9,1,1
+412,Male,21,White,0,0,2,Assault,M,9,1,1
+3845,Male,22,White,0,0,0,Harassment,F,4,1,1
+4956,Male,35,White,0,0,0,Possession of Ecstasy,F,2,0,1
+1623,Male,24,Black,0,0,3,arrest case no charge,M,7,0,0
+4194,Male,42,White,0,0,2,Dealing Cannabis/Marijuana,F,7,1,1
+4390,Male,37,Black,0,0,2,Driving with a Suspended License,F,2,1,0
+2180,Male,30,White,0,0,0,False Imprisonment,F,3,1,1
+3760,Female,30,White,0,0,0,Battery,M,8,0,1
+1806,Male,23,Black,1,0,2,Dealing Cocaine,F,7,0,0
+3061,Male,22,Black,0,0,3,Assault,F,9,0,0
+4540,Male,59,Black,0,0,8,arrest case no charge,F,8,1,0
+3403,Female,34,White,0,0,3,Battery,M,5,0,1
+1825,Male,70,White,0,0,0,Driving Under the Influence,M,1,0,1
+6148,Male,36,White,0,0,0,Battery,M,1,0,1
+3927,Male,54,Black,0,0,4,Possession of Cocaine,F,3,1,0
+1329,Male,22,Black,0,0,0,Burglary,F,3,0,0
+5578,Male,26,White,0,0,2,Burglary,F,2,0,1
+5005,Male,52,White,0,0,0,Battery,M,1,0,1
+4601,Male,36,White,0,0,4,Grand Theft,F,2,1,1
+2978,Male,34,Black,0,1,27,Battery,M,7,0,0
+4724,Male,30,White,0,0,5,Grand Theft,F,8,1,1
+4772,Male,37,Black,0,0,8,Battery,M,5,0,0
+5559,Male,23,White,0,1,4,Battery,M,4,1,1
+1666,Male,50,Black,0,0,0,Assault,F,1,0,0
+3615,Male,34,Black,0,0,12,Unauthorized Loud Noise,F,7,0,0
+3684,Male,30,White,0,0,1,Forgery,F,3,0,1
+2049,Female,31,Black,0,0,0,Battery,M,2,0,0
+3228,Male,51,Black,1,0,19,Theft,F,9,0,0
+5948,Female,30,Black,0,0,0,Battery,M,5,1,0
+3306,Male,24,Black,5,0,5,Burglary,F,8,1,0
+1201,Male,28,White,0,0,1,,F,4,0,1
+4406,Male,40,Black,0,0,11,Driving with a Suspended License,M,3,1,0
+4022,Female,39,White,0,0,1,arrest case no charge,F,4,0,1
+4002,Male,21,Black,0,0,0,Battery,M,4,0,0
+331,Male,36,Black,0,0,14,Throwing Deadly Missile,F,7,1,0
+1659,Male,40,Black,0,0,1,Battery,M,1,0,0
+3448,Male,34,White,0,0,5,Theft,M,2,1,1
+5255,Male,31,White,0,0,1,Stalking,F,3,1,1
+1240,Male,30,White,0,0,6,arrest case no charge,F,7,0,1
+5704,Female,49,Black,0,0,25,Theft,F,10,1,0
+3033,Male,50,Black,0,0,2,Theft,M,5,1,0
+2586,Male,27,White,0,0,0,Driving Under the Influence,M,4,1,1
+6126,Male,41,White,0,0,0,Driving Under the Influence,M,1,0,1
+2374,Male,47,White,0,0,2,Battery,M,1,0,1
+3058,Male,26,Black,0,0,0,Operating a Vehicle without a Valid Drivers License,M,2,0,0
+1085,Male,30,White,0,0,0,Battery,M,1,0,1
+5859,Female,29,Black,0,0,5,arrest case no charge,F,4,1,0
+360,Male,27,White,0,0,3,Fleeing a Law Enforcement Officer,M,1,0,1
+4578,Male,24,Black,0,0,1,Possession of Cannabis/Marijuana,M,8,1,0
+1512,Male,34,Black,0,0,2,Driving with a Suspended License,F,4,0,0
+3974,Male,49,White,0,0,4,Battery,M,6,1,1
+2412,Male,22,White,0,0,0,Possession of a Controlled Substance,F,5,0,1
+441,Male,52,Black,0,0,4,Failure to Register a Vehicle,M,5,0,0
+3401,Female,28,White,0,0,0,Driving with a Revoked License,F,2,0,1
+147,Male,62,Black,0,0,8,Possession of Cocaine,F,4,0,0
+3792,Female,40,White,0,0,0,Possession of Cocaine,F,2,0,1
+1768,Male,25,Black,2,0,4,arrest case no charge,F,10,1,0
+1030,Male,23,Black,0,0,0,Battery,M,9,0,0
+2841,Male,40,Black,0,0,5,arrest case no charge,F,7,1,0
+1808,Male,34,White,0,0,1,arrest case no charge,F,6,0,1
+1873,Male,28,Black,0,0,1,Possession of Ecstasy,F,2,1,0
+1559,Male,58,White,0,0,0,Battery,M,1,0,1
+4695,Male,28,Black,0,0,2,Possession of Cannabis/Marijuana,F,4,0,0
+1221,Male,30,Black,0,0,2,Driving with a Suspended License,M,7,0,0
+4400,Male,30,White,0,0,1,Possession of a Controlled Substance,F,8,0,1
+2287,Male,23,Black,0,0,0,Grand Theft,F,5,0,0
+5372,Male,39,Black,0,0,9,Possession of Ecstasy,F,5,0,0
+3090,Male,23,White,0,0,2,Child Neglect,F,9,1,1
+2890,Male,52,White,0,0,1,arrest case no charge,F,1,0,1
+3767,Female,37,Black,0,0,0,Battery,M,1,0,0
+4087,Female,42,Black,0,0,1,Possession of a Controlled Substance,F,2,0,0
+5163,Male,34,Black,0,1,20,Possession of Cocaine,F,9,1,0
+2035,Male,31,White,0,0,11,Fraud,F,7,1,1
+3467,Male,49,White,0,0,3,Possession of Cocaine,F,4,0,1
+5535,Male,29,Black,0,0,1,Battery,M,1,1,0
+1116,Male,26,Black,0,0,0,Burglary,F,4,1,0
+1416,Male,57,Black,0,0,27,arrest case no charge,M,10,0,0
+266,Female,51,White,0,0,0,Battery,M,1,0,1
+5277,Male,29,White,0,0,4,Possession of Cocaine,F,8,0,1
+1452,Female,26,Black,0,0,3,Burglary,F,5,0,0
+1943,Male,23,Black,0,0,1,arrest case no charge,F,2,1,0
+5712,Male,23,Black,1,1,4,Burglary,F,10,0,0
+5620,Female,35,Black,0,0,7,arrest case no charge,F,6,1,0
+5210,Male,23,White,0,0,4,Forgery,F,4,1,1
+3839,Male,43,White,0,0,0,Grand Theft,F,9,1,1
+1219,Female,60,White,0,0,2,Battery with a Deadly Weapon,F,1,0,1
+3132,Male,58,White,0,0,1,arrest case no charge,F,1,0,1
+4621,Male,27,Black,0,0,3,arrest case no charge,M,3,0,0
+5752,Male,30,Black,0,1,14,Driving with a Revoked License,F,7,0,0
+5698,Male,31,White,0,0,3,Battery,M,4,1,1
+4808,Male,30,Black,0,0,13,Battery,F,10,1,0
+5495,Male,27,Black,0,0,2,Possession of Cocaine,F,2,1,0
+5760,Male,40,Black,0,0,1,arrest case no charge,F,3,0,0
+1673,Male,50,White,0,0,0,arrest case no charge,F,1,1,1
+1829,Male,43,Black,0,0,18,arrest case no charge,F,4,1,0
+1912,Male,28,White,0,0,3,arrest case no charge,F,3,0,1
+5147,Male,30,White,0,0,1,Grand Theft,F,1,1,1
+2921,Female,53,White,0,0,0,Driving Under the Influence,M,1,0,1
+4990,Male,29,Black,0,0,16,Grand Theft,F,10,1,0
+5054,Female,28,White,0,0,1,Grand Theft,M,5,0,1
+5738,Male,27,Black,1,2,11,Dealing Cocaine,F,9,0,0
+4172,Male,38,Black,0,0,1,arrest case no charge,F,4,1,0
+3159,Male,42,Black,0,0,0,Battery,F,5,0,0
+3386,Male,31,Black,0,0,6,Possession of Cocaine,F,8,0,0
+1407,Male,57,Black,0,0,19,Driving with a Suspended License,F,3,0,0
+2378,Male,25,White,0,0,0,Driving Under the Influence,M,2,0,1
+3693,Male,24,Black,0,0,0,Battery,M,7,0,0
+1986,Male,20,Black,0,0,1,Grand Theft,F,6,1,0
+3519,Female,44,Black,0,0,0,Battery,M,1,0,0
+5541,Male,31,Black,0,1,3,Grand Theft,F,1,1,0
+2981,Male,20,White,0,0,0,Grand Theft,F,10,1,1
+5460,Female,39,Black,0,0,0,Grand Theft,F,5,1,0
+5983,Male,56,White,0,0,0,Driving Under the Influence,M,1,1,1
+5490,Male,39,Black,0,0,2,Driving Under the Influence,M,2,0,0
+1112,Male,27,Black,0,0,4,Grand Theft,F,2,1,0
+4764,Female,32,White,0,0,5,Burglary,F,2,0,1
+3667,Male,56,Black,0,0,12,Possession of Cocaine,F,5,1,0
+1013,Male,49,White,0,0,8,Driving Under the Influence,F,6,1,1
+5960,Male,46,White,0,0,0,Assault,F,1,0,1
+5583,Female,22,Black,0,0,0,Battery,M,6,0,0
+5963,Female,40,White,0,0,3,Possession of Cocaine,F,1,1,1
+5083,Male,63,Black,0,0,9,Burglary,F,6,1,0
+4599,Male,24,Black,0,0,1,False Imprisonment,F,7,0,0
+5325,Male,22,White,0,0,1,Battery,M,5,0,1
+1387,Female,32,White,0,0,6,arrest case no charge,F,6,1,1
+3230,Female,32,Black,0,0,1,Battery,M,1,0,0
+394,Female,24,Black,1,0,6,arrest case no charge,F,9,1,0
+1129,Male,30,Black,0,0,6,Possession of a Controlled Substance,F,4,0,0
+5898,Female,24,Black,0,0,0,Forgery,F,4,1,0
+3022,Male,37,White,0,0,0,Battery,M,1,0,1
+4891,Male,27,White,0,0,2,arrest case no charge,F,4,1,1
+4097,Male,24,Black,0,0,2,Battery,M,5,1,0
+4459,Male,37,White,0,0,4,Possession of Cannabis/Marijuana,M,5,1,1
+5496,Male,55,White,0,0,27,Battery,M,5,0,1
+3457,Male,44,White,0,0,6,Grand Theft,F,6,1,1
+4548,Male,29,Black,0,0,5,arrest case no charge,F,5,1,0
+4463,Male,26,White,0,0,2,Possession of a Controlled Substance,F,2,0,1
+5073,Male,36,White,0,0,0,Driving Under the Influence,M,1,0,1
+4894,Female,20,Black,0,0,0,Battery,M,7,1,0
+6054,Male,34,White,0,0,5,arrest case no charge,F,1,0,1
+1712,Male,25,Black,0,0,4,Driving with a Suspended License,F,7,1,0
+2665,Male,67,White,0,0,0,Grand Theft,F,1,1,1
+2217,Male,21,Black,1,0,1,arrest case no charge,F,10,1,0
+2261,Male,31,Black,0,1,3,Battery,F,5,0,0
+1016,Male,44,White,0,0,0,Unauthorized Interference with a Railroad,F,2,1,1
+70,Male,41,Black,0,0,1,arrest case no charge,M,2,0,0
+5307,Female,24,Black,0,0,0,arrest case no charge,F,7,0,0
+4160,Male,29,White,0,0,0,Grand Theft,F,2,1,1
+5111,Male,31,White,0,0,11,arrest case no charge,F,7,1,1
+3606,Male,51,Black,0,0,11,Theft,M,5,1,0
+3162,Male,21,Black,0,0,0,Resisting an Officer with Violence,F,6,1,0
+1640,Male,29,Black,0,0,10,Assault,M,10,1,0
+1041,Male,60,Black,0,0,12,Driving with a Revoked License,F,3,0,0
+4661,Male,26,Black,1,0,10,arrest case no charge,F,9,1,0
+4454,Male,37,White,0,0,0,Possession of Ecstasy,F,6,0,1
+5835,Male,24,Black,0,0,1,Battery,M,7,0,0
+5293,Female,48,White,0,0,0,Grand Theft,F,1,0,1
+246,Male,34,Black,0,0,5,Driving with a Suspended License,M,4,0,0
+1647,Male,20,White,0,0,0,Grand Theft,F,5,1,1
+4105,Male,24,Black,0,0,3,Possession of Cannabis/Marijuana,F,8,0,0
+3534,Male,29,White,0,0,3,Possession of Cannabis/Marijuana,F,6,1,1
+2301,Male,56,Black,0,0,9,arrest case no charge,M,8,0,0
+1182,Male,37,White,0,0,0,Child Abuse,F,2,1,1
+4516,Female,67,Black,0,0,0,,F,1,0,0
+5100,Male,59,White,0,0,2,Driving Under the Influence,M,1,1,1
+3173,Male,32,Black,0,0,10,Driving with a Suspended License,F,6,1,0
+4729,Female,24,Black,0,0,0,Dealing Cocaine,F,3,0,0
+5687,Male,24,Black,0,0,2,Possession of a Controlled Substance,F,6,1,0
+1638,Male,35,Black,0,0,1,Violating License Restrictions,M,2,0,0
+3294,Male,44,Black,0,0,0,Possession of Meth,F,2,1,0
+1074,Male,28,White,0,0,2,Battery,M,1,0,1
+1398,Male,21,Black,0,0,1,Grand Theft,F,5,1,0
+3642,Male,29,White,0,0,5,Driving with a Revoked License,F,2,0,1
+2088,Male,44,White,0,0,4,Driving with a Revoked License,F,2,0,1
+220,Male,20,Black,0,0,1,Carrying a Concealed Weapon,F,8,1,0
+5219,Male,47,Black,0,0,3,Assault with a Deadly Weapon,F,2,0,0
+4480,Male,37,Black,0,0,0,Battery,M,1,1,0
+2690,Male,33,White,0,0,10,Battery,M,4,0,1
+5790,Male,29,Black,0,0,0,Battery,F,2,0,0
+3954,Male,36,Black,0,0,0,Introducing Contraband Into Jail,F,4,0,0
+1964,Male,23,White,0,0,0,Possession of Ecstasy,F,3,0,1
+5873,Male,52,Black,0,0,17,Possession of Cocaine,F,7,1,0
+684,Male,39,Black,0,0,0,Driving with a Revoked License,F,3,0,0
+1470,Male,31,White,0,0,1,Grand Theft,F,7,1,1
+5060,Male,31,Black,1,0,5,arrest case no charge,M,8,0,0
+4471,Female,41,Black,0,0,0,Battery,F,1,0,0
+2751,Female,27,White,0,0,2,arrest case no charge,F,5,1,1
+5918,Female,51,White,0,0,0,Fraud,M,1,0,1
+4167,Male,27,Black,0,0,8,Criminal Damage of less than $1000,M,8,0,0
+1351,Male,54,Black,0,0,8,Possession of Cocaine,F,1,1,0
+930,Male,20,White,0,0,0,Battery,M,5,1,1
+1571,Male,44,Black,0,0,10,Driving Under the Influence,M,4,1,0
+581,Male,31,Black,0,0,5,arrest case no charge,F,7,0,0
+5099,Male,34,Black,0,0,12,Possession of a Controlled Substance,F,9,1,0
+1279,Male,56,White,0,0,1,Battery,M,1,0,1
+4388,Male,35,White,0,0,3,Domestic Violence,M,3,0,1
+2226,Male,43,Black,0,0,4,Domestic Violence,M,5,1,0
+4707,Male,66,White,0,0,2,Domestic Violence,M,3,0,1
+6167,Male,23,Black,0,0,0,Dealing Cannabis/Marijuana,F,7,0,0
+4196,Male,80,White,0,0,0,Battery,M,1,0,1
+4823,Male,38,Black,0,0,2,Possession of Cannabis/Marijuana,M,4,1,0
+5485,Male,46,White,0,0,0,Battery,M,2,1,1
+1629,Male,30,Black,0,3,18,Battery,M,10,0,0
+1120,Female,58,Black,0,0,4,Grand Theft,F,1,0,0
+2461,Male,50,White,0,0,1,arrest case no charge,F,3,0,1
+5603,Female,44,White,0,0,0,Grand Theft,F,1,1,1
+5849,Male,21,Black,0,0,0,Burglary,F,3,0,0
+3832,Female,22,White,0,0,3,Grand Theft,F,9,1,1
+4848,Male,52,Black,0,0,0,Battery,F,1,0,0
+2865,Male,27,White,0,0,0,Driving with a Suspended License,M,3,1,1
+5899,Female,67,White,0,0,0,Driving Under the Influence,M,1,0,1
+3866,Male,39,White,0,0,0,Assault,M,2,0,1
+905,Male,21,Black,0,0,0,Grand Theft,F,10,1,0
+2304,Male,56,White,0,0,7,Battery,F,6,1,1
+3431,Male,52,White,0,0,0,Manufacturing Cannabis/Marijuana,F,1,0,1
+5489,Male,29,Black,0,0,11,Operating a Vehicle without a Valid Drivers License,M,10,0,0
+1973,Female,33,White,0,0,2,Possession of a Controlled Substance,F,3,0,1
+4600,Male,53,White,0,0,3,arrest case no charge,F,1,1,1
+3410,Male,26,White,0,0,2,Assault with a Deadly Weapon,F,9,1,1
+4089,Male,36,Black,0,0,2,Burglary,F,6,1,0
+425,Male,27,White,0,0,2,Possession of Cocaine,F,5,0,1
+27,Male,30,White,0,0,9,Battery,F,9,1,1
+538,Male,27,Black,0,2,18,Theft,F,9,1,0
+544,Female,22,Black,0,0,0,Grand Theft,F,8,0,0
+934,Female,20,Black,0,0,0,Grand Theft,F,8,0,0
+2559,Male,24,Black,0,0,2,Child Abuse,F,3,1,0
+16,Male,31,White,0,0,5,Possession of Heroin,F,3,1,1
+5638,Female,27,White,0,0,2,Grand Theft,F,5,1,1
+2729,Male,31,Black,2,1,16,Grand Theft,F,9,1,0
+3382,Male,50,White,0,0,3,Battery,F,3,0,1
+2886,Female,31,Black,0,0,3,arrest case no charge,F,5,0,0
+5324,Male,21,White,0,0,0,Battery,M,4,1,1
+1930,Female,35,Black,0,0,12,Possession of a Controlled Substance,F,7,1,0
+3612,Male,23,Black,0,0,3,Grand Theft,F,8,1,0
+3426,Male,32,Black,0,0,7,Driving with a Suspended License,F,1,0,0
+447,Male,25,Black,0,1,1,Battery,M,3,1,0
+1034,Male,35,Black,0,0,0,Battery,M,1,0,0
+1754,Male,32,White,0,0,0,Driving with a Revoked License,F,3,0,1
+1369,Male,57,Black,0,0,12,Possession of Cocaine,F,9,0,0
+3439,Male,26,Black,0,0,0,Battery,M,2,0,0
+2938,Male,42,White,0,0,0,Assault with a Deadly Weapon,F,1,0,1
+5577,Male,34,Black,0,0,10,,F,7,0,0
+233,Male,22,Black,0,1,3,Battery,M,10,1,0
+77,Male,36,Black,0,0,9,Dealing Cocaine,F,7,1,0
+4861,Male,55,White,0,0,1,Grand Theft,F,1,1,1
+1821,Male,21,Black,0,0,0,Burglary,F,6,0,0
+123,Male,32,Black,0,0,11,Possession of a Controlled Substance,F,6,1,0
+4888,Male,29,White,0,0,12,Criminal Damage of less than $1000,M,6,1,1
+5767,Male,20,Black,0,0,0,Possession of Cannabis/Marijuana,F,6,1,0
+2889,Male,50,White,0,0,1,Battery with a Deadly Weapon,F,1,0,1
+1856,Male,43,White,0,0,0,Driving Under the Influence,M,4,1,1
+4673,Female,53,Black,0,0,5,Unlicensed Telemarketing,F,6,0,0
+153,Male,56,White,0,0,0,Possession of Cocaine,F,1,0,1
+297,Male,22,White,0,0,0,Possession of Cocaine,F,4,0,1
+3514,Female,34,White,0,0,0,Tampering with a Witness,F,3,1,1
+948,Male,33,Black,0,0,16,Driving with a Revoked License,F,9,1,0
+616,Male,22,White,0,1,1,arrest case no charge,F,4,1,1
+1474,Male,56,White,0,0,4,Possession of Cocaine,F,1,0,1
+178,Male,38,Black,0,0,2,Driving with a Revoked License,F,1,0,0
+5180,Male,29,White,0,0,3,False Imprisonment,F,4,1,1
+5411,Male,57,White,0,0,2,Child Molestation,F,1,0,1
+617,Male,45,Black,0,0,0,Grand Theft,F,4,1,0
+4043,Male,24,Black,0,0,1,Battery,F,3,1,0
+3661,Male,26,White,0,0,4,Tampering with a Witness,F,4,1,1
+3582,Male,30,Black,0,0,0,Driving with a Revoked License,F,4,1,0
+3808,Male,25,White,4,0,13,arrest case no charge,F,4,1,1
+2572,Male,50,White,0,0,0,Driving Under the Influence,M,1,0,1
+3991,Male,38,Black,0,0,7,arrest case no charge,F,4,1,0
+3498,Male,38,White,0,0,2,Threatening a Public Servant,F,3,1,1
+5606,Male,20,White,0,0,0,Battery,M,10,1,1
+1693,Male,42,Black,0,0,2,Possession of Cocaine,F,5,0,0
+2092,Male,36,Black,0,0,15,arrest case no charge,F,5,0,0
+5742,Male,57,White,0,0,0,Battery,M,1,0,1
+4957,Male,40,Black,0,0,2,Battery,M,3,0,0
+3065,Male,22,Black,0,0,0,Criminal Damage of less than $1000,F,8,1,0
+4526,Female,31,White,0,0,1,arrest case no charge,F,2,0,1
+1966,Male,40,White,0,0,4,Driving Under the Influence,M,1,0,1
+2332,Male,21,Black,0,0,0,Carrying a Concealed Weapon,F,7,0,0
+1352,Female,20,White,0,0,0,Possession of Cocaine,F,4,0,1
+663,Male,21,White,0,2,2,Grand Theft,F,9,1,1
+6021,Female,69,White,0,0,5,,F,3,0,1
+808,Male,45,Black,0,0,0,Possession of Morphine,F,5,1,0
+3957,Male,24,White,0,0,0,Driving with a Suspended License,M,5,1,1
+2064,Male,21,Black,0,1,1,Robbery,F,9,0,0
+4449,Male,25,Black,0,0,0,Forgery,F,7,0,0
+5248,Male,29,Black,0,0,8,Driving with a Suspended License,M,9,0,0
+3112,Male,35,Black,0,0,5,Stalking,F,4,1,0
+269,Male,20,Black,0,0,0,Grand Theft,F,9,1,0
+198,Male,52,Black,0,0,0,Forgery,F,4,0,0
+1952,Female,24,Black,0,0,1,arrest case no charge,F,9,0,0
+766,Male,28,Black,0,0,3,arrest case no charge,M,6,1,0
+2683,Female,35,Black,0,0,2,arrest case no charge,F,6,0,0
+474,Male,38,Black,0,0,0,Burglary,F,1,0,0
+1805,Female,25,Black,0,0,5,Theft,F,7,0,0
+5064,Male,43,Black,0,0,2,Battery,M,1,0,0
+2349,Male,38,Black,0,0,8,Fraud,M,6,1,0
+2640,Female,64,Black,0,0,1,Resisting an Officer,M,1,1,0
+694,Male,33,Black,0,0,5,Driving with a Suspended License,M,8,1,0
+2136,Male,26,Black,0,0,1,arrest case no charge,F,5,1,0
+1554,Male,23,Black,0,0,2,Criminal Damage of less than $1000,M,8,1,0
+2309,Male,30,Black,0,0,0,Possession of Oxycodone,F,2,1,0
+3956,Female,35,Black,2,0,9,arrest case no charge,F,8,0,0
+1894,Male,31,Black,0,0,10,arrest case no charge,F,6,1,0
+4892,Female,34,Black,0,0,1,Battery,M,2,0,0
+3215,Male,49,White,0,0,0,Driving Under the Influence,M,1,0,1
+5334,Male,27,Black,0,0,9,Possession of a Controlled Substance,F,7,1,0
+4731,Male,44,Black,0,0,0,Driving Under the Influence,F,1,0,0
+4676,Female,24,White,0,0,1,arrest case no charge,F,6,0,1
+1690,Female,44,Black,0,1,11,Possession of Cocaine,F,8,1,0
+2383,Male,30,Black,0,0,12,Driving with a Revoked License,F,9,1,0
+1315,Male,33,White,0,0,2,Driving with a Suspended License,M,2,0,1
+3528,Male,38,Black,0,0,9,Grand Theft,F,5,1,0
+6082,Male,43,Black,0,0,5,arrest case no charge,M,6,0,0
+1141,Male,32,Black,0,0,11,arrest case no charge,M,9,1,0
+44,Male,29,White,0,0,1,Possession of Oxycodone,F,2,1,1
+332,Male,29,Black,1,0,2,Assault,F,5,0,0
+1751,Male,30,Black,0,1,7,Fraud,F,5,1,0
+1991,Male,45,Black,0,0,17,Theft,F,7,1,0
+5930,Male,34,White,0,0,11,Driving with a Revoked License,F,4,0,1
+4685,Female,36,Black,0,0,13,Possession of Cocaine,F,9,1,0
+4024,Male,21,White,0,0,0,Failure to Register a Vehicle,M,4,1,1
+1609,Male,32,White,2,0,15,Possession of Cocaine,F,9,1,1
+194,Male,23,Black,0,0,2,Robbery with a Weapon,F,9,0,0
+3212,Male,31,Black,0,0,9,Battery,M,7,1,0
+385,Male,28,White,0,0,1,Battery,F,4,1,1
+15,Male,31,White,0,0,6,Driving with a Revoked License,F,5,1,1
+3070,Female,22,Black,0,0,2,Battery,F,5,0,0
+702,Male,39,White,0,0,2,Battery,M,2,0,1
+22,Male,43,White,0,0,1,Driving with a Suspended License,M,1,0,1
+1024,Male,36,Black,0,0,1,Possession of Cocaine,F,8,1,0
+2219,Female,50,White,0,0,2,Possession of Cocaine,F,1,1,1
+5999,Male,31,White,0,0,9,Battery,M,8,1,1
+1453,Male,49,Black,0,0,1,Battery,F,1,0,0
+5673,Male,35,White,0,0,0,Driving with an Expired License,M,2,0,1
+2627,Male,38,White,0,0,17,Theft,F,10,0,1
+5992,Male,22,Black,0,0,1,Robbery,F,6,1,0
+583,Male,44,Black,0,0,14,Driving with a Suspended License,F,8,1,0
+3043,Male,28,White,0,0,0,Drug Trafficking,F,2,0,1
+691,Male,28,Black,0,0,14,Fleeing a Law Enforcement Officer,F,7,1,0
+25,Male,26,Black,0,0,5,Possession of Cannabis/Marijuana,F,7,1,0
+3960,Female,23,White,0,0,4,Battery,M,9,1,1
+6080,Male,26,Black,0,0,0,Burglary,F,2,0,0
+4481,Male,23,White,8,2,11,Possession of Cannabis/Marijuana,F,10,1,1
+3056,Male,22,Black,0,0,0,Burglary,F,2,0,0
+2903,Male,20,Black,1,0,1,arrest case no charge,F,7,1,0
+5296,Female,43,Black,0,0,0,Battery,M,1,0,0
+4905,Male,38,Black,0,0,0,Battery,M,1,0,0
+5632,Female,42,Black,0,0,1,Driving with a Suspended License,F,5,0,0
+2058,Female,52,Black,0,0,8,arrest case no charge,F,9,0,0
+3941,Female,58,White,0,0,1,Driving Under the Influence,M,2,0,1
+5322,Female,41,White,0,0,1,Battery,M,2,0,1
+5981,Male,60,Black,0,0,13,Theft,F,6,1,0
+591,Male,46,Black,0,0,0,Grand Theft,F,1,0,0
+2048,Male,33,Black,0,0,8,Possession of Oxycodone,F,6,0,0
+2713,Female,27,Black,0,0,4,Driving with a Suspended License,F,6,1,0
+1902,Male,52,Black,0,0,2,arrest case no charge,F,1,0,0
+2694,Male,41,White,0,0,2,arrest case no charge,M,1,0,1
+949,Male,33,Black,0,0,4,Battery,M,5,1,0
+1334,Male,30,Black,0,2,11,Armed Robbery,F,8,0,0
+2645,Male,23,Black,0,0,0,Grand Theft,F,7,0,0
+2237,Male,48,Black,0,0,2,Grand Theft,F,1,1,0
+2247,Male,27,White,0,0,0,arrest case no charge,F,6,0,1
+4488,Male,29,White,4,1,10,Burglary,F,9,1,1
+1486,Male,59,Black,0,0,4,Battery,M,2,0,0
+3246,Male,24,Black,0,0,8,Grand Theft,F,8,1,0
+4358,Male,34,White,0,0,1,Grand Theft,F,7,0,1
+3885,Male,22,White,0,0,3,Burglary,F,7,1,1
+1920,Female,42,White,0,0,0,Battery,M,1,0,1
+1289,Male,34,Black,0,0,15,arrest case no charge,F,7,0,0
+1716,Male,26,Black,0,1,13,Driving with a Suspended License,M,10,1,0
+4605,Male,48,White,0,0,0,Battery,F,1,0,1
+4981,Female,29,Black,0,0,0,Battery,F,4,1,0
+387,Male,26,Black,1,1,10,Battery,F,9,1,0
+4303,Female,51,White,0,0,0,Possession of Oxycodone,F,1,0,1
+104,Male,31,White,0,0,13,arrest case no charge,F,10,1,1
+4279,Male,24,Black,0,1,3,Possession of Ecstasy,F,10,1,0
+1641,Male,40,Black,0,0,0,Stalking,F,2,0,0
+1478,Male,23,White,0,0,0,Battery,M,4,0,1
+108,Male,42,White,0,0,6,Possession of a Controlled Substance,F,3,0,1
+1600,Male,36,Black,0,0,0,Grand Theft,F,1,0,0
+1996,Male,42,Black,0,0,1,arrest case no charge,F,1,0,0
+113,Female,24,Black,0,0,0,Battery,M,2,0,0
+575,Female,34,White,0,0,15,Grand Theft,F,9,1,1
+3167,Male,39,White,0,0,3,Possession of a Controlled Substance,F,4,0,1
+189,Female,41,Black,0,0,5,Battery,M,6,0,0
+4416,Male,41,Black,0,0,3,Driving Under the Influence,M,2,1,0
+5943,Male,29,Black,0,0,1,arrest case no charge,F,5,1,0
+5021,Female,48,Black,0,0,0,Battery,M,5,0,0
+5812,Male,22,White,0,0,0,Possession of Cannabis/Marijuana,M,6,1,1
+5499,Male,37,White,0,0,1,Battery,M,2,0,1
+2341,Male,26,Black,0,1,9,Resisting an Officer,M,10,1,0
+4209,Male,24,White,0,0,0,Possession of Cocaine,F,9,0,1
+6023,Male,44,White,0,0,1,Battery,M,1,0,1
+1252,Female,21,White,0,0,0,Grand Theft,F,6,1,1
+3857,Male,29,White,0,0,0,Battery,F,8,0,1
+2767,Male,32,Black,0,3,10,Sexual Assault,F,6,1,0
+362,Male,24,White,0,1,3,Possession of Ecstasy,F,8,1,1
+1699,Female,33,Black,0,0,1,Battery,M,1,0,0
+1253,Male,36,Black,0,0,5,arrest case no charge,F,3,0,0
+5056,Male,39,Black,0,0,1,Battery,F,1,0,0
+4904,Male,32,Black,0,0,2,Battery,M,5,0,0
+4532,Male,25,White,0,0,4,False Imprisonment,F,6,0,1
+3102,Male,38,Black,0,0,11,Battery,F,6,0,0
+3859,Male,51,Black,0,0,17,Possession of Cocaine,F,8,1,0
+5098,Male,26,White,0,0,2,Possession of Meth,F,5,0,1
+6,Female,39,White,0,0,0,Battery,M,1,0,1
+279,Female,21,Black,0,0,0,Robbery,F,8,1,0
+5739,Male,28,White,0,0,4,arrest case no charge,F,4,0,1
+5822,Male,30,Black,0,0,0,Battery,M,1,0,0
+4312,Female,28,White,0,0,0,Child Abuse,M,3,0,1
+3144,Male,35,Black,0,0,6,Forgery,F,8,1,0
+1487,Male,27,Black,0,0,3,Fleeing the Scene of an Accident,M,7,0,0
+5526,Female,48,Black,0,0,0,Tampering With Physical Evidence,F,6,1,0
+2955,Female,25,White,0,0,0,Prostitution,M,4,0,1
+1959,Male,24,Black,0,0,6,Dealing Cocaine,F,10,1,0
+5050,Male,55,Black,0,0,1,arrest case no charge,F,1,0,0
+6058,Male,34,White,0,0,1,Possession of Cocaine,F,5,0,1
+2273,Female,52,White,0,0,0,Driving Under the Influence,M,1,0,1
+5964,Male,54,White,0,0,7,Possession of Cannabis/Marijuana,F,3,0,1
+5370,Male,30,White,0,0,0,Battery,M,1,0,1
+4652,Male,44,Black,0,0,0,Robbery,F,3,0,0
+3544,Male,27,Black,0,0,2,Loitering,M,5,1,0
+4777,Male,33,Black,0,0,14,Driving with a Revoked License,F,10,1,0
+945,Female,22,White,0,0,0,Disorderly Conduct,M,3,0,1
+3603,Male,31,White,0,0,0,Battery,M,1,1,1
+3581,Male,35,White,0,0,5,Animal Cruelty,F,3,0,1
+6081,Female,28,Black,0,0,5,Theft,F,8,0,0
+5217,Male,40,White,0,0,5,Possession of a Controlled Substance,F,1,1,1
+4074,Male,28,Black,0,0,1,Battery,M,3,1,0
+5292,Male,26,Black,0,0,2,Driving with a Revoked License,F,3,0,0
+4486,Male,35,Black,0,0,0,Possession of Oxycodone,F,4,0,0
+5366,Male,22,White,0,0,1,Soliciting For Prostitution,F,6,0,1
+5012,Female,35,Black,0,0,7,Driving with a Revoked License,F,2,1,0
+305,Male,30,White,0,0,0,Possession of Cocaine,F,4,0,1
+3568,Male,33,Black,0,0,13,Carrying a Concealed Weapon,F,6,1,0
+5234,Male,59,Black,0,0,1,Battery,M,1,0,0
+4370,Male,45,White,0,0,1,Disorderly Conduct,M,1,0,1
+392,Male,54,Black,0,0,28,Possession of Cocaine,F,9,1,0
+2489,Male,49,White,0,0,1,Battery,M,1,0,1
+2625,Male,23,Black,0,0,0,Battery,M,3,0,0
+3073,Male,33,Black,0,0,3,Possession of Cocaine,F,5,1,0
+3304,Male,23,White,0,0,0,Battery,M,2,0,1
+5174,Male,33,Black,0,0,9,Battery,M,8,1,0
+473,Male,50,Black,0,0,3,Battery,M,3,0,0
+726,Male,26,Black,0,1,4,Battery,M,8,1,0
+3345,Male,47,White,0,0,2,Dealing Controlled Substances,F,1,0,1
+4590,Male,24,Black,0,0,0,Battery,M,5,1,0
+4054,Female,22,Black,0,0,0,Battery,M,4,0,0
+658,Male,25,White,0,0,0,Driving Under the Influence,M,2,0,1
+3402,Male,25,Black,0,0,1,Battery,M,2,1,0
+5852,Male,30,Black,2,0,8,arrest case no charge,F,6,0,0
+5008,Male,46,White,0,0,0,Driving with a Suspended License,M,1,0,1
+4439,Female,33,Black,0,0,0,Battery,M,9,0,0
+4108,Female,29,White,0,0,0,Grand Theft,F,6,1,1
+2521,Male,54,White,0,0,2,Battery,M,1,0,1
+4980,Male,22,Black,0,1,2,Driving with a Revoked License,F,6,0,0
+248,Male,34,Black,0,0,5,Possession of Oxycodone,F,4,1,0
+4500,Male,52,Black,0,0,7,Grand Theft,M,3,1,0
+5502,Male,25,Black,1,1,2,Possession of Meth,F,7,1,0
+1386,Male,37,Black,0,0,8,Driving with a Suspended License,F,5,1,0
+995,Male,25,Black,0,0,4,Robbery,F,5,1,0
+4428,Male,39,White,0,0,17,Possession of a Controlled Substance,F,2,1,1
+2812,Male,30,White,0,1,3,Tampering with a Witness,F,3,0,1
+836,Male,32,White,1,0,8,Burglary,F,4,0,1
+978,Male,23,White,0,1,1,Battery,M,2,0,1
+1473,Male,28,Black,0,1,8,Resisting an Officer with Violence,F,6,0,0
+4591,Male,30,Black,0,0,5,Battery,M,3,0,0
+5220,Male,24,Black,0,0,8,Possession of Cocaine,F,7,1,0
+2914,Female,23,Black,0,0,1,Possession of a Controlled Substance,F,5,1,0
+3720,Female,37,Black,0,0,3,arrest case no charge,F,1,0,0
+1342,Female,39,Black,0,1,6,Grand Theft,F,5,0,0
+6165,Male,30,Black,0,0,0,Possession of Cannabis/Marijuana,M,2,1,0
+1703,Male,35,White,0,0,1,Possession of Cocaine,F,1,1,1
+1789,Female,30,Black,0,0,0,Battery,M,2,0,0
+1076,Male,28,Black,0,0,0,Possession of Ecstasy,F,2,0,0
+869,Female,75,Black,0,0,5,arrest case no charge,F,1,0,0
+762,Male,27,White,0,0,0,Forgery,F,10,1,1
+4462,Male,36,White,0,0,2,Driving Under the Influence,M,1,0,1
+2753,Male,29,White,0,0,1,Possession of Heroin,F,4,0,1
+5328,Male,28,White,0,0,0,Possession of Meth,F,7,0,1
+961,Female,52,White,0,0,6,Theft,M,7,0,1
+2935,Male,50,White,0,0,2,Possession of Cocaine,F,3,0,1
+4994,Male,40,Black,0,0,0,Possession of Cocaine,F,10,1,0
+3816,Male,22,Black,0,0,0,Burglary,F,3,1,0
+4330,Male,29,Black,0,0,0,Grand Theft,F,7,0,0
+1822,Male,25,Black,0,0,4,Possession of Cocaine,F,10,1,0
+3746,Male,39,White,0,0,10,Grand Theft,F,8,1,1
+2091,Male,55,White,0,0,1,Driving Under the Influence,M,1,0,1
+2538,Female,44,White,0,0,1,Grand Theft,F,1,0,1
+1921,Male,21,Black,0,0,0,Grand Theft,F,6,1,0
+784,Male,49,Black,0,0,3,arrest case no charge,F,1,1,0
+1853,Male,30,Black,0,0,4,Battery,M,8,1,0
+1976,Male,25,White,0,0,0,arrest case no charge,F,2,1,1
+1225,Male,24,Black,0,0,5,Driving with a Suspended License,F,7,1,0
+1381,Female,31,Black,0,0,2,Grand Theft,F,2,0,0
+53,Male,38,White,0,0,4,Battery,M,2,1,1
+2733,Male,23,Black,0,1,7,Carrying a Concealed Weapon,F,8,1,0
+238,Male,43,Black,0,0,0,Battery,F,1,0,0
+3810,Male,23,White,0,0,3,Battery with a Deadly Weapon,F,5,0,1
+1338,Female,70,Black,0,0,1,arrest case no charge,F,1,0,0
+121,Female,43,White,0,0,0,Driving Under the Influence,M,1,0,1
+2542,Male,32,Black,0,0,0,Possession of Cocaine,F,1,1,0
+3765,Female,26,White,0,0,1,Possession of Cocaine,F,6,0,1
+3972,Male,25,Black,0,0,11,Battery,M,9,1,0
+265,Male,20,Black,0,0,0,Grand Theft,F,10,1,0
+2632,Male,21,Black,0,0,0,Loitering,M,9,1,0
+1934,Female,25,Black,0,0,1,Battery with a Deadly Weapon,F,3,0,0
+2840,Male,55,White,0,0,0,Battery,M,1,0,1
+920,Male,49,White,0,0,0,Possession of Cocaine,F,1,0,1
+2511,Female,20,Black,0,0,0,Grand Theft,F,4,0,0
+17,Male,64,Black,0,0,13,arrest case no charge,F,6,1,0
+1995,Male,30,White,0,0,1,Driving with an Expired License,M,8,1,1
+5884,Female,65,White,0,0,1,Assault with a Deadly Weapon,F,1,0,1
+2449,Male,66,White,0,0,0,Grand Theft,F,1,0,1
+165,Male,23,Black,0,0,0,Possession of Cannabis/Marijuana,F,3,1,0
+4938,Male,30,Black,0,1,1,Assault,M,2,0,0
+6146,Male,36,Black,0,0,9,Driving with a Revoked License,F,4,0,0
+1841,Male,40,Black,0,0,3,Driving with a Revoked License,F,2,0,0
+162,Male,39,White,0,0,0,Possession of Meth,F,4,1,1
+3877,Male,38,Black,0,1,10,Possession of Cannabis/Marijuana,M,6,0,0
+4595,Male,29,Black,0,0,0,Carrying a Concealed Weapon,F,2,1,0
+983,Male,41,Black,2,1,9,Possession of a Controlled Substance,M,9,0,0
+6051,Male,28,Black,0,0,2,Possession of Cannabis/Marijuana,M,5,1,0
+4899,Male,42,Black,1,0,7,Possession of Cocaine,F,9,1,0
+5330,Male,39,Black,0,0,1,Theft,F,8,0,0
+553,Male,38,White,0,0,1,Criminal Damage of more than $1000,F,1,1,1
+4668,Male,30,White,0,0,0,Possession of Cannabis/Marijuana,F,2,0,1
+5091,Male,34,Black,0,0,1,Possession of Cocaine,F,7,0,0
+1676,Male,59,Black,0,0,4,Possession of Cocaine,F,3,1,0
+4881,Male,41,Black,0,0,19,arrest case no charge,F,8,0,0
+1669,Male,44,Black,0,0,9,Grand Theft,F,8,0,0
+2484,Female,25,White,0,0,2,Escape,F,10,0,1
+4446,Male,30,Black,0,0,4,Possession of Cannabis/Marijuana,M,8,0,0
+99,Male,41,Black,0,1,10,Possession of Cocaine,F,9,1,0
+1955,Male,26,Black,0,0,2,Battery with a Deadly Weapon,F,2,0,0
+5866,Female,34,White,0,0,0,Grand Theft,F,3,0,1
+2097,Male,32,Black,0,0,1,Fleeing the Scene of an Accident,F,8,1,0
+2307,Female,25,White,0,0,0,Abuse,F,6,0,1
+5538,Male,32,Black,0,0,1,Battery,M,10,0,0
+1847,Male,62,White,0,0,0,Assault,M,1,0,1
+6079,Male,56,Black,0,0,31,Possession of Cocaine,F,6,1,0
+231,Male,27,White,0,0,0,Grand Theft,F,6,1,1
+2336,Male,32,White,0,0,0,Possession of Meth,F,5,0,1
+1189,Female,42,Black,0,0,2,Burglary,F,2,0,0
+2211,Male,44,White,0,0,0,Shoplifting,F,1,0,1
+4906,Female,27,Black,0,0,8,arrest case no charge,F,6,0,0
+4487,Female,22,Black,0,0,0,Battery with a Deadly Weapon,F,4,1,0
+5129,Male,21,White,0,2,2,Possession of LSD,F,9,1,1
+957,Male,61,Black,0,0,1,Driving with a Suspended License,F,1,1,0
+2958,Male,33,Black,0,0,4,arrest case no charge,F,2,0,0
+6140,Female,61,White,0,0,1,Driving Under the Influence,M,1,0,1
+700,Male,25,Black,0,0,3,Battery,M,6,1,0
+119,Male,59,White,0,0,1,Possession of Cocaine,F,2,1,1
+3945,Male,26,Black,0,1,6,Possession of a Controlled Substance,F,10,1,0
+1811,Male,51,Black,0,0,4,Driving with a Suspended License,M,2,0,0
+2441,Male,36,White,0,0,9,arrest case no charge,M,4,1,1
+5915,Male,55,Black,0,0,3,arrest case no charge,M,5,1,0
+708,Male,48,Black,1,0,25,arrest case no charge,F,10,1,0
+2391,Male,51,White,0,0,2,Battery,F,1,0,1
+4948,Female,41,White,0,0,9,Theft,M,4,1,1
+3883,Male,39,White,0,0,0,Assault with a Deadly Weapon,F,3,0,1
+5326,Male,38,Black,0,0,7,Battery,M,6,0,0
+903,Male,57,Black,0,0,19,Battery,F,7,0,0
+904,Male,22,Black,0,0,5,arrest case no charge,F,8,1,0
+5951,Male,25,White,0,0,0,Battery,M,2,1,1
+714,Male,56,White,0,0,4,Disorderly Intoxication,M,1,0,1
+2036,Male,20,Black,0,0,0,Grand Theft,F,3,0,0
+430,Female,26,Black,0,0,0,Battery,M,2,0,0
+1194,Male,52,White,0,0,2,Trespassing,M,1,0,1
+5214,Female,29,White,0,0,0,Domestic Violence,M,7,0,1
+5892,Male,29,Black,0,0,8,Possession of Cannabis/Marijuana,M,9,1,0
+3913,Female,28,Black,0,0,13,Assault,F,9,1,0
+5642,Male,22,White,0,0,0,Grand Theft,F,4,0,1
+232,Male,30,Black,0,0,11,Fraud,F,7,1,0
+3840,Male,27,White,0,0,7,Possession of a Controlled Substance,F,8,1,1
+3335,Male,21,Black,0,0,1,arrest case no charge,F,7,1,0
+6154,Male,35,Black,0,0,8,Battery,M,7,1,0
+3111,Male,33,White,0,0,0,Possession of Cocaine,F,6,1,1
+2765,Male,40,Black,0,0,3,Fleeing a Law Enforcement Officer,F,8,1,0
+239,Male,37,White,0,0,3,arrest case no charge,F,1,0,1
+3812,Male,44,White,0,0,1,Possession of Cocaine,F,8,0,1
+3541,Male,25,Black,0,0,0,Battery,M,2,0,0
+5085,Male,29,White,0,0,2,Animal Cruelty,M,5,0,1
+311,Female,50,White,0,0,1,Battery,M,1,1,1
+5394,Male,27,Black,0,0,4,Possession of a Controlled Substance,F,4,1,0
+2197,Female,33,Black,0,0,5,Possession of Cocaine,F,9,1,0
+4272,Female,23,Black,0,0,1,Battery with a Deadly Weapon,F,3,0,0
+299,Male,49,Black,0,0,3,Grand Theft,F,5,0,0
+5667,Female,20,White,0,0,0,Battery,M,6,1,1
+564,Male,21,Black,0,0,0,Obstruction of Fire Equipment,F,5,0,0
+1636,Male,23,Black,0,0,0,Grand Theft,F,3,1,0
+906,Male,26,Black,0,0,0,Carrying a Concealed Weapon,F,3,1,0
+4700,Male,25,Black,0,0,4,Burglary,F,9,1,0
+1243,Female,30,White,0,0,7,arrest case no charge,M,7,0,1
+4208,Male,49,White,0,0,4,Disorderly Conduct,M,8,0,1
+3199,Male,46,Black,0,0,9,Possession of Cannabis/Marijuana,F,4,0,0
+2478,Male,71,White,0,0,1,Driving Under the Influence,M,1,0,1
+1063,Male,20,Black,0,0,0,Burglary,F,10,1,0
+328,Male,28,Black,0,0,5,arrest case no charge,F,9,0,0
+4785,Male,23,Black,0,0,0,Battery,M,3,1,0
+4639,Male,23,Black,0,0,1,Grand Theft,F,2,0,0
+2176,Male,50,White,0,0,2,Battery,M,1,1,1
+118,Male,31,Black,0,0,1,Child Molestation,M,2,0,0
+4008,Male,23,Black,0,0,5,Fraud,F,6,1,0
+398,Male,35,Black,0,0,1,Battery,M,2,0,0
+2249,Male,27,White,0,1,7,Battery,M,9,1,1
+49,Male,49,Black,0,0,4,Battery,M,1,0,0
+4497,Male,27,Black,0,0,1,Failure to Register a Vehicle,M,5,0,0
+1823,Female,27,Black,0,0,3,Child Neglect,F,5,1,0
+2022,Male,50,White,0,0,0,Grand Theft,F,7,0,1
+2972,Male,52,White,0,0,7,Resisting an Officer with Violence,F,2,0,1
+2362,Male,31,White,0,1,4,arrest case no charge,F,8,1,1
+4360,Male,54,Black,0,0,1,arrest case no charge,M,1,0,0
+4689,Male,45,White,0,0,0,Battery,F,1,0,1
+4833,Male,24,Black,0,0,6,Resisting an Officer with Violence,F,9,1,0
+3973,Female,24,White,0,0,0,Child Neglect,F,5,0,1
+367,Male,36,White,0,0,2,Battery,M,1,0,1
+3497,Male,34,White,0,0,3,Driving with a Revoked License,F,1,0,1
+3731,Male,39,White,0,0,2,Possession of a Controlled Substance,F,2,1,1
+5357,Female,52,White,0,0,6,arrest case no charge,F,1,0,1
+4098,Male,27,Black,0,0,2,arrest case no charge,F,7,0,0
+660,Male,37,Black,0,0,4,Driving with a Revoked License,F,2,0,0
+4996,Male,39,White,0,0,0,Driving Under the Influence,M,1,0,1
+2701,Male,25,Black,0,0,3,Possession of Cocaine,F,6,1,0
+1242,Male,24,Black,0,0,4,Grand Theft,F,7,0,0
+229,Female,48,Black,0,0,0,Assault with a Deadly Weapon,F,2,0,0
+1725,Male,31,Black,0,0,2,Possession of Ecstasy,F,7,1,0
+5546,Male,39,Black,0,0,8,Child Molestation,F,4,0,0
+2466,Female,20,White,0,0,0,Grand Theft,F,3,0,1
+815,Male,27,Black,0,0,10,arrest case no charge,F,6,1,0
+4890,Female,22,Black,0,0,4,Possession of Cocaine,F,9,1,0
+941,Male,54,White,0,0,3,Operating a Vehicle without a Valid Drivers License,M,1,1,1
+3621,Male,58,White,0,0,4,Theft,F,5,1,1
+2146,Female,62,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+5274,Male,46,White,0,0,0,Possession of Meth,F,1,0,1
+2944,Male,27,White,0,0,0,Driving with a Revoked License,F,9,1,1
+3313,Male,37,Black,0,0,22,arrest case no charge,M,9,1,0
+5724,Male,59,White,0,0,0,Battery,M,1,0,1
+1546,Male,36,Black,0,0,2,Driving with a Revoked License,F,5,0,0
+5953,Male,45,White,0,0,4,arrest case no charge,M,1,1,1
+4057,Male,24,White,0,0,2,arrest case no charge,F,2,0,1
+378,Female,46,Black,0,0,2,Grand Theft,F,10,1,0
+4542,Male,57,White,0,0,0,Failure to Obey Police Officer,M,1,1,1
+3443,Male,31,Black,0,0,15,arrest case no charge,F,10,0,0
+2438,Male,20,Black,0,1,1,Battery,M,5,1,0
+1831,Male,29,Black,0,0,0,Forgery,F,4,0,0
+1389,Male,21,White,0,0,0,Possession of Cannabis/Marijuana,F,5,0,1
+3910,Male,26,White,0,0,0,Battery,M,4,0,1
+3222,Male,28,Black,0,0,1,Battery,M,2,0,0
+393,Male,35,Black,0,0,8,Battery,F,7,1,0
+1657,Male,26,Black,0,0,2,Battery,M,7,0,0
+4070,Female,46,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+39,Male,29,Black,0,0,0,Fraud,F,7,1,0
+4690,Male,47,White,0,0,1,Battery,M,5,0,1
+3479,Male,22,Black,0,0,0,Burglary,F,4,1,0
+5338,Male,32,Black,0,3,7,arrest case no charge,F,2,0,0
+3835,Female,39,White,0,0,2,,F,5,1,1
+5382,Male,25,White,0,0,1,Possession of Ecstasy,F,3,0,1
+4682,Male,54,Black,0,0,4,arrest case no charge,F,1,0,0
+4169,Male,26,White,0,0,2,arrest case no charge,F,5,0,1
+3752,Male,32,Black,0,1,5,arrest case no charge,F,4,0,0
+5961,Male,33,White,0,0,2,Possession of Oxycodone,F,4,0,1
+1208,Male,30,Black,2,0,20,Battery,F,9,1,0
+268,Male,29,Black,0,0,7,arrest case no charge,F,9,0,0
+4465,Male,27,Black,0,0,0,Forgery,F,6,0,0
+3522,Female,20,Black,0,0,0,Battery,M,5,0,0
+3093,Male,21,White,0,0,1,Burglary,F,6,1,1
+1667,Male,57,Black,0,0,8,Battery,F,5,1,0
+3436,Female,27,Black,0,0,0,Assault,M,2,0,0
+2856,Male,34,Black,0,0,1,arrest case no charge,M,1,1,0
+6118,Male,51,White,0,0,4,Battery,M,1,0,1
+4931,Male,38,White,0,0,3,Disorderly Conduct,M,3,0,1
+1117,Male,26,Black,0,0,0,Battery,M,2,0,0
+2081,Male,23,Black,0,0,1,Battery,M,7,1,0
+3051,Male,48,Black,0,0,0,Battery,M,1,0,0
+4574,Male,31,Black,3,0,16,Driving with a Revoked License,F,10,1,0
+2711,Male,51,White,0,0,3,Interference with Custody,F,3,1,1
+4344,Male,52,White,0,0,3,Battery,M,2,0,1
+5162,Male,25,Black,0,0,1,Battery,M,2,0,0
+1363,Female,51,White,0,0,5,Battery,M,7,1,1
+1513,Female,60,White,0,0,0,Battery,F,1,1,1
+3250,Male,42,Black,0,0,10,Driving with a Suspended License,M,5,1,0
+2871,Male,36,Black,0,2,25,Battery,M,10,1,0
+5936,Male,40,Black,0,0,8,Battery,M,4,1,0
+3759,Male,30,White,0,0,1,Burglary,F,5,0,1
+5937,Female,22,White,0,0,1,Domestic Violence,M,8,0,1
+3919,Female,21,Black,0,0,0,Battery,M,5,1,0
+921,Male,49,Black,0,0,1,Resisting an Officer with Violence,F,3,1,0
+3875,Male,23,Black,0,0,1,Grand Theft,F,6,0,0
+1429,Female,30,White,0,0,2,Burglary,F,10,1,1
+1020,Male,38,White,0,0,0,,F,4,0,1
+4257,Male,27,Black,0,0,0,Child Abuse,M,1,1,0
+6131,Male,28,White,0,0,0,Battery,M,4,1,1
+1044,Male,24,White,0,0,4,Battery,M,8,0,1
+1488,Male,22,Black,0,0,0,Grand Theft,F,3,0,0
+5016,Male,27,Black,0,0,0,Burglary,F,5,0,0
+1871,Male,31,Black,0,0,1,Battery,F,1,0,0
+895,Female,26,Black,0,0,4,Driving with a Suspended License,F,7,1,0
+3117,Female,29,Black,0,0,9,Theft,F,7,1,0
+5751,Male,29,Black,0,0,2,Resisting an Officer with Violence,F,1,1,0
+100,Male,22,Black,0,0,0,Forgery,F,4,1,0
+156,Male,47,Black,0,0,23,Possession of Cannabis/Marijuana,M,8,1,0
+4708,Male,51,Black,0,0,21,arrest case no charge,F,8,1,0
+1057,Male,21,Black,0,0,0,Grand Theft,F,4,0,0
+163,Male,26,Black,0,0,9,Dealing Cocaine,F,9,1,0
+3721,Male,28,Black,0,0,0,Driving with a Suspended License,M,7,1,0
+4307,Male,26,Black,0,0,4,Possession of Ecstasy,F,7,1,0
+3303,Male,24,White,0,0,1,Possession of a Controlled Substance,F,4,0,1
+2403,Male,27,Black,2,0,6,Driving with a Suspended License,M,8,1,0
+3026,Female,33,Black,0,0,0,Possession of Cocaine,F,9,1,0
+3367,Male,22,White,0,0,1,arrest case no charge,F,7,0,1
+622,Male,29,Black,0,0,0,Grand Theft,F,2,0,0
+4366,Female,23,Black,0,0,2,Shooting into a Vehicle,F,10,1,0
+5019,Male,25,White,0,0,4,Grand Theft,F,10,1,1
+1447,Male,40,White,0,0,1,Robbery,F,1,0,1
+130,Female,61,Black,0,0,1,Purchasing Cocaine,F,1,1,0
+3802,Female,47,Black,0,1,21,Battery,M,9,1,0
+2953,Male,27,Black,0,0,0,arrest case no charge,F,6,1,0
+1545,Male,32,White,0,0,6,Refusing to Submit Blood or Breath Test for DUI,M,7,0,1
+4915,Male,29,White,0,0,1,False Imprisonment,F,1,0,1
+4448,Male,25,Black,0,0,0,Possession of Cocaine,F,2,0,0
+1925,Male,26,White,0,0,0,Battery,M,6,1,1
+2054,Male,37,Black,0,0,9,Possession of Cocaine,F,6,1,0
+2173,Male,31,Black,0,1,10,Driving with a Revoked License,F,5,1,0
+2868,Female,54,White,0,0,2,arrest case no charge,F,2,0,1
+2298,Male,33,White,0,0,7,Child Neglect,F,9,1,1
+1709,Male,35,Black,0,0,2,Battery,M,2,0,0
+1310,Female,49,White,0,0,2,Restraining Order Violation,M,2,1,1
+1648,Male,27,Black,0,0,1,Throwing Deadly Missile,F,1,0,0
+3571,Male,21,Black,0,1,6,Burglary,F,8,1,0
+3665,Male,21,Black,0,0,1,Obstruction of Officer with Violence,F,5,1,0
+1372,Male,45,Black,0,0,8,arrest case no charge,F,7,1,0
+894,Female,31,Black,0,0,0,Grand Theft,F,8,0,0
+1840,Female,25,White,0,0,2,arrest case no charge,F,5,1,1
+2050,Male,26,Black,0,0,1,Possession of a Controlled Substance,M,5,0,0
+1091,Male,44,Black,0,0,2,arrest case no charge,F,5,0,0
+2163,Male,32,White,0,0,0,Battery,M,1,0,1
+365,Female,24,Black,0,0,3,Grand Theft,F,10,1,0
+2792,Male,29,White,0,0,0,Possession of a Controlled Substance,M,1,0,1
+1994,Male,40,White,0,0,0,Battery,M,1,1,1
+4302,Female,47,White,0,0,28,Prostitution,F,9,1,1
+4872,Male,25,White,0,0,0,Driving Under the Influence,M,2,0,1
+4100,Male,22,White,0,2,3,Possession of Cannabis/Marijuana,F,8,1,1
+6116,Male,34,White,0,0,4,Possession of Cannabis/Marijuana,F,5,0,1
+2437,Male,57,White,0,0,0,Loitering,M,1,0,1
+3981,Male,32,Black,0,0,9,Burglary,F,8,0,0
+3273,Male,29,Black,0,0,0,Battery,M,6,0,0
+3131,Male,25,Black,0,0,0,Battery,M,5,1,0
+126,Female,33,Black,0,0,7,Possession of Cocaine,F,9,1,0
+4269,Male,59,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+142,Male,31,White,0,0,0,Dealing Controlled Substances,F,5,0,1
+5725,Male,39,Black,0,0,2,Resisting an Officer,M,1,1,0
+3920,Male,25,Black,0,0,2,Driving with a Suspended License,M,4,1,0
+439,Male,24,White,0,0,0,Possession of Cocaine,F,2,0,1
+2672,Male,31,White,0,0,6,Battery,M,3,1,1
+1382,Female,33,White,0,0,7,Battery,M,6,0,1
+4613,Male,45,Black,1,0,16,Possession of Cocaine,F,7,0,0
+1042,Male,33,Black,0,0,6,Battery,M,5,0,0
+1073,Male,28,Black,0,0,0,Driving Under the Influence,M,1,0,0
+5694,Male,32,Black,0,0,0,Possession of Cannabis/Marijuana,F,9,0,0
+3997,Male,34,Black,0,0,3,arrest case no charge,M,9,0,0
+3836,Male,43,Black,0,0,8,Criminal Damage of less than $1000,F,3,1,0
+5729,Male,21,White,0,0,0,Burglary,F,9,1,1
+4020,Male,26,Black,0,0,2,Possession of Cocaine,F,8,1,0
+1549,Female,26,Black,0,0,0,Battery,M,2,0,0
+4309,Male,60,Black,0,0,1,arrest case no charge,F,1,0,0
+1393,Male,22,Black,0,0,0,Forgery,F,2,0,0
+4088,Male,26,Black,1,2,9,Tampering With Physical Evidence,F,10,1,0
+5175,Male,29,White,0,0,2,arrest case no charge,F,1,1,1
+943,Male,46,White,0,0,1,Domestic Violence,M,1,0,1
+5070,Female,33,Black,0,0,1,arrest case no charge,F,1,0,0
+833,Male,30,Black,0,0,4,Battery,M,4,1,0
+4567,Male,50,Black,0,0,1,Possession of Weapon on School Property,F,1,0,0
+4993,Male,21,Black,0,0,0,Dealing Controlled Substances,F,4,0,0
+4343,Male,77,Black,0,0,0,Driving Under the Influence,M,1,0,0
+6036,Male,36,Black,0,0,9,Possession of Cocaine,F,7,1,0
+5697,Male,28,Black,0,0,0,Fraud,M,2,0,0
+3098,Female,24,Black,0,0,2,Fraud,F,4,0,0
+3963,Male,25,White,0,0,3,Possession of Ecstasy,F,7,0,1
+918,Female,22,Black,0,0,1,Grand Theft,F,6,1,0
+4638,Female,38,White,0,0,0,Battery,M,1,0,1
+1857,Male,26,Black,0,0,3,Possession of Cannabis/Marijuana,F,10,1,0
+68,Female,26,Black,0,0,1,Possession of Cocaine,F,4,1,0
+137,Female,30,White,0,0,3,Possession of a Controlled Substance,F,7,1,1
+5648,Male,33,White,0,0,0,Battery,M,1,0,1
+1957,Female,30,Black,0,3,14,Carrying a Concealed Weapon,F,10,1,0
+2186,Male,30,White,0,0,13,Possession of a Controlled Substance,F,8,1,1
+2229,Male,25,White,0,0,2,Carrying a Concealed Weapon,F,5,1,1
+1677,Female,42,Black,0,0,0,Battery with a Deadly Weapon,F,1,0,0
+1632,Male,26,White,0,0,3,Theft,M,4,0,1
+2892,Male,38,Black,0,0,0,Battery with a Deadly Weapon,F,4,0,0
+3175,Female,23,White,0,0,0,Possession of a Controlled Substance,M,7,0,1
+2269,Male,36,Black,0,0,6,Child Abuse,F,5,0,0
+5950,Female,21,White,0,0,0,Battery,M,5,1,1
+1504,Male,47,White,0,0,0,Battery,M,1,0,1
+2085,Male,34,Black,0,0,0,Battery,F,1,0,0
+1104,Male,49,White,0,0,12,Possession of Cannabis/Marijuana,M,5,0,1
+5273,Male,29,White,0,0,1,arrest case no charge,F,2,0,1
+1780,Male,37,Black,0,0,4,arrest case no charge,F,4,0,0
+228,Female,23,Black,0,0,0,Carrying a Concealed Weapon,F,4,1,0
+2483,Female,28,White,0,0,0,Battery with a Deadly Weapon,F,5,0,1
+3351,Male,65,White,0,0,0,Driving Under the Influence,M,1,0,1
+3894,Female,28,Black,0,0,4,Possession of Cocaine,F,5,1,0
+2620,Male,35,White,0,0,0,Battery,M,10,1,1
+5508,Male,26,Black,0,0,2,Grand Theft,F,5,1,0
+2583,Male,25,White,0,0,1,Possession of Cocaine,F,9,0,1
+2635,Male,35,Black,0,0,12,Possession of Oxycodone,F,8,1,0
+5641,Male,47,Black,0,0,5,Possession of Cocaine,F,6,0,0
+3729,Male,39,Black,0,0,0,Forgery,F,4,1,0
+2686,Male,22,Black,0,0,0,Possession of a Controlled Substance,M,3,1,0
+6029,Male,24,Black,0,0,0,Domestic Violence,M,6,1,0
+5418,Male,48,Black,0,0,3,Child Abuse,F,2,1,0
+5284,Female,38,Black,0,0,7,Grand Theft,F,10,1,0
+5262,Male,31,Black,0,0,1,Driving with a Suspended License,M,4,0,0
+2566,Male,29,Black,0,0,5,Burglary,F,10,0,0
+2742,Male,26,White,0,0,0,Battery,M,2,0,1
+287,Male,23,Black,0,0,1,Grand Theft,F,6,0,0
+2334,Male,22,Black,0,0,0,Assault with a Deadly Weapon,F,3,1,0
+2984,Male,24,Black,0,0,0,Driving Under the Influence,M,2,1,0
+373,Male,61,White,0,0,4,arrest case no charge,F,1,0,1
+2358,Female,30,Black,0,0,9,Theft,F,9,1,0
+2495,Male,37,Black,0,0,3,Battery,M,2,0,0
+3398,Male,42,White,0,0,0,Tampering With Physical Evidence,F,5,0,1
+2813,Male,44,White,0,0,0,Grand Theft,F,4,0,1
+4248,Male,26,Black,0,0,1,Driving with a Suspended License,F,6,0,0
+723,Male,21,Black,0,0,1,arrest case no charge,F,8,0,0
+1011,Female,37,White,0,0,1,Driving Under the Influence,M,3,0,1
+3677,Male,51,Black,0,0,12,Driving with a Suspended License,F,8,1,0
+4751,Male,37,Black,0,0,3,Battery,M,3,0,0
+4854,Female,41,Black,0,0,0,Battery,M,1,0,0
+5177,Male,22,Black,0,0,0,Battery,M,8,0,0
+2912,Female,56,White,0,0,10,Possession of Cocaine,F,5,1,1
+2541,Male,27,Black,0,0,2,Battery,M,5,1,0
+671,Male,31,White,0,0,2,Driving Under the Influence,M,3,0,1
+506,Male,20,Black,1,0,1,arrest case no charge,F,3,0,0
+3636,Male,24,White,0,0,0,Possession of Cannabis/Marijuana,F,2,0,1
+5746,Male,29,White,0,0,0,Possession of Cocaine,F,3,0,1
+2123,Male,29,White,0,0,1,Possession of Cocaine,F,3,0,1
+3630,Female,50,White,0,0,0,Battery,M,1,0,1
+5529,Male,54,Black,0,0,4,Sexual Assault,F,3,1,0
+5343,Male,29,White,0,0,1,Fleeing the Scene of an Accident,M,10,0,1
+4963,Male,50,White,0,0,1,Battery,F,2,0,1
+526,Female,22,Black,0,0,0,Theft,M,5,0,0
+618,Female,36,Black,0,0,4,Child Neglect,F,10,1,0
+4456,Male,30,Black,0,0,4,Battery,M,2,0,0
+1218,Male,52,White,0,0,1,Driving with a Suspended License,F,1,0,1
+1984,Male,49,Black,0,0,3,arrest case no charge,F,4,0,0
+1188,Male,25,White,0,0,2,Resisting an Officer,M,4,1,1
+2707,Female,30,Black,0,1,4,Possession of Cocaine,F,6,0,0
+4706,Male,47,White,0,0,5,Driving Under the Influence,M,2,0,1
+6067,Female,27,White,0,0,0,Battery,M,8,1,1
+6138,Female,22,White,0,0,1,Possession of Ecstasy,F,7,0,1
+5955,Male,22,Black,0,0,0,Battery,M,10,1,0
+5032,Male,36,Black,0,0,2,arrest case no charge,F,4,1,0
+2664,Male,38,Black,0,0,3,Battery,F,2,1,0
+3432,Male,34,Black,0,0,0,Unlawful Possession of Firearm,F,10,0,0
+2574,Male,27,Black,0,0,0,Battery,M,1,0,0
+635,Male,39,Black,0,4,10,arrest case no charge,M,9,0,0
+4283,Male,61,White,0,0,0,Theft,M,1,0,1
+3643,Female,35,Black,0,0,5,Child Neglect,F,3,0,0
+5166,Male,56,White,0,0,6,Possession of Cocaine,F,1,0,1
+2015,Male,26,Black,0,0,1,arrest case no charge,F,9,1,0
+3435,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,6,1,0
+3153,Male,42,White,0,0,4,Burglary,F,1,1,1
+5276,Female,27,White,0,0,1,arrest case no charge,F,5,1,1
+209,Male,28,Black,0,0,25,arrest case no charge,F,8,1,0
+2150,Male,28,Black,1,1,5,Stalking,F,10,0,0
+2642,Male,20,White,0,0,1,Grand Theft,F,2,1,1
+3934,Male,28,White,0,0,2,Possession of Cocaine,F,7,0,1
+3324,Male,25,Black,0,0,0,Battery,M,2,1,0
+5726,Male,23,Black,0,0,1,Burglary,F,5,0,0
+1136,Male,53,Black,0,0,8,Possession of Cocaine,F,6,1,0
+1726,Female,23,Black,0,0,0,Battery,M,4,0,0
+5333,Male,24,Black,0,0,0,Battery,M,9,1,0
+5579,Male,31,White,0,0,0,Possession of Meth,F,1,0,1
+3553,Male,54,Black,0,0,3,arrest case no charge,F,6,1,0
+732,Female,21,White,0,0,0,Possession of Cannabis/Marijuana,M,5,0,1
+3604,Male,23,Black,0,0,0,,F,4,0,0
+747,Male,22,White,0,1,1,Grand Theft,F,8,1,1
+1146,Male,43,White,0,0,4,Burglary,F,5,1,1
+235,Female,41,Black,0,0,2,Battery,M,3,0,0
+1089,Female,39,Black,0,0,1,arrest case no charge,F,2,0,0
+3042,Male,34,Black,1,0,21,Battery,M,10,1,0
+1203,Male,22,Black,0,0,1,Possession of Cannabis/Marijuana,F,7,0,0
+5889,Male,33,White,0,0,1,,F,2,0,1
+5197,Male,32,White,0,1,15,arrest case no charge,F,9,1,1
+5029,Female,39,Black,0,0,3,Driving with a Suspended License,M,6,0,0
+443,Male,25,White,0,0,4,Possession of Cocaine,F,4,1,1
+2398,Male,25,Black,0,0,5,Dealing Cocaine,F,8,0,0
+5198,Male,28,Black,0,0,0,Forgery,F,2,0,0
+1721,Male,30,Black,0,0,3,Carrying a Concealed Weapon,F,2,0,0
+3596,Female,42,White,0,0,3,Fraud,F,5,0,1
+2281,Male,37,Black,0,0,2,Driving with a Suspended License,M,1,0,0
+3776,Male,47,Black,0,0,0,Possession of a Controlled Substance,F,8,1,0
+5309,Male,28,Black,0,0,12,Criminal Damage of less than $1000,M,7,1,0
+4559,Male,24,Black,2,0,7,Restraining Order Violation,M,8,1,0
+5218,Male,31,White,0,0,0,Grand Theft,F,1,0,1
+2501,Male,25,Black,0,0,0,Driving Under the Influence,M,2,0,0
+262,Female,42,White,0,0,0,Possession of Cocaine,F,2,0,1
+1882,Male,22,Black,0,0,0,Forgery,F,3,0,0
+5300,Male,28,Black,0,0,2,Possession of Cocaine,F,6,1,0
+3346,Male,28,White,0,0,1,Possession of Cocaine,F,1,1,1
+5764,Male,23,Black,0,0,1,Possession of Cocaine,F,3,1,0
+1258,Male,54,White,0,0,14,Battery,M,4,1,1
+4055,Male,27,Black,0,0,2,Battery,M,3,1,0
+3442,Male,37,White,0,0,4,Battery,M,1,0,1
+1926,Male,36,White,0,0,0,Battery,F,1,0,1
+5318,Male,38,Black,0,0,14,Grand Theft,F,7,0,0
+5387,Female,34,Black,0,0,5,Driving with a Revoked License,F,2,1,0
+4614,Male,41,White,0,0,0,Possession of a Controlled Substance,F,2,1,1
+2797,Male,41,Black,0,0,0,Grand Theft,F,7,0,0
+1837,Male,31,White,0,0,6,Battery,M,5,0,1
+551,Male,22,Black,0,0,1,Burglary,F,4,1,0
+3851,Male,22,White,0,0,0,Dealing Controlled Substances,F,8,0,1
+3221,Male,33,Black,0,0,4,Driving with a Suspended License,F,6,0,0
+1358,Male,45,Black,0,0,2,Carrying an Open Beverage in Public,M,6,0,0
+322,Male,35,Black,0,0,2,Possession of Cannabis/Marijuana,F,5,0,0
+4876,Male,27,Black,0,0,2,,F,3,0,0
+3424,Male,37,Black,0,0,11,Driving with a Suspended License,F,8,1,0
+2333,Male,27,White,0,0,0,Burglary,F,3,0,1
+2878,Male,21,Black,1,0,7,Fleeing a Law Enforcement Officer,F,10,1,0
+3405,Male,39,Black,0,0,4,Child Abuse,F,4,0,0
+5074,Male,69,White,0,0,0,Driving with a Revoked License,F,5,0,1
+971,Female,24,Black,0,0,0,Grand Theft,F,7,0,0
+917,Male,26,White,0,0,0,Dealing Controlled Substances,F,4,0,1
+5246,Female,34,Black,0,0,0,Battery,M,1,1,0
+4553,Male,21,Black,0,2,3,Fleeing the Scene of an Accident,F,9,1,0
+4270,Male,49,Black,0,0,1,Battery,M,1,1,0
+2712,Female,28,Black,0,0,3,Grand Theft,F,3,0,0
+2157,Male,22,Black,0,0,1,Grand Theft,F,3,1,0
+284,Female,30,White,0,0,0,Battery,M,6,0,1
+4038,Female,30,Black,0,0,7,Battery,M,3,1,0
+3524,Male,33,Black,0,0,1,Battery,F,4,1,0
+1539,Male,39,Black,0,0,5,Grand Theft,F,7,0,0
+1548,Male,39,White,0,0,2,Driving Under the Influence,M,4,0,1
+2,Male,24,Black,0,0,4,Possession of Cocaine,F,4,1,0
+2128,Male,27,Black,0,0,8,Battery,F,7,1,0
+3163,Female,35,White,0,0,1,Battery,M,5,0,1
+5682,Male,24,Black,0,0,0,Dealing Cocaine,F,9,1,0
+4084,Male,34,Black,0,6,19,arrest case no charge,M,8,0,0
+2323,Male,41,White,0,0,1,Burglary,F,2,1,1
+254,Male,62,White,0,0,0,False Imprisonment,F,1,0,1
+801,Male,25,White,0,0,1,Possession of Cocaine,F,5,0,1
+4331,Female,55,White,0,0,2,Possession of Cocaine,F,1,0,1
+3088,Male,34,White,0,0,5,Possession of Ecstasy,F,6,1,1
+527,Female,19,White,0,0,2,Possession of Cocaine,F,10,1,1
+3626,Male,56,White,0,0,13,arrest case no charge,F,2,0,1
+1951,Male,36,White,0,0,2,Possession of Ecstasy,F,1,0,1
+3103,Male,51,Black,0,0,22,arrest case no charge,F,9,1,0
+4117,Male,41,White,0,0,0,Grand Theft,F,1,1,1
+2550,Female,30,Black,0,0,1,Driving Under the Influence,M,4,0,0
+1052,Male,30,White,0,0,3,Battery,M,4,0,1
+2775,Male,29,White,0,0,1,Driving with a Suspended License,M,3,0,1
+846,Male,24,White,0,0,2,Possession of a Controlled Substance,F,6,0,1
+1590,Male,46,White,0,0,10,arrest case no charge,F,7,1,1
+4798,Male,58,Black,0,0,0,Grand Theft,F,4,1,0
+1205,Male,26,Black,0,0,3,Possession of Cannabis/Marijuana,F,4,1,0
+2823,Female,24,Black,0,0,2,Driving with a Suspended License,F,6,1,0
+3761,Male,26,Black,1,1,18,Grand Theft,F,10,1,0
+1779,Male,24,Black,0,0,0,Possession of Cannabis/Marijuana,F,3,0,0
+5860,Female,44,Black,0,0,0,Tampering With Physical Evidence,F,1,0,0
+5743,Male,30,Black,0,0,2,Burglary,F,2,0,0
+1692,Male,30,Black,0,1,14,Grand Theft,F,9,1,0
+1337,Female,24,Black,0,0,0,Battery,F,3,0,0
+4556,Female,24,White,0,0,0,Battery,M,5,0,1
+464,Male,23,White,0,0,2,Possession of Cannabis/Marijuana,F,2,0,1
+4976,Male,35,Black,0,0,4,arrest case no charge,F,4,0,0
+5022,Female,26,Black,0,0,1,Battery,M,4,0,0
+2568,Male,39,Black,0,0,2,Possession of Cannabis/Marijuana,F,3,0,0
+2112,Male,61,White,0,0,0,Battery,M,1,0,1
+1845,Male,61,White,0,0,1,Driving Under the Influence,M,1,0,1
+3613,Male,31,Black,0,0,15,Driving with a Suspended License,F,8,0,0
+3379,Male,29,Black,0,0,0,Battery,M,9,1,0
+1550,Male,28,Black,0,0,8,Grand Theft,F,8,1,0
+4387,Male,33,Black,0,0,3,Burglary,F,6,1,0
+1583,Male,56,Black,0,0,4,Possession of Cocaine,F,1,0,0
+4730,Male,44,White,0,0,0,Driving with a Revoked License,F,7,0,1
+1660,Male,34,White,0,0,0,Possession of Cocaine,F,4,0,1
+6158,Male,23,White,0,0,0,Possession of Meth,F,8,0,1
+4932,Male,41,Black,0,0,7,arrest case no charge,F,9,0,0
+3892,Female,44,White,0,0,0,Battery,M,1,0,1
+4717,Male,21,Black,0,0,0,Battery,F,3,1,0
+1686,Male,22,Black,0,0,1,Possession of Cannabis/Marijuana,F,7,1,0
+2339,Male,59,White,0,0,0,Possession of a Controlled Substance,F,1,0,1
+3136,Male,38,White,0,0,2,Possession of Heroin,F,3,0,1
+2908,Male,29,White,0,0,0,Grand Theft,F,2,0,1
+4201,Male,21,White,0,0,0,Battery,F,8,1,1
+4395,Female,42,White,0,0,4,Battery,M,6,1,1
+4629,Male,39,White,0,0,3,Driving with a Revoked License,F,6,1,1
+1469,Male,25,Black,0,0,7,Domestic Violence,M,9,1,0
+4641,Female,29,White,0,0,7,arrest case no charge,F,6,1,1
+4016,Male,35,White,0,0,1,Possession of Cannabis/Marijuana,F,1,0,1
+2447,Male,26,White,0,0,1,arrest case no charge,F,3,1,1
+476,Male,28,Black,8,0,16,Assault,F,8,1,0
+3458,Male,26,Black,0,0,0,Battery,M,5,0,0
+4753,Male,45,White,0,0,2,arrest case no charge,F,1,0,1
+5949,Male,25,White,0,0,0,Disorderly Intoxication,M,9,0,1
+2039,Male,28,Black,0,0,1,Possession of Cocaine,F,4,1,0
+3302,Female,21,Black,0,0,0,Grand Theft,F,5,1,0
+3585,Male,31,Black,0,0,0,Possession of Cannabis/Marijuana,F,2,1,0
+4313,Male,28,Black,0,2,7,Possession of Cocaine,F,7,1,0
+1842,Male,33,White,0,0,1,Driving with a Suspended License,M,3,0,1
+2105,Male,33,White,0,0,0,Dealing Controlled Substances,F,9,1,1
+1785,Female,24,White,0,0,0,Possession of Cocaine,F,8,0,1
+729,Male,26,White,0,0,0,Possession of Cocaine,F,4,0,1
+349,Male,31,Black,0,0,7,Assault,M,3,1,0
+3241,Male,35,White,0,0,1,Assault,M,4,1,1
+4202,Male,26,Black,0,0,3,Battery,M,4,1,0
+1185,Female,38,Black,0,0,14,Possession of Cocaine,F,10,1,0
+1924,Female,21,White,0,0,0,Burglary,F,6,0,1
+3360,Male,24,White,0,0,1,Assault with a Deadly Weapon,F,6,0,1
+5792,Male,31,Black,0,0,9,Battery,M,8,1,0
+4061,Male,20,White,0,0,0,Burglary,F,4,1,1
+5134,Male,50,White,0,0,2,arrest case no charge,F,2,1,1
+2254,Female,33,White,0,0,0,Driving with a Suspended License,M,1,0,1
+2266,Female,45,White,0,0,1,Possession of Meth,F,3,1,1
+5907,Male,26,Black,0,0,8,Possession of Ecstasy,F,9,1,0
+4353,Male,32,White,0,0,2,Possession of Cannabis/Marijuana,F,2,0,1
+1610,Male,33,Black,0,0,2,Battery,M,2,1,0
+773,Female,53,White,0,0,0,Driving Under the Influence,M,1,0,1
+5492,Male,26,Black,0,0,7,Grand Theft,F,10,1,0
+5121,Female,26,White,0,0,0,Possession of Cocaine,F,5,0,1
+2408,Male,56,White,0,0,2,Driving Under the Influence,F,4,0,1
+2227,Male,44,Black,0,0,0,Child Abuse,F,1,0,0
+2103,Male,42,Black,0,0,7,Battery,F,5,1,0
+4403,Female,31,Black,0,0,2,Assault,F,5,1,0
+874,Male,27,Black,0,0,1,arrest case no charge,F,2,0,0
+2419,Male,23,Black,0,0,1,Possession of Cannabis/Marijuana,F,4,0,0
+2597,Male,38,Black,0,0,0,Driving with a Revoked License,F,8,0,0
+414,Male,26,Black,0,0,1,Fraud,F,2,0,0
+1563,Male,54,White,0,0,0,Battery,F,1,0,1
+2032,Male,41,Black,0,0,3,Driving with a Suspended License,F,4,1,0
+3191,Female,26,White,0,0,4,Possession of a Controlled Substance,F,3,1,1
+4099,Male,30,White,0,0,2,Driving Under the Influence,M,4,1,1
+4278,Male,54,Black,0,0,1,arrest case no charge,F,3,0,0
+4824,Male,23,Black,0,2,4,Possession of Ecstasy,F,7,1,0
+3254,Male,40,White,0,0,0,Theft,M,8,1,1
+4432,Male,20,Black,0,0,0,Burglary,F,8,0,0
+1587,Male,22,Black,0,0,0,Burglary,F,3,1,0
+2068,Male,21,Black,0,0,1,Possession of Cocaine,F,4,1,0
+3416,Male,29,Black,0,0,0,Driving with a Revoked License,F,5,1,0
+3634,Male,30,White,0,0,1,Battery,M,2,0,1
+1095,Male,23,White,0,0,6,Dealing Cannabis/Marijuana,F,5,1,1
+3343,Male,51,White,0,0,6,Domestic Violence,M,1,1,1
+947,Male,25,Black,0,0,0,Resisting an Officer,M,3,1,0
+1151,Female,23,Black,0,0,0,Battery,M,4,0,0
+5652,Male,28,Black,1,0,5,arrest case no charge,F,5,1,0
+472,Male,22,Black,0,1,3,arrest case no charge,F,7,1,0
+5834,Male,42,Black,0,0,1,Possession of a Controlled Substance,F,1,0,0
+323,Male,53,Black,0,0,2,Driving with a Suspended License,F,1,0,0
+4237,Male,24,White,0,0,3,Purchasing Cannabis/Marijuana,F,5,0,1
+407,Male,59,White,0,0,1,Burglary,F,1,1,1
+6056,Male,25,White,0,0,3,Driving with a Suspended License,M,9,1,1
+5627,Male,34,White,0,0,0,Driving with a Suspended License,M,2,1,1
+2653,Male,39,Black,0,0,1,Possession of Cocaine,F,2,1,0
+5401,Female,21,Black,0,0,2,Grand Theft,F,10,1,0
+1852,Male,22,Black,0,0,0,Grand Theft,F,4,1,0
+835,Male,23,Black,0,0,2,arrest case no charge,F,7,1,0
+2151,Male,56,White,0,0,1,Fleeing a Law Enforcement Officer,F,2,0,1
+1285,Male,27,Black,0,0,6,Possession of Meth,F,5,1,0
+4765,Male,25,Black,0,0,2,arrest case no charge,F,4,0,0
+2216,Male,59,Black,0,0,14,Possession of Cocaine,F,8,1,0
+4042,Male,46,Black,0,0,3,Battery,F,1,0,0
+1066,Male,31,Black,0,0,4,arrest case no charge,F,3,1,0
+827,Male,29,Black,0,0,0,Dealing Controlled Substances,F,1,0,0
+2067,Male,42,White,0,0,1,arrest case no charge,F,2,0,1
+3284,Male,31,Black,0,0,4,arrest case no charge,F,5,1,0
+3015,Female,23,Black,0,0,2,Battery,F,10,1,0
+3006,Male,21,Black,0,0,1,Purchasing Cannabis/Marijuana,F,8,0,0
+3560,Male,37,Black,0,0,12,Possession of Cannabis/Marijuana,F,9,1,0
+2258,Male,53,Black,0,0,0,Battery,M,1,0,0
+4335,Male,20,Black,0,0,0,Grand Theft,F,3,0,0
+3262,Male,45,White,0,0,0,Burglary,F,1,0,1
+1813,Male,55,Black,0,0,21,Battery,F,6,1,0
+533,Male,26,White,0,0,3,Burglary,F,7,1,1
+5590,Male,34,Black,3,1,13,arrest case no charge,F,7,1,0
+4003,Male,56,White,0,0,1,Battery,M,1,0,1
+5167,Male,23,Black,0,0,0,Battery,F,4,0,0
+3238,Male,33,Black,0,0,0,Grand Theft,F,1,0,0
+5002,Male,32,Black,0,0,0,Robbery with a Weapon,F,1,0,0
+5043,Female,55,White,0,0,0,Driving Under the Influence,M,1,0,1
+5941,Male,47,Black,0,0,3,Driving with an Expired License,M,5,1,0
+519,Male,22,Black,0,0,0,Burglary,F,8,1,0
+1426,Female,49,White,0,0,8,arrest case no charge,F,2,0,1
+4128,Male,21,White,0,0,1,Possession of Cannabis/Marijuana,F,4,0,1
+2869,Male,26,Black,0,0,1,arrest case no charge,F,10,1,0
+592,Male,37,Black,0,0,6,Child Abuse,F,3,0,0
+1705,Male,38,White,0,0,0,Battery,M,3,1,1
+6155,Male,43,Black,0,0,0,Battery,M,1,0,0
+2934,Male,24,Black,0,0,3,Unlawful Possession of Firearm,F,8,1,0
+4625,Male,21,White,0,0,0,Forgery,F,5,1,1
+3178,Male,32,Black,0,0,6,Battery,M,5,1,0
+2265,Male,28,Black,0,0,1,Possession of Cocaine,F,7,0,0
+5046,Male,22,Black,0,0,1,Resisting an Officer,M,7,1,0
+5306,Male,46,White,0,0,0,Causing Public Danger,M,5,0,1
+1508,Female,28,Black,0,0,2,Battery,M,2,0,0
+4919,Male,21,White,0,0,1,Burglary,F,3,0,1
+5858,Male,30,White,0,0,1,arrest case no charge,M,2,1,1
+2482,Male,24,White,0,2,6,arrest case no charge,F,9,0,1
+67,Male,22,White,0,0,0,Grand Theft,F,8,0,1
+4184,Male,42,Black,0,0,1,Battery,M,2,1,0
+3125,Male,39,White,0,0,9,Possession of Cocaine,F,5,1,1
+2602,Male,21,Black,0,0,0,arrest case no charge,F,8,0,0
+3740,Male,22,Black,0,0,1,Possession of Ecstasy,F,10,1,0
+4879,Male,30,White,0,0,2,Possession of Cocaine,F,2,0,1
+4329,Male,28,Black,0,0,2,Assault,F,5,1,0
+4421,Male,37,Black,0,0,2,Burglary,F,3,0,0
+749,Male,23,Black,0,3,6,Burglary,F,10,1,0
+689,Male,24,Black,0,0,0,Driving with a Revoked License,F,3,0,0
+3330,Male,40,White,0,0,2,arrest case no charge,M,1,0,1
+2492,Male,30,Black,0,0,5,Assault with a Deadly Weapon,F,4,1,0
+3599,Male,25,Black,0,0,5,arrest case no charge,F,9,1,0
+938,Female,24,White,0,0,2,arrest case no charge,F,7,0,1
+1288,Male,33,Black,0,0,7,Restraining Order Violation,M,6,1,0
+3686,Female,53,White,0,0,6,Possession of Cocaine,F,5,1,1
+283,Male,29,Black,0,0,0,Assault with a Deadly Weapon,F,1,0,0
+5087,Female,40,White,0,0,0,Battery,M,5,0,1
+2849,Male,31,Black,0,0,3,Burglary,F,3,1,0
+3486,Male,38,White,0,0,5,Driving Under the Influence,M,5,1,1
+5116,Male,51,White,0,0,1,Battery,M,2,1,1
+2026,Male,50,White,0,0,0,Possession of Cocaine,F,1,0,1
+5670,Female,48,Black,0,0,1,Possession of a Controlled Substance,F,1,0,0
+5779,Male,23,White,0,0,0,Battery,M,5,0,1
+935,Male,50,White,0,0,8,arrest case no charge,F,2,0,1
+4800,Male,20,Black,0,1,1,Grand Theft,F,10,1,0
+4221,Male,35,Black,0,0,0,Battery,M,8,1,0
+2060,Male,45,Black,0,0,13,Driving with a Suspended License,F,1,1,0
+936,Male,50,Black,0,0,7,Battery with a Deadly Weapon,F,2,0,0
+624,Male,50,Black,0,0,11,Manufacturing Cannabis/Marijuana,F,9,0,0
+852,Male,39,Black,0,0,1,arrest case no charge,F,6,0,0
+5575,Male,43,White,0,0,0,Grand Theft,F,1,1,1
+816,Male,22,White,0,0,0,Disorderly Conduct,M,3,0,1
+5221,Male,39,Black,0,0,4,Theft,F,9,0,0
+4831,Male,58,White,0,0,3,Carrying an Open Beverage in Public,M,2,0,1
+597,Male,53,White,0,0,1,arrest case no charge,F,1,0,1
+3290,Male,35,Black,0,1,8,Driving with a Revoked License,F,9,0,0
+5443,Male,23,Black,0,0,1,Burglary,F,6,1,0
+1023,Male,21,White,0,0,1,Possession of Cannabis/Marijuana,F,6,1,1
+2066,Male,49,White,0,0,0,Grand Theft,F,1,0,1
+5985,Male,26,Black,0,0,4,Fleeing a Law Enforcement Officer,F,3,1,0
+351,Male,28,Black,0,0,8,Forgery,F,6,1,0
+2647,Male,25,Black,0,13,21,Driving with a Revoked License,F,9,1,0
+669,Male,31,White,0,0,0,Battery,M,1,0,1
+5879,Male,29,White,0,0,1,Battery,M,3,0,1
+3896,Male,32,White,0,0,1,Battery,M,1,1,1
+112,Male,28,White,0,0,0,Disorderly Intoxication,M,2,1,1
+2540,Male,30,White,0,0,3,Murder,F,2,0,1
+786,Male,32,Black,0,0,19,Possession of Cocaine,F,10,1,0
+4484,Male,37,White,1,6,13,Child Neglect,F,7,0,1
+1266,Male,29,Black,0,0,7,arrest case no charge,F,3,0,0
+5980,Male,23,Black,0,0,10,arrest case no charge,F,10,1,0
+3900,Male,27,Black,0,0,3,Carrying a Concealed Weapon,F,9,1,0
+1683,Male,29,Black,0,0,8,arrest case no charge,F,8,1,0
+335,Male,56,Black,0,0,5,Driving with a Revoked License,F,3,0,0
+3521,Female,25,White,0,0,6,arrest case no charge,F,7,0,1
+5058,Male,48,White,0,0,1,Deprive Law Enforcement Officer of Protection,F,1,0,1
+782,Male,28,Black,0,0,4,Battery,M,2,1,0
+1706,Female,40,Black,0,0,4,arrest case no charge,M,1,0,0
+4630,Male,56,White,0,0,2,Battery,M,3,0,1
+2027,Female,36,White,0,0,0,Battery,M,1,0,1
+3340,Male,33,White,0,0,0,Carrying a Concealed Weapon,M,3,1,1
+4959,Male,24,Black,0,0,2,Battery,M,9,1,0
+5867,Male,23,Black,0,2,3,Failure to Register a Vehicle,M,7,1,0
+3237,Male,35,White,0,0,3,Possession of Cocaine,F,5,1,1
+2041,Male,55,Black,0,0,1,Possession of Cocaine,F,4,0,0
+469,Male,39,Black,0,0,3,Grand Theft,F,3,1,0
+120,Female,20,Black,1,0,1,arrest case no charge,F,10,0,0
+1027,Male,38,Black,0,0,1,arrest case no charge,M,2,0,0
+2843,Male,28,Black,0,1,10,arrest case no charge,F,7,1,0
+2182,Male,26,White,0,0,5,Fleeing the Scene of an Accident,M,4,0,1
+3406,Male,27,Black,0,0,4,arrest case no charge,F,5,1,0
+1126,Male,23,Black,0,0,0,Battery,M,7,0,0
+2811,Male,21,Black,0,0,0,Battery,M,4,0,0
+5026,Male,41,Black,0,0,0,arrest case no charge,F,1,0,0
+5552,Female,32,Black,0,0,0,Battery,M,1,1,0
+3187,Female,65,White,0,0,0,Driving Under the Influence,M,1,0,1
+9,Female,37,White,0,0,0,Battery,M,1,0,1
+1269,Female,20,White,0,2,3,Battery,M,10,1,1
+2588,Male,36,Black,0,0,2,Driving with a Revoked License,F,1,1,0
+2551,Female,47,Black,0,0,0,Disorderly Intoxication,M,2,0,0
+578,Male,27,Black,0,0,3,Grand Theft,F,4,0,0
+1316,Male,46,Black,0,0,0,Driving with a Revoked License,F,7,0,0
+271,Male,24,Black,0,1,2,Burglary,F,9,1,0
+1150,Male,29,Black,0,0,0,Tampering With Physical Evidence,F,1,0,0
+1810,Male,52,White,0,0,2,arrest case no charge,F,1,0,1
+1937,Male,37,White,0,0,1,Battery,M,2,0,1
+2848,Male,22,Black,0,4,7,arrest case no charge,F,8,1,0
+1464,Male,28,White,0,0,6,Grand Theft,F,4,0,1
+525,Female,23,White,0,0,3,Possession of a Controlled Substance,F,10,0,1
+5463,Male,20,Black,0,0,2,arrest case no charge,F,6,1,0
+5594,Male,37,Black,0,0,5,Battery,M,5,1,0
+3150,Female,52,White,0,0,3,Driving Under the Influence,M,1,0,1
+1244,Male,25,Black,0,0,5,Prostitution,F,9,1,0
+1616,Male,27,Black,0,0,9,Burglary,F,7,1,0
+1854,Male,63,White,0,0,0,Driving Under the Influence,M,1,0,1
+4368,Male,45,Black,0,0,7,Driving with a Suspended License,F,1,0,0
+2924,Male,21,White,0,0,1,Grand Theft,F,3,0,1
+717,Male,37,Black,0,0,6,Theft,F,5,1,0
+2178,Female,21,Black,0,0,0,Dealing Cocaine,F,8,1,0
+2782,Male,26,White,0,0,1,Grand Theft,F,4,1,1
+4489,Male,41,Black,2,0,6,Battery,F,3,1,0
+4494,Male,41,White,0,0,0,Driving with a Revoked License,F,1,0,1
+2343,Male,25,Black,0,1,3,Driving with a Suspended License,M,8,1,0
+2549,Female,25,Black,0,0,0,,F,5,1,0
+5505,Male,32,Black,0,0,8,Forgery,F,9,0,0
+5539,Male,48,Black,0,0,12,arrest case no charge,M,6,0,0
+3750,Male,33,White,0,0,0,Grand Theft,F,2,0,1
+3932,Male,25,Black,0,0,0,Operating a Vehicle without a Valid Drivers License,M,3,1,0
+5048,Male,55,White,0,0,7,Driving Under the Influence,F,8,0,1
+5216,Female,22,Black,0,0,0,Grand Theft,F,7,0,0
+653,Male,29,Black,0,0,1,Driving with a Suspended License,M,4,0,0
+3462,Female,27,Black,1,0,1,arrest case no charge,F,5,0,0
+4351,Male,34,Black,0,0,2,arrest case no charge,F,3,0,0
+6133,Male,21,Black,0,0,0,Grand Theft,F,8,1,0
+3170,Male,32,Black,0,0,17,Possession of Cocaine,F,8,1,0
+2055,Male,50,Black,0,0,1,Possession of Cocaine,F,5,0,0
+2872,Male,28,Black,0,0,18,Dealing Cannabis/Marijuana,F,10,1,0
+4967,Male,29,Black,0,0,3,Possession of Cannabis/Marijuana,M,1,0,0
+4561,Male,28,White,0,0,0,Possession of Ecstasy,F,6,1,1
+5959,Male,23,Black,0,0,0,Fraud,F,4,0,0
+5206,Female,40,White,0,0,0,Driving with a Suspended License,M,2,0,1
+1867,Male,38,Black,0,0,2,Burglary,F,7,1,0
+5035,Male,38,Black,0,0,17,Battery,M,4,1,0
+5297,Male,24,White,0,0,3,Possession of Cocaine,F,5,0,1
+555,Male,47,Black,0,0,20,Tampering with a Witness,F,9,0,0
+2831,Female,38,White,0,0,1,Battery,M,6,1,1
+2065,Male,54,White,0,0,0,Battery,M,1,0,1
+866,Male,24,White,1,2,3,Battery,M,4,0,1
+3203,Male,40,Black,0,0,21,Battery,F,5,0,0
+5802,Female,26,White,0,0,1,Battery,F,9,0,1
+1128,Male,22,Black,0,0,6,arrest case no charge,F,9,0,0
+475,Male,41,White,0,0,1,Sexual Assault,F,6,0,1
+280,Male,36,White,0,0,0,Domestic Violence,M,3,0,1
+3395,Male,29,Black,0,0,6,Battery,M,7,1,0
+2093,Male,23,Black,0,0,1,arrest case no charge,F,4,0,0
+5604,Male,20,Black,0,0,0,Assault,M,4,0,0
+4000,Male,22,White,0,0,1,Assault with a Deadly Weapon,F,4,0,1
+2379,Male,26,Black,0,1,5,arrest case no charge,M,5,0,0
+3041,Male,48,Black,0,0,4,Grand Theft,F,6,0,0
+1368,Male,58,White,0,0,3,Theft,F,4,1,1
+1235,Male,31,White,1,0,2,Possession of Cannabis/Marijuana,M,6,1,1
+5057,Male,79,White,0,0,1,Disorderly Conduct,M,1,0,1
+1954,Male,23,Black,0,0,3,Tampering With Physical Evidence,F,7,0,0
+2189,Male,22,Black,0,0,0,Burglary,F,3,0,0
+4337,Male,44,Black,0,0,6,Possession of Cocaine,F,4,1,0
+3352,Male,33,White,0,0,5,Driving with a Revoked License,F,6,1,1
+6098,Male,28,White,0,0,11,arrest case no charge,F,6,0,1
+3589,Female,22,Black,0,1,2,Battery with a Deadly Weapon,F,9,0,0
+2174,Male,22,White,0,0,0,Assault,F,3,0,1
+2432,Male,51,White,0,0,0,Battery,M,1,0,1
+4746,Male,40,White,0,0,6,Carrying a Concealed Weapon,F,4,0,1
+2135,Male,53,Black,0,0,2,arrest case no charge,F,2,1,0
+922,Male,59,White,0,0,2,arrest case no charge,F,1,0,1
+2770,Male,19,Black,0,1,2,Grand Theft,F,7,1,0
+3288,Male,33,Black,0,0,14,Possession of Cocaine,F,8,1,0
+5039,Male,26,Black,0,0,2,Battery,F,4,0,0
+5906,Female,42,Black,0,0,8,arrest case no charge,F,8,1,0
+3437,Male,20,Black,0,0,0,Forgery,F,5,1,0
+3496,Male,42,Black,0,0,17,arrest case no charge,M,7,1,0
+243,Male,26,Black,0,0,1,Battery,M,8,1,0
+4873,Male,32,Black,0,0,0,Battery,M,1,0,0
+3862,Male,20,Black,0,0,1,arrest case no charge,F,4,1,0
+1753,Female,43,White,0,0,7,Battery,F,8,0,1
+2776,Male,38,White,0,0,2,Battery,M,1,0,1
+4401,Female,45,White,0,0,0,Battery,F,9,1,1
+5929,Female,29,White,0,0,3,arrest case no charge,F,3,0,1
+502,Male,27,Black,0,0,0,Battery,M,2,0,0
+4013,Female,40,Black,0,0,2,Driving with a Suspended License,M,5,0,0
+6002,Male,57,Black,0,0,28,Possession of Cocaine,F,10,1,0
+5434,Male,33,Black,0,0,0,Assault with a Deadly Weapon,F,1,0,0
+2104,Male,26,Black,0,2,20,Grand Theft,F,9,1,0
+942,Male,25,White,0,0,4,Possession of Cannabis/Marijuana,M,10,0,1
+4760,Male,29,Black,0,1,4,Grand Theft,F,4,1,0
+4530,Male,58,White,0,0,10,Driving with a Suspended License,M,3,0,1
+1807,Male,30,White,0,0,0,Driving Under the Influence,M,3,0,1
+402,Male,37,White,0,0,3,Possession of Cocaine,F,2,0,1
+315,Female,24,Black,0,0,0,Assault with a Deadly Weapon,F,4,0,0
+4927,Male,21,Black,0,0,1,arrest case no charge,F,3,0,0
+858,Male,35,Black,0,1,17,Battery,M,7,1,0
+4402,Male,23,Black,0,0,2,Assault with a Deadly Weapon,F,8,1,0
+678,Female,24,Black,0,0,1,Battery,M,5,1,0
+5969,Male,32,Black,0,0,6,Possession of Cocaine,F,8,1,0
+3045,Female,31,White,0,0,2,Grand Theft,F,1,0,1
+451,Male,21,White,0,0,0,Grand Theft,F,3,1,1
+3121,Male,53,Black,0,0,13,Possession of Cocaine,F,7,0,0
+2406,Male,52,Black,0,0,7,Possession of Cocaine,F,9,1,0
+2721,Male,59,Black,0,0,3,arrest case no charge,F,3,0,0
+721,Male,26,White,0,0,4,Domestic Violence,M,7,1,1
+2539,Male,41,Black,0,0,8,Battery,F,4,0,0
+3786,Male,32,White,0,0,0,Grand Theft,F,1,1,1
+3216,Male,29,Black,0,0,2,Grand Theft,F,3,0,0
+4260,Male,31,Black,0,0,6,Battery,M,10,1,0
+363,Male,33,White,0,0,0,Assault,F,1,0,1
+1282,Male,28,Black,0,0,3,Possession of Ecstasy,F,2,0,0
+5281,Male,24,White,0,0,1,Battery,M,2,0,1
+5336,Male,43,Black,0,0,2,arrest case no charge,F,1,0,0
+281,Male,24,Black,0,0,0,Grand Theft,F,3,0,0
+4136,Female,43,Black,0,0,0,Grand Theft,F,6,0,0
+5762,Male,41,Black,0,0,1,Battery,M,5,0,0
+437,Male,59,Black,0,0,10,arrest case no charge,F,7,1,0
+3549,Female,31,Black,0,0,0,Battery,F,2,0,0
+1858,Male,51,Black,0,0,1,Child Neglect,F,1,0,0
+3154,Male,23,Black,0,0,6,Possession of Cocaine,F,6,1,0
+152,Male,78,White,0,0,1,Driving Under the Influence,M,1,1,1
+4776,Male,22,Black,0,0,0,Burglary,F,7,1,0
+5344,Male,36,Black,0,0,2,Driving Under the Influence,M,2,0,0
+1144,Male,30,Black,0,0,7,Possession of Cannabis/Marijuana,F,10,1,0
+577,Male,23,Black,0,0,2,Battery,M,10,1,0
+3139,Male,53,White,0,0,0,Battery,M,2,1,1
+4966,Male,24,Black,0,0,2,Grand Theft,F,5,1,0
+3716,Male,22,Black,0,0,1,Tampering With Physical Evidence,F,4,1,0
+844,Male,51,Black,0,0,17,Driving Under the Influence,M,4,0,0
+6071,Female,27,Black,0,0,3,Grand Theft,F,6,1,0
+2820,Female,37,White,0,0,7,Fraud,F,6,1,1
+5994,Male,36,White,0,0,0,Fraud,F,1,0,1
+4640,Male,28,White,0,0,5,Battery,M,7,1,1
+4688,Male,26,White,0,0,10,Driving with a Suspended License,M,8,1,1
+3422,Female,41,White,0,0,3,Driving with a Revoked License,F,5,0,1
+5876,Male,29,White,0,0,2,Fleeing a Law Enforcement Officer,M,1,0,1
+5557,Male,28,Black,0,1,11,Burglary,F,9,1,0
+843,Male,30,Black,0,0,6,arrest case no charge,F,5,1,0
+4482,Male,21,Black,0,0,0,Battery,M,9,0,0
+5446,Male,20,Black,0,0,0,Grand Theft,F,3,0,0
+5388,Male,18,Black,5,0,4,arrest case no charge,F,5,1,0
+4218,Male,21,Black,0,0,1,Grand Theft,F,6,1,0
+967,Female,62,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+159,Male,66,Black,0,0,3,Battery,F,1,0,0
+3754,Male,39,White,0,0,0,Battery,M,5,0,1
+2277,Male,23,White,0,0,3,arrest case no charge,F,4,1,1
+5728,Male,22,Black,0,0,1,Forgery,F,9,0,0
+3286,Male,26,White,1,0,2,Possession of Cannabis/Marijuana,F,6,0,1
+587,Male,57,Black,0,0,20,Possession of Cocaine,F,7,1,0
+5614,Male,23,Black,0,1,3,Possession of a Controlled Substance,F,5,1,0
+107,Male,33,Black,0,0,19,arrest case no charge,F,10,1,0
+1814,Female,49,White,0,0,1,arrest case no charge,F,1,0,1
+5135,Male,25,Black,0,0,5,arrest case no charge,M,9,0,0
+1935,Male,21,Black,0,1,1,Assault,M,8,0,0
+89,Male,30,White,0,0,0,Possession of Meth,F,4,0,1
+420,Male,38,Black,0,0,0,Tampering With Physical Evidence,F,5,0,0
+227,Female,52,Black,0,0,0,Burglary,F,1,0,0
+4073,Male,68,White,0,0,4,Battery,M,1,0,1
+5245,Male,44,White,0,0,1,Burglary,F,5,0,1
+2455,Male,44,Black,0,0,0,arrest case no charge,F,2,0,0
+4435,Female,24,White,0,0,0,Battery,M,5,1,1
+4859,Male,30,Black,0,0,1,Child Abuse,F,1,0,0
+479,Male,25,White,0,0,2,arrest case no charge,F,4,1,1
+2987,Male,52,White,0,0,8,arrest case no charge,F,2,0,1
+2643,Male,21,Black,0,0,0,Grand Theft,F,5,1,0
+6141,Male,51,Black,0,0,7,Driving Under the Influence,M,6,1,0
+1251,Male,64,White,0,0,0,Sex Offender Failing to Comply with Law,F,3,0,1
+3718,Male,20,Black,0,0,2,Resisting an Officer with Violence,F,10,1,0
+1312,Male,49,White,0,0,1,Resisting an Officer with Violence,F,3,0,1
+3077,Male,30,Black,0,0,1,Battery,M,4,0,0
+6090,Female,24,Black,0,0,0,Threatening a Public Servant,F,4,0,0
+4555,Female,49,White,0,0,1,Fleeing the Scene of an Accident,M,1,0,1
+4535,Male,28,Black,0,0,4,Battery,M,2,1,0
+5474,Male,24,Black,0,0,0,Burglary,F,2,0,0
+2755,Male,24,Black,0,0,0,Possession of Cannabis/Marijuana,F,4,0,0
+2695,Male,35,Black,0,0,5,Battery,F,8,0,0
+509,Male,40,Black,0,0,0,Assault with a Deadly Weapon,F,2,0,0
+5805,Male,32,Black,0,0,4,Driving with a Revoked License,F,6,1,0
+1663,Male,31,Black,0,0,4,Assault,M,3,1,0
+5479,Male,28,Black,0,0,4,Battery,M,3,1,0
+2986,Male,26,Black,0,0,0,Possession of Cannabis/Marijuana,M,3,1,0
+1154,Male,53,White,0,0,0,Possession of a Controlled Substance,F,1,0,1
+5409,Male,30,Black,0,2,13,Grand Theft,F,10,1,0
+1391,Male,49,White,0,0,2,Battery,M,2,0,1
+2308,Female,28,Black,0,0,3,Battery,F,5,0,0
+5934,Male,31,White,0,0,6,arrest case no charge,F,4,0,1
+4666,Male,28,Black,0,8,12,Possession of Cocaine,F,10,1,0
+4947,Male,21,Black,0,0,2,Possession of Cocaine,F,6,1,0
+584,Male,53,White,0,0,2,Dealing Controlled Substances,F,1,0,1
+4044,Male,32,Black,0,0,7,Grand Theft,F,6,1,0
+1489,Male,58,White,0,0,1,Driving with a Revoked License,F,1,0,1
+524,Male,55,Black,0,0,9,arrest case no charge,M,3,1,0
+2577,Male,24,Black,0,0,4,Grand Theft,F,9,1,0
+310,Male,34,White,0,0,1,Battery,M,1,0,1
+4466,Female,37,White,0,0,0,Battery,M,1,0,1
+986,Male,28,Black,0,0,9,Possession of Ecstasy,F,8,1,0
+940,Female,23,Black,0,0,3,arrest case no charge,F,5,1,0
+3722,Male,41,White,0,0,3,Battery,M,5,1,1
+4417,Female,22,White,0,0,0,Dealing Cannabis/Marijuana,F,7,1,1
+4769,Male,22,White,0,0,0,Battery,M,3,1,1
+2826,Male,25,Black,0,0,1,arrest case no charge,F,2,0,0
+4234,Male,63,White,0,0,5,Prostitution,M,1,0,1
+2181,Male,30,Black,0,0,11,arrest case no charge,F,8,1,0
+3879,Male,31,Black,0,0,0,Grand Theft,F,3,0,0
+547,Female,31,Black,0,0,10,Driving with a Revoked License,F,6,0,0
+5007,Male,38,Black,0,0,5,Battery,M,4,0,0
+1700,Male,25,White,0,0,4,Robbery,F,4,0,1
+3907,Male,31,Black,0,0,10,Possession of Cocaine,F,6,1,0
+1210,Male,41,Black,0,0,0,Assault,M,1,0,0
+3609,Male,39,Black,0,1,13,Possession of Cocaine,F,10,1,0
+4955,Female,27,Black,0,0,0,Battery,M,3,0,0
+3053,Male,21,Black,0,0,1,Burglary,F,4,1,0
+1348,Male,43,White,0,0,11,Driving Under the Influence,F,7,1,1
+2319,Male,48,Black,0,0,0,Battery,F,1,0,0
+1318,Male,26,Black,0,1,14,Possession of Cannabis/Marijuana,F,9,1,0
+3931,Male,30,White,0,0,0,Assault,F,2,1,1
+2090,Male,28,White,0,0,14,Possession of Cannabis/Marijuana,F,9,0,1
+478,Male,23,Black,0,0,1,Assault,F,5,0,0
+5585,Female,21,Black,0,1,2,Criminal Damage of more than $1000,F,9,0,0
+950,Male,24,Black,0,0,0,Forgery,F,2,0,0
+5319,Male,31,Black,0,0,1,Driving with a Revoked License,F,1,0,0
+4734,Male,27,Black,0,0,0,Child Abuse,F,2,0,0
+3823,Male,21,Black,0,1,2,Possession of Cannabis/Marijuana,F,9,0,0
+4527,Male,21,Black,0,0,2,Grand Theft,F,7,1,0
+5108,Male,20,Black,0,0,1,Battery,M,4,1,0
+3988,Female,45,White,0,0,0,Battery,M,1,0,1
+2749,Male,46,Black,1,0,9,Grand Theft,F,9,1,0
+1620,Male,27,Black,0,0,4,Dealing Controlled Substances,F,8,0,0
+1727,Male,25,Black,0,0,1,Burglary,F,6,0,0
+4293,Male,46,Black,0,0,3,Fraud,F,1,1,0
+1588,Male,39,White,0,0,0,Battery,M,1,0,1
+902,Male,53,Black,0,0,2,Driving with a Suspended License,F,3,0,0
+81,Female,20,White,0,0,0,Possession of Ecstasy,F,7,0,1
+211,Male,25,Black,0,0,0,Grand Theft,F,3,0,0
+3653,Female,23,Black,0,0,0,Battery,M,2,0,0
+2988,Male,27,Black,0,0,1,Battery,M,2,0,0
+3256,Male,25,White,0,0,0,Domestic Violence,M,5,1,1
+2626,Male,54,Black,0,0,10,Possession of Cocaine,F,6,0,0
+33,Male,34,Black,2,1,21,Unlawful Possession of Firearm,F,9,1,0
+5358,Male,52,Black,0,0,16,arrest case no charge,F,8,1,0
+625,Male,34,Black,0,1,10,arrest case no charge,F,7,1,0
+4714,Male,24,Black,0,0,0,Grand Theft,F,5,0,0
+1493,Female,35,White,0,1,3,Battery with a Deadly Weapon,F,4,0,1
+2472,Male,53,White,0,0,1,Battery,M,1,1,1
+1370,Male,37,Black,0,0,2,Possession of a Controlled Substance,F,7,0,0
+2827,Male,33,Black,0,0,1,Battery,M,1,1,0
+384,Male,52,White,0,0,6,Grand Theft,F,5,1,1
+5628,Male,21,Black,0,0,0,Battery,M,6,1,0
+3690,Female,65,Black,0,0,0,Grand Theft,F,1,0,0
+789,Male,46,Black,0,0,0,Battery,M,1,0,0
+2610,Male,48,White,0,0,20,Possession of Cocaine,F,8,1,1
+5940,Female,25,Black,0,0,1,Battery with a Deadly Weapon,F,5,0,0
+4093,Male,45,White,0,0,3,Tampering With Physical Evidence,F,1,1,1
+5090,Male,37,Black,0,0,4,Criminal Damage of less than $1000,M,7,1,0
+5813,Male,27,Black,0,0,7,Robbery,M,7,1,0
+1458,Female,52,White,0,0,0,Battery,M,1,0,1
+2057,Female,47,White,0,0,0,Prostitution,M,3,1,1
+395,Male,54,Black,0,0,2,Battery,M,1,0,0
+6096,Female,24,White,0,0,1,Burglary,F,4,0,1
+5076,Male,22,Black,0,0,1,Dealing Cannabis/Marijuana,F,7,1,0
+4737,Male,55,White,0,0,0,Battery,F,1,0,1
+4224,Male,36,Black,0,0,7,Possession of Cocaine,F,2,1,0
+713,Male,34,Black,0,0,4,arrest case no charge,M,2,0,0
+2131,Male,27,Black,0,0,1,Battery,M,1,0,0
+3578,Male,47,Black,0,0,1,arrest case no charge,F,2,0,0
+2504,Male,33,Black,0,0,2,Battery,M,1,0,0
+5564,Male,27,Black,0,0,1,Burglary,M,5,0,0
+465,Male,42,Black,0,0,8,arrest case no charge,F,5,0,0
+5080,Male,39,Black,0,0,0,Driving Under the Influence,M,1,0,0
+1907,Male,45,Black,0,0,1,arrest case no charge,F,3,0,0
+1728,Female,24,White,0,0,1,arrest case no charge,F,5,0,1
+3028,Male,25,White,0,0,5,Resisting an Officer with Violence,F,4,1,1
+3699,Male,38,Black,0,0,2,Battery with a Deadly Weapon,F,3,1,0
+2402,Male,21,White,0,0,1,Carrying a Concealed Weapon,F,5,1,1
+2527,Female,22,Black,0,0,0,Grand Theft,F,4,0,0
+276,Female,25,White,0,0,2,Theft,M,4,1,1
+1227,Male,44,Black,0,0,2,Driving with a Suspended License,F,2,0,0
+5882,Female,23,Black,0,0,2,arrest case no charge,M,7,1,0
+595,Male,40,White,0,0,1,Manufacturing Cannabis/Marijuana,F,2,0,1
+10,Male,41,Black,0,0,0,Possession of Ecstasy,F,4,0,0
+1870,Male,36,Black,0,0,0,Battery,M,3,1,0
+1077,Male,53,White,0,0,4,Possession of Cocaine,F,1,0,1
+1585,Female,58,Black,0,0,3,arrest case no charge,M,1,0,0
+2256,Female,35,Black,0,0,0,Battery,M,4,0,0
+834,Female,30,Black,0,0,3,Introducing Contraband Into Jail,F,4,0,0
+4133,Male,40,Black,0,0,15,Possession of Cannabis/Marijuana,F,9,1,0
+3211,Male,51,Black,0,0,3,Driving Under the Influence,F,3,0,0
+2033,Male,23,Black,0,0,1,Grand Theft,F,6,1,0
+4231,Male,39,White,0,0,1,Possession of Cannabis/Marijuana,F,1,0,1
+2347,Male,37,Black,0,0,22,arrest case no charge,F,9,1,0
+5833,Male,49,Black,0,0,1,Battery,M,1,0,0
+3831,Male,27,White,0,0,2,Grand Theft,F,2,0,1
+3484,Female,44,White,0,0,0,Disorderly Conduct,M,1,1,1
+1475,Male,45,Black,0,0,15,Burglary,F,9,1,0
+5151,Female,30,Black,0,0,11,Criminal Damage of more than $1000,F,7,1,0
+1476,Male,26,White,0,0,7,Burglary,F,6,1,1
+2276,Female,33,White,0,0,2,arrest case no charge,F,4,0,1
+2787,Male,25,Black,0,1,4,arrest case no charge,F,8,1,0
+6083,Male,29,Black,0,0,2,Possession of Cannabis/Marijuana,F,2,1,0
+1139,Male,23,Black,0,0,0,Burglary,F,3,0,0
+2029,Female,54,Black,0,0,7,Fraud,F,6,0,0
+3620,Male,34,Black,0,0,7,Possession of Cocaine,F,5,1,0
+4250,Male,44,Black,0,0,0,Battery with a Deadly Weapon,F,1,0,0
+4034,Male,27,White,0,0,0,Grand Theft,F,8,1,1
+2911,Male,46,White,0,0,2,Purchasing Cocaine,F,3,0,1
+5415,Male,51,White,0,0,3,Driving Under the Influence,F,4,0,1
+4841,Male,23,Black,0,0,0,Possession of Cannabis/Marijuana,F,2,0,0
+167,Female,23,Black,0,0,1,Battery,M,4,0,0
+4907,Female,30,White,0,0,0,Grand Theft,F,6,1,1
+306,Male,21,Black,0,1,1,Grand Theft,F,3,0,0
+1314,Female,28,Black,0,0,0,Battery,M,3,0,0
+5006,Male,20,White,0,1,1,Possession of a Controlled Substance,F,10,1,1
+4795,Male,30,Black,0,0,1,Assault with a Deadly Weapon,F,2,0,0
+1302,Female,24,Black,0,0,2,Assault,M,7,1,0
+5683,Male,49,White,0,0,0,Driving with a Suspended License,F,1,0,1
+4816,Male,24,White,0,0,5,arrest case no charge,F,5,1,1
+5470,Male,23,Black,0,0,2,Trespassing,M,7,1,0
+2340,Female,44,White,0,0,1,Battery,F,1,1,1
+3011,Male,27,Black,0,0,2,Tampering with a Witness,F,7,1,0
+692,Male,32,Black,0,0,0,Restraining Order Violation,M,5,0,0
+1093,Male,30,Black,0,0,1,Grand Theft,F,1,0,0
+6008,Male,74,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+442,Male,20,Black,0,0,0,Possession of a Controlled Substance,F,4,1,0
+3224,Male,38,White,0,0,0,Driving Under the Influence,M,1,0,1
+1523,Male,23,Black,0,0,1,Battery,F,4,1,0
+1872,Female,28,Black,0,0,3,arrest case no charge,F,4,1,0
+4457,Male,34,Black,0,0,1,Fraud,M,2,0,0
+4790,Male,29,Black,0,0,4,Assault,M,5,0,0
+4334,Male,24,White,0,0,3,Grand Theft,F,8,1,1
+5838,Male,26,White,0,0,2,Burglary,F,3,1,1
+1092,Male,45,White,0,0,0,Battery,M,2,0,1
+3188,Female,22,Black,0,0,0,Battery,M,3,0,0
+4018,Male,43,Black,0,0,7,Threatening a Public Servant,F,6,1,0
+4815,Female,69,White,0,0,2,Fleeing the Scene of an Accident,M,1,0,1
+129,Female,26,White,0,0,0,Failure to Obey Police Officer,M,6,0,1
+3185,Male,40,White,0,0,0,Battery,M,1,1,1
+3825,Female,51,White,0,0,0,Fleeing the Scene of an Accident,M,4,1,1
+738,Male,31,Black,0,3,25,Resisting an Officer,M,8,1,0
+2779,Male,58,Black,0,0,10,Possession of Cocaine,F,3,1,0
+3370,Male,33,White,0,0,3,Battery,M,4,1,1
+2285,Male,33,Black,0,0,6,Possession of Cannabis/Marijuana,F,6,0,0
+1301,Male,72,White,0,0,3,arrest case no charge,F,1,0,1
+1114,Male,43,Black,0,0,2,arrest case no charge,F,3,0,0
+1594,Male,25,Black,0,0,0,Battery,F,8,0,0
+5423,Male,56,White,0,0,3,Battery,M,3,0,1
+5122,Male,26,Black,0,0,5,Burglary,F,4,0,0
+2270,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,3,0,0
+2450,Male,28,Black,0,0,3,Carrying a Concealed Weapon,M,2,0,0
+1124,Male,31,White,0,0,0,Grand Theft,F,7,1,1
+4222,Female,41,Black,0,0,0,Battery,M,1,0,0
+3789,Male,33,Black,0,0,2,Tampering with a Witness,F,7,0,0
+4297,Male,24,Black,0,0,7,arrest case no charge,F,7,1,0
+3756,Female,35,White,0,0,4,Battery,M,7,0,1
+2754,Male,46,White,0,0,4,Possession of Ecstasy,F,4,0,1
+1490,Male,29,White,0,0,2,Grand Theft,F,3,0,1
+5581,Male,39,Black,0,0,0,Kidnapping,F,1,0,0
+4200,Male,24,White,0,0,0,Possession of Cocaine,F,10,0,1
+4235,Female,66,Black,0,0,11,Unlawful Possession of Firearm,F,8,1,0
+3714,Male,21,White,0,0,0,Burglary,M,3,0,1
+2905,Male,24,White,0,0,8,arrest case no charge,F,9,0,1
+3591,Female,30,Black,0,0,2,Grand Theft,F,2,0,0
+3415,Female,24,White,0,0,0,Forgery,F,8,0,1
+6164,Male,21,White,0,0,0,Grand Theft,M,6,1,1
+5663,Male,22,Black,0,0,2,Grand Theft,F,9,1,0
+5630,Male,57,White,0,0,0,arrest case no charge,F,1,0,1
+5768,Male,49,White,0,0,2,Driving Under the Influence,F,1,1,1
+838,Male,42,White,0,0,0,Fleeing the Scene of an Accident,M,1,0,1
+1428,Male,21,White,0,0,0,Dealing Cannabis/Marijuana,F,9,1,1
+2946,Male,28,Black,0,0,7,arrest case no charge,F,5,1,0
+3733,Male,41,Black,0,0,0,Driving with a Revoked License,F,1,0,0
+4517,Male,42,White,0,0,1,Possession of a Controlled Substance,M,2,0,1
+2113,Female,42,White,0,0,0,Driving Under the Influence,M,1,0,1
+2115,Male,27,Black,0,0,1,Possession of Cannabis/Marijuana,M,5,0,0
+523,Male,28,Black,0,0,10,Driving with a Revoked License,F,3,0,0
+4864,Male,50,White,0,0,1,Battery,M,2,0,1
+4304,Male,36,White,0,0,1,Battery,M,2,0,1
+2094,Male,56,Black,0,0,1,Driving Under the Influence,M,1,0,0
+2043,Female,26,Black,0,0,0,Possession of Cannabis/Marijuana,M,4,0,0
+462,Male,46,White,0,0,2,Possession of a Controlled Substance,F,6,1,1
+5009,Male,27,Black,0,0,0,Forgery,F,4,1,0
+5925,Male,27,Black,0,0,4,Battery,M,6,0,0
+6168,Male,23,Black,0,0,0,Fleeing the Scene of an Accident,F,3,0,0
+4320,Male,28,Black,0,0,8,Dealing Cocaine,F,8,1,0
+3531,Male,36,White,0,0,9,arrest case no charge,F,6,1,1
+2463,Male,47,Black,0,0,1,Battery,M,1,1,0
+2454,Male,73,White,0,0,0,Battery,M,1,0,1
+521,Male,51,White,0,0,0,Driving Under the Influence,M,1,0,1
+884,Female,53,White,0,0,0,Driving Under the Influence,M,1,0,1
+3644,Male,29,Black,0,0,1,Battery,M,6,1,0
+4499,Male,23,White,0,0,0,Driving Under the Influence,M,4,0,1
+98,Male,42,White,0,0,1,Stalking,F,2,1,1
+2828,Male,26,Black,1,3,24,Resisting an Officer,M,10,1,0
+4576,Male,23,Black,0,0,1,Possession of a Controlled Substance,F,5,1,0
+2166,Male,21,Black,0,0,0,Battery,M,10,0,0
+6037,Male,33,White,0,0,2,Driving Under the Influence,M,3,1,1
+6057,Male,34,Black,0,0,1,arrest case no charge,F,6,0,0
+4468,Male,23,Black,0,0,3,Battery,F,7,1,0
+2887,Male,36,Black,1,0,26,Possession of Cocaine,F,8,1,0
+2037,Male,49,Black,0,0,10,arrest case no charge,F,6,1,0
+6152,Male,25,Black,0,0,1,Battery,F,2,0,0
+2415,Male,42,Black,0,0,1,Domestic Violence,M,6,1,0
+5563,Female,50,White,0,0,0,Driving Under the Influence,M,3,1,1
+3824,Female,29,Black,0,0,0,Battery,M,2,0,0
+4922,Female,25,Black,0,0,6,Driving with a Revoked License,F,7,1,0
+4585,Male,23,Black,0,0,1,Criminal Damage of less than $1000,M,8,0,0
+2409,Male,34,Black,0,0,22,Driving with a Revoked License,F,9,0,0
+484,Female,35,Black,0,0,6,arrest case no charge,F,2,1,0
+5713,Female,26,Black,0,0,0,Driving with a Suspended License,M,8,0,0
+63,Male,29,Black,0,0,5,Fraud,F,6,1,0
+2646,Male,46,Black,0,0,3,arrest case no charge,F,4,0,0
+4763,Female,34,White,0,0,0,Driving with a Suspended License,M,7,1,1
+2783,Male,27,White,0,0,1,Dealing Controlled Substances,F,1,0,1
+665,Male,57,Black,0,0,11,Possession of Cocaine,F,6,0,0
+4755,Male,31,White,0,0,1,Battery,F,5,0,1
+5377,Female,52,Black,0,0,0,Driving with a Suspended License,F,7,1,0
+3633,Female,43,White,0,0,0,Battery,M,1,1,1
+1377,Male,31,Black,0,0,8,Battery,M,7,1,0
+12,Male,31,Black,0,0,7,Driving with a Suspended License,F,3,1,0
+2019,Female,53,White,0,0,0,Battery,M,1,0,1
+3301,Male,41,White,0,0,0,Battery,F,1,0,1
+1913,Male,36,Black,0,0,3,Battery,M,2,1,0
+1277,Male,55,White,0,0,13,Possession of Cocaine,F,6,1,1
+6066,Male,40,White,0,0,0,Battery,F,1,0,1
+4723,Male,40,Black,0,0,2,Driving with a Suspended License,F,4,0,0
+5871,Male,29,Black,0,0,0,Driving Under the Influence,M,1,0,0
+855,Male,44,White,0,0,6,Driving with a Revoked License,F,3,0,1
+2236,Male,34,Black,0,0,0,arrest case no charge,F,7,1,0
+5593,Male,20,Black,0,0,0,Possession of Cocaine,F,10,1,0
+381,Male,27,Black,0,0,13,Possession of Cannabis/Marijuana,M,8,1,0
+4349,Male,26,Black,0,0,0,Possession of Ecstasy,F,4,1,0
+1979,Male,23,White,0,0,0,Fleeing a Law Enforcement Officer,F,2,0,1
+516,Male,37,White,0,0,2,Driving Under the Influence,M,1,0,1
+2805,Male,23,White,0,0,0,False Imprisonment,F,9,1,1
+650,Male,25,Black,0,0,6,Burglary,F,6,0,0
+317,Male,28,Black,0,0,1,Battery,M,3,0,0
+309,Male,21,Black,0,0,0,Burglary,F,5,1,0
+791,Male,27,Black,0,0,1,arrest case no charge,F,2,0,0
+2623,Male,44,White,0,0,2,Battery,M,4,0,1
+205,Male,31,White,0,0,0,Burglary,F,8,1,1
+1406,Female,24,Black,0,0,1,Grand Theft,F,5,0,0
+4176,Female,29,Black,0,0,1,Battery,M,2,0,0
+4502,Male,40,White,0,0,10,Theft,F,7,1,1
+2246,Male,20,Black,0,0,0,Burglary,F,6,0,0
+3530,Male,30,Black,0,0,9,Driving with a Revoked License,F,3,1,0
+2240,Male,42,Black,0,0,0,Fraud,F,5,1,0
+825,Female,20,Black,0,0,0,Grand Theft,F,4,0,0
+2982,Female,32,White,0,0,2,Possession of Cocaine,F,10,1,1
+5380,Male,50,Black,0,0,2,Disorderly Intoxication,M,6,0,0
+3279,Male,39,Black,2,2,19,Driving with a Revoked License,F,9,1,0
+5433,Male,37,Black,0,0,2,arrest case no charge,F,9,0,0
+4205,Male,21,Black,0,0,0,Battery,F,8,1,0
+3647,Female,26,Black,0,0,1,arrest case no charge,F,5,0,0
+932,Female,30,White,0,0,5,Tampering With Physical Evidence,F,10,1,1
+4982,Male,31,Black,0,0,0,Possession of Cocaine,M,9,0,0
+5072,Male,34,Black,0,0,3,Assault,F,1,0,0
+2606,Female,21,Black,0,0,0,Battery,M,4,0,0
+644,Female,20,White,0,0,1,Burglary,F,8,1,1
+5550,Male,27,Black,0,0,5,arrest case no charge,F,10,1,0
+3320,Female,34,White,0,0,0,Possession of a Controlled Substance,F,8,1,1
+6001,Male,24,Black,0,0,0,Possession of a Controlled Substance,F,3,1,0
+1054,Male,20,White,0,0,0,Battery,M,10,1,1
+3527,Male,27,Black,0,0,9,Possession of a Controlled Substance,F,9,1,0
+2788,Male,32,Black,0,0,0,False Imprisonment,F,2,1,0
+4748,Male,31,White,0,0,3,Battery,M,3,1,1
+6100,Female,39,Black,0,0,1,arrest case no charge,F,7,1,0
+5676,Male,32,Black,0,0,0,Assault,F,7,0,0
+1401,Male,22,Black,0,0,13,Possession of a Controlled Substance,F,10,1,0
+5839,Male,28,White,0,0,2,Tampering with a Witness,F,2,1,1
+1581,Female,22,Black,0,0,0,Battery,M,7,1,0
+5996,Male,24,Black,0,0,0,Resisting an Officer with Violence,F,6,0,0
+4618,Male,33,White,0,0,0,Grand Theft,F,1,0,1
+92,Male,43,White,0,0,1,Possession of Cocaine,F,1,0,1
+5154,Male,41,Black,0,1,9,Driving with a Suspended License,M,9,0,0
+4636,Male,28,Black,0,0,7,Grand Theft,F,10,0,0
+4103,Male,41,Black,0,0,19,Dealing Cannabis/Marijuana,F,5,1,0
+1738,Male,23,Black,0,0,1,Grand Theft,F,10,1,0
+5719,Male,29,Black,0,0,0,Possession of Meth,F,5,0,0
+3208,Male,24,Black,0,0,0,,F,3,0,0
+3895,Male,30,Black,0,0,0,Carrying a Concealed Weapon,F,5,0,0
+1134,Male,59,Black,0,0,1,Possession of Cocaine,F,4,0,0
+6034,Male,47,Black,0,0,0,Battery,M,1,0,0
+1005,Male,31,White,0,0,2,Possession of Cocaine,F,3,1,1
+4766,Male,34,White,0,1,15,Possession of Cocaine,F,7,0,1
+4316,Female,24,Black,0,0,2,Assault with a Deadly Weapon,F,7,1,0
+4539,Female,58,White,0,0,0,Driving Under the Influence,M,1,0,1
+3169,Male,40,Black,0,0,3,Battery,F,7,0,0
+3471,Male,26,Black,0,0,1,Battery,M,3,0,0
+272,Male,53,White,0,0,36,Threatening a Public Servant,F,6,1,1
+5239,Male,35,White,0,0,3,Battery,M,5,1,1
+2184,Male,29,Black,0,0,13,Driving with a Revoked License,F,8,1,0
+4797,Female,44,White,0,0,10,Prostitution,F,5,1,1
+1010,Male,31,White,0,0,0,Dealing Controlled Substances,F,4,0,1
+683,Female,33,Black,0,0,0,Simulation of Legal Process,M,2,0,0
+4445,Male,21,White,0,0,0,Grand Theft,F,4,1,1
+186,Male,48,Black,0,0,0,Battery,F,1,0,0
+571,Male,36,Black,0,0,0,Battery,M,7,1,0
+4245,Male,43,White,0,0,8,arrest case no charge,F,3,0,1
+1999,Male,38,Black,0,0,4,Selling Counterfeit Goods,F,3,0,0
+334,Male,25,White,0,0,0,Resisting an Officer with Violence,F,2,0,1
+3587,Male,47,Black,0,0,9,Battery,F,4,0,0
+6122,Male,59,Black,0,0,5,Alcoholic Beverage Violation,M,5,0,0
+1298,Male,20,Black,2,0,2,Grand Theft,F,9,1,0
+2768,Male,24,Black,0,0,1,Battery,M,4,0,0
+460,Male,27,Black,0,0,5,Battery with a Deadly Weapon,F,9,1,0
+1311,Male,41,White,0,0,5,Driving with a Suspended License,F,1,0,1
+5832,Male,49,White,0,0,0,Grand Theft,F,1,0,1
+2948,Female,32,Black,0,0,11,Driving with a Revoked License,F,7,0,0
+3085,Male,50,White,0,0,1,arrest case no charge,F,1,0,1
+2870,Male,37,Black,1,8,23,Dealing Cocaine,F,8,1,0
+1101,Male,29,White,0,0,7,Battery,M,10,1,1
+4198,Male,23,Black,0,0,1,Grand Theft,F,8,0,0
+5693,Male,57,Black,0,0,2,arrest case no charge,M,1,0,0
+5885,Male,31,Black,0,3,15,Child Abuse,F,6,1,0
+5414,Female,28,Black,0,0,9,arrest case no charge,M,9,1,0
+358,Male,37,White,0,0,0,Criminal Damage of more than $1000,F,4,0,1
+4249,Female,33,White,0,0,1,Possession of Cannabis/Marijuana,M,3,0,1
+627,Female,22,White,0,0,0,Fleeing the Scene of an Accident,M,5,0,1
+5405,Male,46,White,0,0,1,Possession of Oxycodone,F,1,0,1
+532,Male,20,Black,0,1,4,arrest case no charge,F,9,1,0
+2498,Male,58,White,0,0,0,Domestic Violence,M,1,0,1
+1361,Male,21,Black,0,0,0,Grand Theft,F,8,1,0
+3108,Male,25,White,0,0,1,Battery,M,3,0,1
+4637,Female,36,Black,0,0,1,Battery,M,2,0,0
+4838,Male,28,White,0,0,0,Forgery,F,3,0,1
+3060,Male,34,White,0,0,0,Possession of Oxycodone,F,2,0,1
+3820,Male,23,Black,0,0,3,Grand Theft,F,9,1,0
+4660,Female,26,White,0,0,2,Purchasing Cannabis/Marijuana,F,6,1,1
+2162,Male,53,White,0,0,0,Battery,M,1,0,1
+2747,Male,34,Black,0,0,9,Possession of Cannabis/Marijuana,F,10,1,0
+2359,Male,34,Black,0,0,16,Fleeing a Law Enforcement Officer,F,9,1,0
+5901,Male,39,Black,0,0,3,arrest case no charge,F,4,1,0
+57,Male,27,Black,0,1,6,Assault,F,6,1,0
+3554,Male,39,White,0,0,0,Possession of Cocaine,F,3,0,1
+477,Female,30,Black,0,0,0,Battery,M,3,0,0
+1793,Male,52,White,0,0,0,Driving Under the Influence,M,1,0,1
+2970,Male,24,Black,0,0,0,Battery,F,3,0,0
+2855,Male,35,Black,0,0,2,Possession of Cannabis/Marijuana,M,7,0,0
+5084,Male,24,White,0,0,8,Battery,F,4,1,1
+4674,Male,27,Black,1,0,6,Fraud,F,7,1,0
+5468,Male,21,Black,1,0,1,arrest case no charge,F,10,1,0
+1181,Female,59,White,0,0,1,Grand Theft,F,1,0,1
+5732,Male,31,White,0,0,3,Driving Under the Influence,M,7,0,1
+5623,Male,48,Black,0,0,7,Driving with a Suspended License,M,4,1,0
+4584,Male,60,White,0,0,0,Driving Under the Influence,M,1,0,1
+5735,Male,26,White,0,0,0,Assault with a Deadly Weapon,F,2,0,1
+288,Male,47,Black,0,0,3,Burglary,F,3,0,0
+2496,Female,34,Black,0,0,1,Child Neglect,F,7,1,0
+3513,Male,21,Black,0,0,0,Burglary,F,5,0,0
+1317,Male,21,Black,0,0,0,Disrupting a School Function,M,4,0,0
+3339,Male,57,White,0,0,9,Possession of Cocaine,F,4,1,1
+955,Male,35,Black,0,0,5,Driving with a Revoked License,F,6,1,0
+5305,Female,25,White,0,0,0,Possession of a Controlled Substance,F,5,0,1
+5912,Male,67,White,0,0,0,Battery,M,1,0,1
+3480,Male,38,White,0,0,2,Battery,M,2,0,1
+3747,Male,42,White,0,0,0,Possession of LSD,F,4,0,1
+2051,Male,34,White,0,0,0,Battery,M,1,0,1
+4623,Female,24,White,0,0,0,Battery,M,3,0,1
+3076,Male,24,White,0,0,3,Assault,F,5,1,1
+5875,Male,21,Black,0,0,0,Battery,M,5,0,0
+3912,Male,28,White,0,0,1,Battery,M,2,0,1
+41,Male,35,Black,1,0,13,Forgery,F,8,1,0
+5025,Male,22,White,0,1,3,Battery,M,4,1,1
+5658,Female,39,Black,0,0,1,arrest case no charge,F,5,0,0
+4047,Male,30,White,3,0,4,Battery with a Deadly Weapon,F,4,1,1
+672,Male,24,Black,0,0,0,Burglary,F,5,1,0
+5088,Male,30,Black,0,0,7,arrest case no charge,F,8,1,0
+91,Female,39,White,0,0,1,Possession of Morphine,F,4,0,1
+1021,Male,38,Black,0,0,3,Manufacturing Cannabis/Marijuana,F,4,0,0
+371,Male,20,Black,1,0,1,arrest case no charge,F,10,1,0
+4124,Female,49,White,0,0,4,Battery,M,2,0,1
+338,Male,32,Black,0,0,3,Battery,F,2,0,0
+5096,Male,37,White,0,0,2,arrest case no charge,F,1,1,1
+4596,Female,38,White,0,0,1,Theft,M,5,1,1
+652,Male,27,Black,0,0,4,Possession of Cannabis/Marijuana,F,9,1,0
+3342,Male,47,White,0,0,3,arrest case no charge,F,2,0,1
+4648,Male,58,Black,0,0,0,Battery,F,1,0,0
+1384,Female,46,White,0,0,0,Battery,M,1,1,1
+1988,Male,67,White,0,0,3,arrest case no charge,F,1,0,1
+859,Male,27,Black,0,0,11,arrest case no charge,M,10,1,0
+350,Male,22,White,0,0,1,Fraud,F,5,1,1
+641,Female,47,Black,0,0,19,Possession of Cocaine,F,10,1,0
+3024,Male,22,Black,0,0,2,Possession of a Controlled Substance,F,4,1,0
+6052,Female,22,Black,0,0,0,Grand Theft,F,4,1,0
+1236,Male,19,Black,0,2,3,Grand Theft,F,4,1,0
+3971,Male,34,Black,0,0,2,Possession of Cannabis/Marijuana,F,2,0,0
+1248,Female,23,Black,0,0,1,arrest case no charge,F,9,0,0
+5684,Female,40,White,0,0,0,Possession of Cocaine,F,2,0,1
+5475,Female,19,Black,0,0,1,arrest case no charge,F,4,1,0
+75,Male,22,Black,1,0,2,Burglary,F,9,1,0
+4513,Male,41,White,0,0,0,Driving Under the Influence,M,1,0,1
+6145,Male,42,White,0,0,5,arrest case no charge,F,4,0,1
+1420,Male,45,White,0,0,1,Possession of Cocaine,F,2,0,1
+3909,Male,23,Black,0,1,4,arrest case no charge,F,9,1,0
+5680,Male,28,Black,0,0,3,Theft,M,2,1,0
+5510,Male,28,White,0,0,6,arrest case no charge,M,4,1,1
+636,Female,37,Black,0,0,0,Possession of Cocaine,F,5,0,0
+5189,Male,26,Black,0,0,2,Disorderly Conduct,M,3,0,0
+5528,Male,21,Black,0,2,2,Grand Theft,F,10,1,0
+6157,Male,32,Black,0,0,4,Driving with a Suspended License,F,5,0,0
+5727,Male,27,Black,0,0,3,arrest case no charge,F,1,1,0
+693,Female,32,White,0,0,1,Battery,M,3,1,1
+3348,Female,44,White,0,0,1,Battery,M,1,1,1
+237,Male,52,Black,0,0,3,Possession of Cocaine,F,6,1,0
+1503,Male,25,Black,0,0,1,arrest case no charge,F,2,0,0
+206,Male,37,White,0,0,0,Grand Theft,F,2,1,1
+4757,Male,21,Black,0,0,0,Possession of Weapon on School Property,F,4,0,0
+4617,Male,39,White,0,0,1,Possession of Ecstasy,F,1,0,1
+1107,Male,27,Black,0,0,0,Battery,M,3,0,0
+1211,Male,23,White,1,0,5,Domestic Violence,M,5,1,1
+4631,Male,28,Black,0,0,6,Driving with a Suspended License,F,1,0,0
+1403,Male,28,Black,2,1,11,Fleeing a Law Enforcement Officer,F,10,0,0
+1855,Male,33,Black,0,0,4,Possession of Cocaine,F,10,0,0
+1941,Male,24,White,0,0,1,Burglary,F,5,1,1
+5553,Male,25,Black,0,0,5,arrest case no charge,F,9,1,0
+1696,Male,29,White,0,0,7,Assault,F,10,1,1
+3298,Male,24,Black,0,0,2,Driving with a Revoked License,F,7,1,0
+3164,Male,37,White,0,0,0,Burglary,F,5,0,1
+6032,Male,24,Black,0,0,4,Burglary,F,4,1,0
+2725,Male,28,White,0,0,9,arrest case no charge,F,8,1,1
+3253,Male,42,Black,0,0,0,Possession of Heroin,F,1,1,0
+3726,Male,20,Black,0,0,1,Burglary,F,7,1,0
+1477,Male,33,White,0,0,7,Battery,F,8,1,1
+501,Female,21,White,0,0,0,Burglary,F,7,0,1
+4647,Male,26,Black,0,0,6,Burglary,F,7,1,0
+1175,Male,55,White,0,0,2,Battery,M,1,1,1
+1392,Male,55,White,0,0,3,Possession of Cocaine,F,7,1,1
+2099,Male,22,Black,0,0,1,Battery,F,6,1,0
+5595,Female,34,White,0,0,1,Battery,M,1,0,1
+3337,Male,22,White,0,0,1,arrest case no charge,F,3,1,1
+699,Male,47,White,0,0,2,Tampering with a Witness,F,4,0,1
+710,Male,52,Black,1,0,9,Battery,M,8,1,0
+2132,Male,28,White,0,0,0,Grand Theft,F,2,1,1
+966,Male,25,White,0,0,1,Possession of Cannabis/Marijuana,M,3,1,1
+2294,Male,20,Black,0,0,1,Loitering,M,4,0,0
+5800,Male,25,Black,0,0,2,Trespassing,M,6,0,0
+1396,Male,22,White,0,0,0,Theft,M,2,1,1
+2274,Male,26,White,0,0,0,Battery,F,2,0,1
+267,Male,56,White,0,0,0,Battery,M,1,0,1
+1271,Male,72,White,0,0,1,Driving Under the Influence,M,1,0,1
+2002,Male,54,White,0,0,1,Battery,M,1,1,1
+4552,Female,42,Black,0,0,16,Resisting an Officer with Violence,F,6,0,0
+5051,Female,43,White,0,0,0,Grand Theft,F,1,1,1
+2366,Male,39,Black,0,0,2,Driving with a Suspended License,M,1,0,0
+5944,Male,40,White,0,0,4,Grand Theft,F,5,1,1
+923,Male,32,White,0,0,6,Battery,M,5,0,1
+366,Male,19,White,0,0,1,Battery,F,10,1,1
+528,Male,31,Black,0,0,1,Battery,M,1,0,0
+848,Male,36,Black,0,0,5,Possession of Cocaine,F,4,0,0
+5750,Male,35,Black,0,0,0,Battery,M,8,1,0
+2801,Male,30,Black,0,0,0,Battery,F,1,0,0
+1222,Male,48,Black,0,0,9,arrest case no charge,F,6,1,0
+3908,Male,25,Black,0,0,5,arrest case no charge,F,5,1,0
+1291,Male,32,Black,0,0,12,Possession of Cocaine,F,8,0,0
+5310,Male,23,Black,0,0,0,Disorderly Conduct,M,3,1,0
+2699,Male,35,Black,0,0,7,arrest case no charge,F,3,0,0
+878,Male,39,White,0,0,1,Money Laundering,F,1,0,1
+1981,Female,39,White,0,0,4,Assault with a Deadly Weapon,F,1,1,1
+5913,Male,27,Black,0,0,10,Driving with a Revoked License,F,7,0,0
+5896,Male,27,Black,0,0,5,Driving with a Suspended License,M,5,1,0
+4675,Male,26,Black,0,1,6,arrest case no charge,M,5,0,0
+5364,Female,20,White,0,0,4,arrest case no charge,F,8,1,1
+6114,Male,30,White,0,0,2,arrest case no charge,F,3,0,1
+2490,Male,26,Black,0,0,6,Assault,F,9,1,0
+1909,Male,25,White,0,0,0,Battery,M,2,0,1
+1944,Male,43,White,0,0,5,Burglary,F,5,0,1
+1456,Male,34,Black,0,0,7,Possession of Cannabis/Marijuana,F,6,1,0
+1903,Male,21,White,0,0,0,Battery,M,8,1,1
+428,Male,52,White,0,0,4,Battery,M,3,0,1
+3030,Female,43,White,0,0,3,Domestic Violence,M,2,1,1
+631,Female,53,White,0,0,0,Possession of Cocaine,F,1,0,1
+3247,Male,32,White,0,0,0,Burglary,F,2,1,1
+5942,Male,21,Black,0,0,5,Battery,M,5,1,0
+1305,Male,45,Black,0,0,0,Battery,M,1,0,0
+2082,Male,23,Black,0,0,4,Possession of Cannabis/Marijuana,F,8,1,0
+2279,Female,55,White,0,0,0,Driving Under the Influence,M,1,0,1
+1180,Male,34,Black,0,2,19,Fraud,F,10,1,0
+3504,Female,29,Black,0,0,0,Battery,F,10,0,0
+2802,Male,43,White,0,0,4,Forgery,F,5,0,1
+4939,Female,33,White,0,0,3,Possession of Heroin,F,6,1,1
+3196,Male,34,Black,0,0,5,Assault,F,1,0,0
+3788,Male,30,Black,4,0,12,Possession of Cocaine,F,9,1,0
+5286,Female,36,Black,0,0,1,Battery,M,1,0,0
+4023,Male,36,Black,0,0,16,Battery,M,8,1,0
+5200,Male,30,White,0,0,0,Grand Theft,F,9,1,1
+1536,Male,48,White,0,0,1,Driving Under the Influence,M,1,1,1
+3048,Female,32,White,0,0,4,Resisting an Officer with Violence,F,2,0,1
+166,Male,34,Black,0,0,2,Battery,M,2,0,0
+1166,Male,29,Black,0,0,0,Battery,M,2,0,0
+1949,Male,47,Black,0,0,22,Driving with a Suspended License,F,7,1,0
+3700,Female,22,Black,0,0,0,Possession of a Controlled Substance,F,8,0,0
+731,Male,24,Black,0,1,7,Battery,M,9,0,0
+5139,Male,29,Black,0,0,0,Possession of Ecstasy,F,3,0,0
+4212,Female,25,Black,0,0,1,Child Neglect,F,3,0,0
+2187,Male,25,Black,0,0,5,Battery,M,5,1,0
+5258,Male,34,Black,3,1,9,False Imprisonment,F,7,1,0
+3983,Male,23,Black,0,0,3,Battery,M,5,0,0
+2023,Male,44,White,3,0,16,Driving Under the Influence,M,7,0,1
+2670,Male,37,Black,0,0,10,Fleeing the Scene of an Accident,F,7,1,0
+6013,Male,22,Black,0,0,1,Battery,M,6,1,0
+5952,Male,27,Black,0,0,5,Possession of Cannabis/Marijuana,M,10,1,0
+4326,Male,34,Black,0,0,11,Assault with a Deadly Weapon,F,8,1,0
+6123,Male,29,Black,0,2,7,Delivery of Controlled Substances,F,7,1,0
+2894,Male,71,White,0,0,13,Driving with a Suspended License,F,2,0,1
+1625,Male,43,White,0,0,0,Driving Under the Influence,M,1,0,1
+500,Male,25,Black,0,0,0,Disorderly Conduct,M,3,0,0
+3455,Male,23,Black,1,0,4,arrest case no charge,F,9,0,0
+2746,Male,20,Black,0,1,1,Grand Theft,F,8,1,0
+3651,Male,51,White,0,0,1,Possession of a Controlled Substance,F,1,1,1
+4664,Male,37,Black,0,0,8,arrest case no charge,F,5,0,0
+2880,Male,33,White,0,0,0,Possession of a Controlled Substance,F,1,0,1
+4845,Male,30,Black,0,0,14,arrest case no charge,F,8,1,0
+1241,Male,43,Black,0,0,4,Sound Articles Over 100,F,1,1,0
+3029,Male,23,Black,0,0,3,Burglary,F,5,1,0
+4029,Male,21,Black,0,0,1,Grand Theft,F,6,1,0
+5345,Male,35,Black,0,0,6,arrest case no charge,F,8,1,0
+606,Male,62,White,0,0,0,Battery,F,1,0,1
+3872,Male,33,Black,0,0,18,Grand Theft,F,9,1,0
+4501,Male,29,Black,0,0,6,arrest case no charge,F,6,1,0
+2101,Male,45,Black,0,0,3,Domestic Violence,M,2,0,0
+5660,Male,26,Black,0,0,0,Forgery,F,2,0,0
+5488,Male,22,White,0,0,6,Criminal Damage of more than $1000,F,9,1,1
+3179,Male,31,Black,0,0,4,Tampering With Physical Evidence,F,8,1,0
+5203,Male,35,Black,0,0,1,False Imprisonment,F,8,0,0
+647,Female,53,Black,0,0,0,Driving with a Suspended License,F,1,0,0
+3338,Female,23,Black,0,0,1,arrest case no charge,F,3,0,0
+5435,Male,23,Black,0,0,5,False Imprisonment,F,7,1,0
+270,Male,27,White,0,0,8,arrest case no charge,F,5,0,1
+4814,Male,21,Black,0,0,0,Resisting an Officer,M,4,1,0
+4856,Female,34,Black,0,0,5,arrest case no charge,F,3,0,0
+1664,Male,59,White,0,0,3,Driving Under the Influence,M,1,1,1
+4407,Male,56,White,0,0,1,Possession of Cocaine,F,2,0,1
+3594,Male,50,Black,0,0,0,Battery,M,1,0,0
+2515,Male,24,Black,0,0,0,Burglary,F,3,0,0
+219,Male,29,Black,0,0,1,Battery,M,3,0,0
+3588,Male,24,Black,0,1,9,Operating a Vehicle without a Valid Drivers License,M,9,1,0
+4381,Male,22,Black,0,0,1,Assault,M,9,1,0
+3976,Male,28,Black,0,0,10,Possession of Cocaine,F,5,1,0
+1573,Male,23,Black,0,0,0,Possession of Cannabis/Marijuana,F,3,0,0
+3263,Male,23,Black,0,0,2,Battery,M,4,1,0
+3793,Male,53,Black,0,0,4,Possession of Cocaine,F,7,0,0
+640,Male,26,Black,0,0,4,Assault with a Deadly Weapon,F,7,1,0
+348,Female,58,White,0,0,2,Driving Under the Influence,M,1,0,1
+1168,Male,44,White,0,0,0,Battery,M,1,0,1
+3565,Male,27,White,0,0,2,Possession of a Controlled Substance,F,7,1,1
+5530,Male,54,White,0,0,3,Manufacturing Cannabis/Marijuana,F,2,0,1
+4182,Male,36,Black,0,0,13,arrest case no charge,F,9,1,0
+50,Male,53,White,0,0,8,arrest case no charge,F,5,0,1
+5268,Female,25,White,0,0,2,Forgery,F,9,1,1
+3388,Female,23,Black,0,0,0,Assault with a Deadly Weapon,F,3,1,0
+5110,Male,49,Black,0,0,3,Possession of Cocaine,F,8,1,0
+3319,Male,26,White,0,0,2,Assault,F,2,1,1
+4451,Male,22,Black,0,0,0,Forgery,F,4,0,0
+4077,Female,25,Black,0,0,3,arrest case no charge,M,10,0,0
+2830,Male,46,White,0,0,0,Possession of Cocaine,F,1,0,1
+5449,Male,37,Black,0,0,6,Driving with a Suspended License,F,2,1,0
+1046,Male,29,Black,1,1,4,Burglary,F,10,1,0
+2806,Female,40,White,0,0,5,Grand Theft,F,10,0,1
+1652,Male,25,Black,0,0,0,Forgery,F,4,0,0
+604,Male,22,Black,0,0,1,arrest case no charge,F,5,0,0
+5181,Male,56,White,0,0,1,Driving Under the Influence,F,1,0,1
+1212,Male,43,White,0,0,1,Battery,F,2,1,1
+3555,Male,24,Black,0,1,1,Possession of Cocaine,F,7,0,0
+466,Male,58,Black,0,0,6,Theft,F,6,0,0
+5279,Male,23,Black,0,0,3,Battery,M,2,1,0
+368,Female,24,White,0,0,0,Possession of Ecstasy,F,5,0,1
+1591,Male,38,White,0,0,1,Possession of Meth,F,1,1,1
+2195,Male,19,Black,0,0,0,Possession of Cannabis/Marijuana,F,4,1,0
+4011,Male,58,White,0,0,1,Possession of Cocaine,F,1,0,1
+4560,Male,21,White,0,0,1,arrest case no charge,F,4,0,1
+1495,Male,30,Black,1,0,5,,F,9,1,0
+4538,Male,23,Black,1,0,2,Possession of Cannabis/Marijuana,F,9,1,0
+404,Male,34,White,0,0,4,Possession of Cannabis/Marijuana,F,6,1,1
+2122,Male,29,White,0,0,0,Forgery,F,1,0,1
+5689,Male,33,White,0,0,0,Possession of Cannabis/Marijuana,M,7,1,1
+4376,Male,20,Black,1,0,1,arrest case no charge,F,8,1,0
+5420,Male,31,Black,0,0,6,Driving with a Suspended License,F,2,1,0
+3713,Male,33,Black,0,0,21,Domestic Violence,M,7,1,0
+2353,Male,36,Black,0,0,10,Possession of Cocaine,F,10,1,0
+892,Male,36,Black,0,0,4,Battery,M,5,1,0
+3465,Female,24,White,0,1,3,Battery,M,5,1,1
+4603,Male,23,Black,0,0,0,Possession of Alcohol Under 21 Years of Age,M,10,1,0
+2418,Male,37,Black,0,0,0,Possession of Cocaine,F,9,0,0
+1787,Male,38,Black,0,0,9,arrest case no charge,F,6,0,0
+5125,Male,23,Black,0,1,1,Driving with a Suspended License,M,2,1,0
+3509,Female,30,Black,0,0,0,Grand Theft,F,2,0,0
+2100,Male,37,White,0,0,1,Possession of Cocaine,F,2,1,1
+6061,Female,36,White,0,0,5,arrest case no charge,F,3,1,1
+912,Male,34,Black,0,0,1,,F,1,0,0
+1108,Male,30,White,0,0,0,Driving Under the Influence,M,2,0,1
+1022,Female,34,Black,0,0,0,Battery,M,3,0,0
+6009,Male,24,Black,0,0,3,Burglary,F,6,1,0
+1510,Male,54,Black,0,0,0,Soliciting For Prostitution,M,1,0,0
+5323,Male,20,Black,0,0,0,Dealing Cannabis/Marijuana,F,5,1,0
+5477,Male,29,Black,0,0,3,arrest case no charge,F,4,1,0
+1330,Male,42,White,0,0,2,Possession of Cocaine,F,5,1,1
+5823,Male,34,White,0,0,1,Burglary,F,5,0,1
+5257,Male,36,Black,0,0,6,Battery,M,4,0,0
+897,Male,47,Black,0,0,4,Possession of Cocaine,F,3,0,0
+5149,Male,24,Black,0,0,3,Stalking,F,7,0,0
+4244,Male,22,White,0,0,0,Operating a Vehicle without a Valid Drivers License,M,6,0,1
+182,Male,28,Black,0,0,2,Possession of Cannabis/Marijuana,M,5,0,0
+1231,Male,61,White,0,0,3,Battery,M,2,1,1
+4082,Male,26,Black,0,0,20,Child Neglect,F,10,1,0
+415,Female,30,White,0,0,0,Driving Under the Influence,M,2,0,1
+3463,Male,45,White,0,0,7,Battery,F,2,0,1
+1977,Male,21,Black,0,0,1,Grand Theft,F,2,0,0
+839,Male,21,Black,0,0,0,Burglary,F,8,1,0
+5721,Male,29,Black,0,0,9,Dealing Cocaine,F,7,1,0
+3113,Female,33,Black,0,0,0,Child Neglect,F,2,0,0
+4653,Male,36,White,0,0,5,Driving with a Revoked License,F,3,0,1
+1661,Male,22,White,0,0,1,Grand Theft,F,2,1,1
+1215,Female,42,Black,0,0,2,arrest case no charge,M,3,0,0
+2966,Male,32,White,0,0,1,Possession of Cannabis/Marijuana,F,1,1,1
+1950,Male,28,Black,0,0,4,Forgery,F,2,1,0
+2639,Male,26,White,0,0,0,Criminal Damage of less than $1000,M,5,0,1
+3142,Male,53,White,0,0,2,Failure to Obey Sex Offender Laws,F,4,0,1
+1786,Male,49,White,0,0,2,Driving Under the Influence,M,1,0,1
+105,Male,27,Black,0,0,3,Possession of Cocaine,F,9,1,0
+621,Male,24,Black,0,0,0,Dealing Cannabis/Marijuana,F,8,0,0
+5580,Male,23,Black,0,0,1,Grand Theft,F,3,1,0
+1849,Male,48,White,0,0,9,Grand Theft,F,6,0,1
+3099,Male,31,White,0,0,4,Battery,F,8,1,1
+3846,Male,31,Black,0,0,5,Child Abuse,F,4,0,0
+3213,Male,27,White,0,0,0,Battery,M,2,0,1
+3616,Female,63,Black,0,0,1,Possession of Cannabis/Marijuana,F,1,0,0
+1434,Male,48,Black,0,0,14,arrest case no charge,F,9,1,0
+2514,Male,22,Black,0,0,1,Grand Theft,F,3,0,0
+4901,Female,24,White,0,0,0,Battery,M,6,0,1
+4372,Male,24,Black,0,0,1,Possession of Cocaine,F,6,1,0
+5714,Male,31,Black,0,0,9,Possession of Cocaine,F,8,1,0
+3503,Male,30,White,0,0,1,Possession of Heroin,F,8,1,1
+6025,Female,52,White,0,0,0,Battery,M,3,0,1
+3937,Male,49,Black,0,0,0,Battery,M,1,1,0
+1367,Male,36,Black,0,0,0,Driving with a Suspended License,F,5,0,0
+4784,Female,36,Black,0,0,1,Grand Theft,F,2,0,0
+14,Male,25,Black,0,0,3,Grand Theft,F,10,0,0
+3799,Female,34,Black,0,0,1,Grand Theft,F,1,0,0
+5500,Male,34,Black,0,0,0,Grand Theft,F,1,0,0
+4078,Male,25,White,0,0,2,Possession of Cocaine,F,5,0,1
+4111,Male,24,Black,0,0,2,Battery,F,6,1,0
+4180,Female,24,Black,0,0,0,Criminal Damage of less than $1000,M,7,0,0
+2702,Female,65,White,0,0,1,Fleeing the Scene of an Accident,M,1,1,1
+5549,Male,27,Black,0,0,1,Forgery,F,2,0,0
+2171,Male,41,White,0,0,0,Driving Under the Influence,M,2,0,1
+2475,Male,26,White,0,0,9,Possession of Cannabis/Marijuana,M,7,1,1
+679,Female,36,Black,0,0,1,Driving with a Suspended License,M,2,0,0
+3770,Female,31,Black,0,0,0,Battery,M,6,0,0
+5183,Male,23,Black,0,0,1,Grand Theft,F,4,1,0
+4942,Female,29,White,0,0,0,Battery,M,6,0,1
+2680,Female,39,White,0,0,8,Possession of a Controlled Substance,F,7,1,1
+1671,Female,25,White,0,0,0,Grand Theft,F,4,0,1
+5451,Male,27,Black,0,0,8,Battery,F,5,1,0
+720,Male,20,Black,0,0,1,Possession of Cannabis/Marijuana,M,7,1,0
+4116,Male,25,Black,0,0,0,Battery,M,5,1,0
+4121,Female,25,Black,0,0,0,Possession of Oxycodone,F,7,0,0
+5703,Male,25,White,0,0,4,Possession of a Controlled Substance,F,9,0,1
+4138,Male,24,White,0,0,2,Fraud,F,3,1,1
+1586,Male,24,White,0,1,3,Driving Under the Influence,M,5,0,1
+1948,Male,39,White,0,0,0,Domestic Violence,M,1,0,1
+3067,Male,20,White,0,0,0,Possession of Cocaine,F,4,0,1
+3982,Male,55,White,0,0,0,Driving with a Revoked License,F,1,0,1
+820,Male,36,Black,0,0,5,Domestic Violence,M,8,1,0
+976,Male,23,Black,0,0,2,Drug Trafficking,F,2,1,0
+6134,Male,27,Black,0,0,1,Driving Under the Influence,M,5,0,0
+4228,Female,43,Black,0,0,9,Battery,M,9,0,0
+3157,Male,38,White,0,0,12,Grand Theft,F,5,0,1
+1985,Male,31,Black,0,0,7,Unlawful Possession of Firearm,F,7,1,0
+1375,Male,34,White,1,0,9,Assault,F,6,1,1
+3257,Male,23,Black,0,0,0,Battery,F,5,0,0
+3737,Male,29,Black,0,0,0,Disorderly Conduct,M,2,1,0
+4551,Male,34,Black,0,0,5,Domestic Violence,M,3,1,0
+3798,Male,22,Black,1,0,1,Battery,M,7,0,0
+2491,Male,30,Black,0,1,7,Burglary,F,9,1,0
+4429,Male,36,White,0,0,0,Grand Theft,F,3,1,1
+3645,Male,36,White,0,0,1,arrest case no charge,F,2,0,1
+5895,Male,21,White,0,0,0,Tampering With Physical Evidence,F,9,0,1
+4510,Female,20,White,0,0,0,arrest case no charge,F,10,1,1
+3580,Female,42,White,0,0,0,Battery,M,2,0,1
+4740,Male,34,Black,0,0,0,Possession of Cocaine,F,8,1,0
+1100,Male,26,White,0,0,0,Dealing Heroin,F,7,1,1
+3356,Male,51,White,0,0,1,Battery,M,2,0,1
+4564,Male,37,Black,3,0,12,arrest case no charge,M,10,0,0
+3725,Female,30,White,0,0,4,arrest case no charge,F,6,0,1
+666,Male,48,White,0,0,0,Grand Theft,F,7,0,1
+4550,Male,28,White,0,0,0,Battery,M,1,0,1
+840,Female,22,Black,0,0,0,Battery,M,3,0,0
+3349,Male,25,Black,0,0,0,Battery,F,4,1,0
+695,Male,29,Black,0,1,16,Possession of Cocaine,F,10,0,0
+1441,Male,20,White,0,1,1,Burglary,F,5,1,1
+3104,Male,22,White,0,0,0,Battery,F,3,0,1
+510,Male,22,Black,0,0,11,Possession of Cocaine,F,10,1,0
+3593,Female,43,White,0,0,22,Trespassing,M,10,1,1
+1045,Male,27,Black,0,0,0,Battery,M,2,1,0
+5537,Male,41,Black,0,0,6,Possession of Cocaine,F,3,0,0
+5954,Male,32,Black,0,0,4,arrest case no charge,F,3,1,0
+4884,Male,50,White,0,0,0,Possession of Child Pornography,F,1,0,1
+4064,Male,26,Black,0,0,8,Threatening a Public Servant,F,7,1,0
+1859,Male,39,White,0,0,3,arrest case no charge,F,1,1,1
+4609,Male,37,Black,0,0,17,Resisting an Officer,M,9,0,0
+275,Female,36,Black,0,0,0,Battery with a Deadly Weapon,F,7,0,0
+981,Male,33,White,0,0,3,Driving with a Suspended License,M,3,0,1
+3887,Male,23,Black,0,0,1,Assault,F,6,1,0
+5360,Male,60,White,0,0,2,Driving Under the Influence,M,2,0,1
+2735,Male,62,White,0,0,0,Forgery,F,1,0,1
+5308,Male,28,Black,0,0,4,Battery,F,7,1,0
+1936,Male,48,Black,0,0,1,Fraud,F,1,0,0
+4119,Male,25,Black,0,0,2,Criminal Damage of more than $1000,F,5,1,0
+4150,Male,28,White,1,1,4,Burglary,M,6,1,1
+4598,Male,21,White,0,0,0,Battery,M,4,1,1
+1421,Male,37,Black,2,3,24,Burglary,F,8,0,0
+5967,Male,22,Black,0,0,0,Resisting an Officer,M,10,0,0
+1633,Male,51,Black,0,0,5,Driving with a Suspended License,M,7,0,0
+1863,Male,59,White,0,0,0,Possession of Cocaine,F,1,0,1
+3867,Male,30,Black,0,0,1,Burglary,F,4,1,0
+2513,Female,49,Black,0,0,0,,F,1,0,0
+3785,Female,19,Black,0,0,0,Criminal Damage of less than $1000,M,4,1,0
+2129,Male,61,White,0,0,0,Battery,M,1,0,1
+980,Female,35,Black,0,0,2,arrest case no charge,F,5,0,0
+4083,Female,35,Black,0,0,13,,F,8,0,0
+2913,Male,23,Black,0,0,0,Grand Theft,F,3,1,0
+596,Female,60,White,0,0,9,arrest case no charge,F,3,1,1
+5321,Male,37,Black,0,0,16,arrest case no charge,F,8,1,0
+4433,Female,43,White,0,0,0,Driving Under the Influence,M,1,0,1
+970,Male,35,White,0,0,0,Battery,M,1,0,1
+1566,Male,30,Black,4,1,11,Possession of Cannabis/Marijuana,F,10,0,0
+3818,Male,29,Black,0,0,0,Driving with a Revoked License,F,6,0,0
+2976,Male,47,White,0,0,3,Theft,M,5,0,1
+4276,Male,34,Black,0,0,0,Driving with a Revoked License,F,1,0,0
+607,Male,34,White,0,0,0,Driving Under the Influence,M,1,1,1
+177,Female,28,White,0,0,7,Theft,F,9,1,1
+5170,Male,28,Black,0,0,7,Resisting an Officer,M,7,0,0
+5763,Male,56,White,0,0,0,Driving Under the Influence,M,1,0,1
+746,Female,26,Black,0,0,1,Battery,M,2,0,0
+1824,Male,30,White,0,0,3,Criminal Damage of more than $1000,F,4,1,1
+5922,Female,27,Black,0,1,1,Forgery,F,3,0,0
+1427,Male,23,Black,0,0,0,Tampering With Physical Evidence,F,7,0,0
+3434,Male,33,Black,0,0,0,Resisting an Officer,M,7,0,0
+562,Male,53,White,0,0,1,Battery,M,1,0,1
+4450,Male,27,Black,0,0,10,arrest case no charge,F,8,1,0
+4371,Male,28,Black,1,0,12,Driving with a Suspended License,F,5,0,0
+2109,Male,25,Black,0,1,5,arrest case no charge,F,9,1,0
+4166,Male,26,Black,0,1,5,Resisting an Officer with Violence,F,6,0,0
+5105,Male,24,Black,0,0,3,Possession of Cannabis/Marijuana,F,8,1,0
+247,Male,23,White,0,0,0,Assault with a Deadly Weapon,F,5,1,1
+2355,Male,35,White,0,0,2,Battery,F,5,1,1
+5716,Female,20,White,0,0,0,Possession of a Controlled Substance,F,8,1,1
+3069,Male,60,Black,0,0,13,Possession of Heroin,F,3,0,0
+2773,Male,25,Black,0,0,1,arrest case no charge,F,3,0,0
+2070,Male,74,White,0,0,0,Driving Under the Influence,M,1,0,1
+1451,Male,27,White,0,0,0,Failure to Register a Vehicle,M,3,1,1
+5723,Male,31,Black,0,0,2,arrest case no charge,F,2,0,0
+5467,Male,51,Black,0,0,12,Possession of Cocaine,F,8,1,0
+5355,Male,55,Black,0,0,5,Possession of Cocaine,F,4,0,0
+1719,Male,34,White,0,0,0,Child Molestation,F,1,0,1
+2608,Female,65,White,0,0,1,Introducing Contraband Into Jail,F,1,0,1
+5144,Male,21,White,0,0,1,Possession of Cannabis/Marijuana,F,8,0,1
+2243,Female,27,Black,0,0,1,arrest case no charge,F,3,0,0
+1172,Male,31,White,0,0,7,Child Abuse,M,3,0,1
+656,Male,31,Black,0,0,0,Battery,M,2,0,0
+5905,Male,37,Black,0,0,4,Battery,M,4,1,0
+5675,Male,34,Black,0,0,2,Carrying a Concealed Weapon,F,3,1,0
+2668,Male,40,Black,1,0,15,arrest case no charge,F,8,0,0
+4080,Male,31,White,0,0,2,Burglary,F,5,0,1
+1691,Male,35,Black,0,0,4,Battery,M,5,0,0
+4340,Female,23,Black,0,0,0,Resisting an Officer with Violence,F,6,1,0
+688,Male,35,Black,0,0,7,Possession of Cannabis/Marijuana,F,6,0,0
+1720,Female,33,White,0,0,1,Battery,M,2,0,1
+4190,Male,23,Black,0,1,2,Robbery,F,6,1,0
+535,Male,25,White,0,0,1,Assault with a Deadly Weapon,F,5,0,1
+3762,Male,31,Black,0,0,2,Grand Theft,F,2,0,0
+3743,Female,24,Black,0,0,3,Fraud,M,6,1,0
+744,Female,52,Black,0,0,0,Assault with a Deadly Weapon,F,1,0,0
+416,Male,29,White,0,0,0,Battery,M,4,1,1
+405,Male,56,White,0,0,0,Grand Theft,F,1,0,1
+4950,Female,52,Black,0,0,3,False 911 Call,F,1,0,0
+5957,Female,44,Black,0,0,6,Possession of Cocaine,F,6,0,0
+928,Male,27,Black,0,0,9,arrest case no charge,F,10,1,0
+4409,Male,51,Black,0,0,4,,F,1,0,0
+3683,Male,31,Black,0,0,0,Grand Theft,F,7,0,0
+3814,Male,56,Black,0,0,5,Child Molestation,F,2,1,0
+5794,Male,28,Black,0,0,1,arrest case no charge,F,1,1,0
+364,Male,29,Black,0,0,2,arrest case no charge,F,6,0,0
+1111,Female,51,White,0,0,5,arrest case no charge,F,5,0,1
+3987,Female,29,Black,0,0,5,Battery,F,7,0,0
+805,Female,26,White,0,0,0,Possession of a Controlled Substance,F,6,0,1
+5158,Female,34,Black,0,0,1,Battery,M,1,0,0
+2716,Male,31,Black,0,0,0,Dealing Cocaine,F,6,0,0
+696,Male,34,White,0,0,1,Fraud,M,3,1,1
+2365,Male,36,Black,0,0,5,Battery,M,5,1,0
+4075,Male,39,Black,0,0,19,Battery,M,6,1,0
+5661,Male,25,Black,0,0,2,Operating a Vehicle without a Valid Drivers License,M,5,1,0
+4006,Male,27,White,0,0,2,Burglary,F,6,1,1
+294,Male,69,White,0,0,0,,M,1,0,1
+2194,Male,22,Black,0,0,0,Burglary,F,3,1,0
+1758,Male,24,White,0,0,0,Robbery with a Weapon,F,4,0,1
+2367,Male,51,Black,0,0,9,Possession of Cocaine,F,9,1,0
+3943,Male,28,White,0,0,2,Possession of Oxycodone,F,3,1,1
+937,Male,40,White,0,0,3,Driving with a Suspended License,F,1,0,1
+3444,Male,29,Black,0,0,6,Driving with a Revoked License,F,8,1,0
+203,Male,30,Black,0,0,4,Driving with a Revoked License,F,2,0,0
+2979,Male,42,Black,0,0,5,Battery,F,6,0,0
+3140,Male,33,Black,0,0,2,Battery with a Deadly Weapon,F,8,1,0
+1071,Female,44,White,0,0,1,Driving Under the Influence,M,5,0,1
+3166,Female,51,White,0,0,4,arrest case no charge,F,3,0,1
+1637,Male,34,Black,0,0,7,arrest case no charge,F,5,1,0
+4328,Male,28,Black,0,0,6,Grand Theft,F,10,1,0
+3724,Female,33,Black,0,0,3,Battery,M,4,0,0
+4509,Male,47,White,0,0,0,Battery,M,1,1,1
+4256,Female,43,Black,0,0,2,Restraining Order Violation,M,2,0,0
+572,Male,46,Black,0,0,17,arrest case no charge,F,9,1,0
+4739,Male,30,Black,0,0,18,Operating a Vehicle without a Valid Drivers License,M,9,1,0
+400,Male,51,White,0,0,0,Battery,F,1,0,1
+2235,Male,24,Black,0,0,1,Robbery,F,3,1,0
+383,Male,29,Black,0,0,3,Possession of a Controlled Substance,F,5,1,0
+2507,Male,24,Black,0,0,3,Criminal Damage of more than $1000,F,3,1,0
+4518,Male,25,Black,0,0,0,arrest case no charge,F,3,0,0
+753,Male,32,Black,0,0,1,arrest case no charge,F,7,0,0
+736,Female,22,White,0,0,1,Possession of a Controlled Substance,F,6,0,1
+6139,Female,49,White,0,0,3,Grand Theft,F,2,0,1
+3147,Female,42,White,0,0,5,arrest case no charge,M,4,1,1
+1961,Male,26,Black,0,0,2,Battery,M,4,0,0
+2479,Female,61,White,0,0,0,Disorderly Conduct,M,1,0,1
+5117,Male,30,Black,0,0,2,Battery,M,2,0,0
+2575,Male,31,White,0,0,4,Theft,F,7,1,1
+4271,Male,36,White,0,0,11,Battery,M,6,1,1
+4155,Male,28,White,0,0,0,Battery,F,2,1,1
+3772,Male,20,White,1,0,1,arrest case no charge,F,9,1,1
+5024,Male,23,White,0,0,1,Burglary,F,5,1,1
+4773,Male,26,Black,0,0,7,Possession of Ecstasy,F,10,1,0
+5525,Male,30,White,0,0,1,Possession of Cocaine,F,3,1,1
+811,Male,41,White,0,0,5,Driving with a Suspended License,F,1,0,1
+2720,Male,29,White,0,0,6,Possession of a Controlled Substance,F,5,1,1
+2021,Male,22,Black,0,0,1,Burglary,F,7,1,0
+2704,Female,24,Black,0,0,0,Battery,M,2,0,0
+4813,Male,34,Black,0,0,1,Battery,M,2,0,0
+1501,Male,29,Black,0,0,0,Possession of Cocaine,F,8,0,0
+5202,Male,26,Black,0,0,3,Assault,F,7,1,0
+3978,Male,47,White,0,0,3,Battery,M,3,1,1
+2295,Male,24,White,0,0,3,Disorderly Conduct,M,8,1,1
+5850,Male,31,White,0,0,0,Possession of Oxycodone,F,1,0,1
+4818,Male,25,Black,0,3,8,Battery,M,8,1,0
+28,Male,32,Black,0,0,4,Tampering with Physical Evidence,F,8,1,0
+879,Male,46,White,0,0,5,Battery,M,4,0,1
+637,Male,20,Black,0,0,0,Possession of Cocaine,F,5,1,0
+3506,Female,28,Black,0,0,0,Assault with a Deadly Weapon,F,3,0,0
+1880,Male,21,Black,0,0,1,arrest case no charge,F,9,1,0
+3691,Female,59,White,0,0,0,Driving Under the Influence,M,1,0,1
+1607,Male,24,Black,0,0,2,Driving with a Suspended License,M,7,1,0
+1033,Female,25,Black,0,0,2,Battery,F,8,1,0
+1347,Male,27,Black,0,0,1,Grand Theft,F,2,0,0
+6018,Female,36,Black,0,0,1,Battery,M,2,0,0
+145,Female,32,Black,0,0,5,,F,7,0,0
+5987,Female,29,Black,0,1,7,,F,7,1,0
+5809,Male,23,Black,0,0,0,Possession of a Controlled Substance,M,4,1,0
+2087,Male,26,Black,0,0,1,Criminal Damage of less than $1000,M,1,0,0
+3955,Male,51,White,0,0,0,Battery,M,1,0,1
+5753,Male,27,Black,0,0,2,Tampering With Physical Evidence,F,10,1,0
+5878,Male,27,White,0,0,0,Possession of Cocaine,F,2,1,1
+1906,Male,22,Black,0,0,0,Open Carrying of Weapon,M,6,0,0
+2468,Male,29,Black,0,0,0,Driving with a Revoked License,F,9,0,0
+3947,Male,23,White,0,0,0,Dealing Cannabis/Marijuana,F,9,0,1
+4768,Female,30,Black,0,0,4,Criminal Damage of more than $1000,F,5,0,0
+2846,Female,57,Black,0,0,0,Resisting an Officer,M,1,0,0
+2118,Male,38,White,0,0,0,Battery,F,1,0,1
+4523,Male,23,Black,0,1,2,Possession of Ecstasy,F,2,0,0
+4359,Male,25,White,0,0,5,Grand Theft,F,7,1,1
+1791,Male,25,Black,0,0,0,Forgery,F,7,1,0
+4566,Male,27,Black,0,0,5,Possession of Cocaine,F,9,1,0
+5143,Male,21,Black,0,0,0,Possession of Cocaine,F,7,0,0
+2907,Male,26,White,0,0,0,Possession of Cannabis/Marijuana,F,3,0,1
+5287,Male,34,Black,0,0,16,Possession of Cannabis/Marijuana,F,9,1,0
+4780,Male,24,Black,0,0,2,Battery,M,9,1,0
+1424,Male,30,Black,0,0,1,Dealing Cocaine,F,6,1,0
+1457,Male,27,Black,0,0,10,arrest case no charge,F,9,0,0
+4378,Male,28,Black,0,0,2,Possession of a Controlled Substance,F,5,0,0
+1425,Male,61,Black,0,0,1,arrest case no charge,M,1,0,0
+3081,Male,45,Black,0,0,1,Battery,M,1,0,0
+2786,Male,23,Black,0,0,0,Battery,M,2,1,0
+3782,Female,24,White,0,0,0,Possession of Cannabis/Marijuana,M,10,0,1
+95,Male,34,White,0,0,0,Assault with a Deadly Weapon,F,5,0,1
+2010,Female,28,Black,0,0,10,Operating a Vehicle without a Valid Drivers License,M,7,1,0
+4522,Male,27,Black,0,0,13,Possession of Cannabis/Marijuana,F,10,1,0
+2909,Male,41,Black,0,0,4,Battery,M,1,1,0
+3485,Male,64,White,0,0,0,Operating a Vehicle without a Valid Drivers License,M,1,0,1
+4805,Male,30,Black,0,0,0,Possession of Cocaine,F,4,1,0
+2579,Male,41,White,0,0,0,Possession of Cocaine,F,2,0,1
+445,Male,23,White,0,0,0,Battery,M,9,0,1
+582,Male,36,Black,0,1,4,Battery,M,5,0,0
+5010,Male,20,Black,0,0,2,Assault with a Deadly Weapon,F,3,1,0
+620,Male,23,Black,0,0,6,Grand Theft,F,9,1,0
+682,Male,36,Black,0,0,3,Driving with a Revoked License,F,2,1,0
+3105,Male,28,Black,0,0,5,arrest case no charge,M,8,0,0
+3511,Male,27,White,0,0,5,Grand Theft,F,4,0,1
+2685,Male,62,Black,0,0,13,Theft,F,8,1,0
+2288,Male,27,White,0,0,1,arrest case no charge,F,3,0,1
+1137,Male,34,White,0,0,2,arrest case no charge,M,2,0,1
+4710,Female,28,White,0,0,3,Burglary,F,6,1,1
+5645,Male,41,White,0,0,4,Possession of Heroin,F,3,1,1
+1769,Male,53,White,0,0,0,Battery,M,1,0,1
+3535,Male,58,White,0,0,2,Domestic Violence,M,1,1,1
+3491,Male,51,Black,0,0,3,arrest case no charge,F,1,0,0
+1308,Male,20,Black,0,0,0,Battery,M,3,1,0
+2502,Male,60,Black,0,0,19,Possession of Cocaine,F,8,1,0
+3115,Female,33,White,0,0,1,arrest case no charge,F,7,0,1
+5156,Male,48,White,0,0,6,Driving with a Revoked License,F,2,0,1
+3440,Male,29,Black,0,0,0,Driving with a Suspended License,M,5,0,0
+4743,Male,42,Black,0,0,7,Driving with a Revoked License,F,1,0,0
+609,Male,21,White,0,0,0,Battery,M,2,0,1
+2193,Female,37,Black,0,0,13,Driving with a Suspended License,F,6,0,0
+5290,Male,26,Black,0,0,1,arrest case no charge,F,5,0,0
+1617,Male,27,Black,0,0,0,Battery,M,1,0,0
+1322,Female,20,Black,0,0,2,arrest case no charge,F,10,1,0
+634,Male,71,Black,0,0,8,Driving with a Revoked License,F,1,0,0
+4718,Male,27,Black,0,0,7,arrest case no charge,F,10,1,0
+2851,Female,25,White,0,0,0,Driving Under the Influence,M,4,0,1
+3408,Male,31,Black,3,0,15,Battery,M,10,1,0
+2553,Male,31,White,0,0,9,arrest case no charge,F,8,1,1
+3128,Male,25,White,0,0,0,Possession of Heroin,F,6,0,1
+5600,Male,42,White,0,0,8,Assault,F,4,0,1
+5791,Male,46,Black,0,0,4,arrest case no charge,F,1,0,0
+5545,Female,22,Black,0,0,0,Grand Theft,F,7,0,0
+5062,Male,32,Black,0,0,5,Driving with a Revoked License,F,4,1,0
+5917,Male,28,White,0,0,0,Driving Under the Influence,M,4,0,1
+3204,Female,30,Black,0,0,1,arrest case no charge,F,2,0,0
+3297,Male,53,White,0,0,0,Battery,M,1,0,1
+2042,Male,22,Black,0,0,0,Loitering,M,9,0,0
+5514,Male,48,White,0,0,0,Possession of Cocaine,F,2,0,1
+1198,Male,53,Black,0,0,0,Battery,M,1,1,0
+5639,Male,51,Black,0,0,0,Operating a Vehicle without a Valid Drivers License,M,1,0,0
+3574,Female,29,White,0,0,6,Possession of Cocaine,F,7,1,1
+5685,Male,22,Black,0,0,4,Driving with a Suspended License,M,6,0,0
+4849,Male,30,Black,0,0,6,Grand Theft,F,5,1,0
+1055,Male,57,White,0,0,0,Battery,M,2,0,1
+3209,Male,43,Black,0,0,0,Providing a Contradicting Statement,F,1,1,0
+1997,Male,24,Black,0,0,2,Fraud,F,3,1,0
+1604,Male,22,Black,0,0,2,Forgery,F,4,1,0
+3811,Male,20,Black,0,0,0,Dealing Cannabis/Marijuana,F,3,0,0
+2020,Male,26,Black,0,0,3,Possession of a Controlled Substance,M,10,0,0
+3797,Male,55,White,0,0,0,Battery,F,3,0,1
+5185,Male,43,White,0,0,2,arrest case no charge,F,1,0,1
+799,Male,26,Black,0,0,5,Driving with a Suspended License,F,10,1,0
+1506,Male,54,White,0,0,0,Battery,M,1,0,1
+5618,Male,22,Black,0,0,0,Dealing Controlled Substances,F,4,1,0
+4213,Male,41,White,0,0,11,Theft,F,4,1,1
+3141,Male,58,White,0,0,1,Battery,M,1,0,1
+1843,Male,26,White,0,0,5,Threat Against Public Servant,F,5,1,1
+2740,Male,47,Black,0,0,3,Possession of a Controlled Substance,F,8,1,0
+5543,Female,46,White,0,0,0,Driving Under the Influence,M,1,0,1
+5863,Male,28,Black,1,2,5,Battery with a Deadly Weapon,F,7,1,0
+6000,Male,49,White,0,0,3,Possession of Cocaine,F,8,1,1
+5589,Male,45,White,0,0,5,Possession of a Controlled Substance,F,5,1,1
+3597,Female,29,White,0,0,1,Grand Theft,F,7,1,1
+4071,Male,56,Black,0,0,16,Possession of Cocaine,F,5,0,0
+1624,Male,26,Black,0,0,6,Possession of Cannabis/Marijuana,F,9,1,0
+2622,Male,47,White,0,0,0,Battery,M,1,0,1
+5233,Male,30,Black,0,0,10,arrest case no charge,F,6,1,0
+3357,Female,21,Black,0,0,0,Battery,F,8,1,0
+438,Male,29,Black,0,0,5,Possession of a Controlled Substance,F,5,1,0
+3049,Male,37,Black,0,0,20,Driving with a Revoked License,F,9,1,0
+4365,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,7,1,0
+2780,Male,42,Black,0,0,9,Possession of Cannabis/Marijuana,F,6,1,0
+2750,Male,21,Black,0,0,0,Grand Theft,F,8,1,0
+5212,Male,56,White,0,0,0,Driving Under the Influence,M,1,0,1
+730,Male,46,White,0,0,0,Possession of Cocaine,F,1,0,1
+2077,Male,53,White,0,0,1,Driving Under the Influence,M,1,0,1
+109,Female,25,White,0,0,2,arrest case no charge,F,4,0,1
+1945,Male,28,Black,0,0,6,arrest case no charge,M,8,1,0
+5938,Male,21,Black,0,1,1,Burglary,M,4,1,0
+4322,Male,45,White,0,0,2,Battery,M,4,0,1
+3009,Male,47,Black,0,0,1,Battery,M,4,0,0
+2310,Female,19,Black,0,0,0,Child Abuse,M,8,1,0
+4572,Male,61,White,0,0,1,Assault with a Deadly Weapon,F,1,1,1
+4991,Male,29,Black,0,0,7,Burglary,F,3,0,0
+4573,Male,34,Black,0,0,1,arrest case no charge,F,1,0,0
+4970,Male,46,White,0,0,1,arrest case no charge,F,3,0,1
+3650,Male,28,White,0,0,0,Grand Theft,F,3,0,1
+5887,Male,21,Black,0,0,0,Battery,F,9,0,0
+1965,Male,26,Black,0,0,5,arrest case no charge,F,7,1,0
+2825,Male,24,Black,1,0,2,Prostitution,M,10,1,0
+5523,Male,26,Black,1,0,10,Resisting an Officer with Violence,F,8,1,0
+172,Female,35,Black,0,1,23,Theft,F,9,1,0
+3847,Male,33,Black,0,0,0,Burglary,F,3,0,0
+313,Male,25,Black,0,0,7,Tampering with a Witness,F,8,1,0
+1777,Male,42,Black,0,0,1,Driving with a Suspended License,F,4,1,0
+1901,Male,34,Black,0,0,5,Grand Theft,F,4,1,0
+5224,Female,26,Black,0,0,4,Grand Theft,F,9,1,0
+3214,Male,32,Black,0,0,1,arrest case no charge,F,2,0,0
+4195,Male,31,Black,0,0,4,arrest case no charge,F,5,1,0
+772,Female,28,White,0,0,3,Battery,M,4,0,1
+2738,Male,49,Black,0,0,1,Assault,M,7,0,0
+5132,Male,35,Black,0,0,22,Possession of Ecstasy,F,10,1,0
+1162,Male,23,Black,0,0,0,Burglary,F,7,1,0
+3427,Male,44,Black,0,0,0,Driving Under the Influence,M,1,0,0
+1555,Female,49,Black,0,0,14,Battery,M,7,1,0
+3939,Male,33,Black,0,0,16,Driving with a Suspended License,M,9,1,0
+4324,Male,52,Black,0,0,0,Battery,M,1,0,0
+4799,Male,24,Black,0,0,5,Possession of Ecstasy,F,6,0,0
+2689,Male,25,White,0,0,2,arrest case no charge,F,6,0,1
+2937,Female,28,White,0,0,0,Possession of Cocaine,F,4,1,1
+2102,Female,31,Black,0,0,14,Assault,F,8,0,0
+1622,Female,31,White,0,0,0,Battery,M,3,0,1
+1740,Male,28,Black,0,0,2,Resisting an Officer,M,4,0,0
+2290,Male,30,Black,0,1,10,arrest case no charge,F,9,0,0
+5572,Male,50,White,0,0,0,Driving Under the Influence,M,1,0,1
+3493,Male,33,White,0,2,2,Domestic Violence,M,2,0,1
+325,Male,48,White,1,0,23,Theft,F,8,1,1
+6103,Male,58,White,0,0,8,Criminal Damage of less than $1000,M,2,0,1
+5601,Female,23,Black,0,0,0,Battery,M,4,1,0
+2007,Male,24,White,0,0,3,Battery,M,5,1,1
+5412,Male,43,White,0,0,0,arrest case no charge,F,1,0,1
+2877,Male,40,White,1,0,9,arrest case no charge,F,9,0,1
+2251,Male,54,Black,0,0,0,Theft,M,1,0,0
+3950,Male,25,Black,0,0,1,Forgery,F,5,0,0
+2142,Female,45,Black,0,0,2,Fraud,F,3,0,0
+488,Female,25,Black,0,0,0,Resisting an Officer,M,3,0,0
+2126,Male,44,Black,1,0,7,Possession of Cocaine,F,6,0,0
+3396,Male,30,Black,0,0,0,Battery,M,1,1,0
+3551,Female,61,White,0,0,8,Resisting an Officer with Violence,F,3,1,1
+3361,Female,23,Black,0,0,0,Burglary,F,5,1,0
+5491,Male,47,White,0,0,0,Battery,M,2,0,1
+5717,Male,24,Black,0,0,1,Possession of Cannabis/Marijuana,F,3,0,0
+5354,Male,20,Black,0,0,2,arrest case no charge,F,8,1,0
+1834,Female,27,White,0,0,0,Possession of Cannabis/Marijuana,F,3,0,1
+554,Male,31,Black,0,0,23,Possession of a Controlled Substance,F,10,1,0
+1460,Male,25,Black,0,0,9,Driving with a Revoked License,F,7,0,0
+5368,Female,28,Black,0,0,0,Arson,F,3,0,0
+4971,Male,33,Black,0,0,9,Battery,M,7,1,0
+1303,Male,45,Black,0,0,3,Burglary,F,9,0,0
+823,Male,22,White,0,0,2,Battery,M,5,1,1
+1479,Male,31,Black,0,0,0,Possession of a Controlled Substance,M,2,0,0
+122,Male,38,Black,1,1,9,Possession of Cocaine,F,8,1,0
+4300,Male,33,White,0,0,1,arrest case no charge,F,4,0,1
+1931,Male,34,Black,0,0,3,Driving with a Suspended License,F,1,0,0
+3779,Male,25,Black,0,1,3,Battery,M,10,1,0
+813,Female,21,White,0,1,0,Driving Under the Influence,M,5,1,1
+3425,Female,22,White,0,0,2,arrest case no charge,F,3,0,1
+3861,Male,35,White,0,0,3,arrest case no charge,M,4,1,1
+4149,Female,30,Black,0,0,2,Battery,M,3,0,0
+712,Male,67,Black,0,0,4,Grand Theft,M,7,1,0
+4144,Male,51,Black,0,0,2,Battery,F,3,0,0
+4779,Male,27,White,0,0,5,Possession of Cocaine,F,6,1,1
+4863,Male,53,Black,0,0,5,Theft,M,2,0,0
+3300,Male,27,Black,0,0,0,Battery,M,2,1,0
+3160,Female,25,White,0,0,0,Battery,M,3,0,1
+5199,Male,45,White,0,0,0,Battery,M,1,0,1
+2451,Male,24,Black,0,0,0,Possession of Cannabis/Marijuana,M,5,0,0
+241,Male,46,White,0,0,3,arrest case no charge,F,4,0,1
+3805,Male,61,Black,0,0,12,Battery,F,3,0,0
+4759,Male,35,Black,0,0,0,Battery,F,1,0,0
+2499,Male,27,White,0,0,0,Using a Computer for Child Exploitation,F,1,0,1
+386,Male,55,Black,0,0,5,Theft,F,3,1,0
+2134,Male,26,White,0,0,9,Violating License Restrictions,M,4,1,1
+2771,Male,23,Black,0,0,6,Forgery,F,9,1,0
+47,Male,24,Black,0,0,2,Possession of a Controlled Substance,F,4,1,0
+3133,Female,29,White,0,0,1,Driving Under the Influence,M,5,1,1
+85,Male,19,Black,0,0,1,Battery,M,4,1,0
+2834,Male,27,Black,0,0,7,Burglary,F,9,1,0
+2571,Male,20,Black,0,1,1,Burglary,F,10,1,0
+5978,Male,30,Black,0,1,18,Burglary,F,10,1,0
+809,Male,33,Black,0,0,7,Possession of Cocaine,F,7,1,0
+5493,Female,21,Black,0,0,0,Burglary,F,5,1,0
+5030,Male,46,White,0,0,0,Battery,M,1,0,1
+2594,Male,21,White,0,0,1,Criminal Damage of less than $1000,M,6,0,1
+2971,Male,38,Black,1,0,8,Disorderly Conduct,M,7,0,0
+440,Male,48,White,0,0,1,Battery,F,7,1,1
+877,Male,59,Black,0,0,2,Driving Under the Influence,M,1,0,0
+4164,Male,36,Black,0,0,0,Battery,F,1,0,0
+2759,Male,23,Black,0,1,4,Fraud,F,9,1,0
+2442,Male,55,White,0,0,1,Fleeing the Scene of an Accident,M,1,0,1
+1145,Male,28,Black,0,0,1,Battery,M,7,0,0
+3134,Male,33,Black,0,0,8,Assault with a Deadly Weapon,F,5,0,0
+345,Male,25,White,0,0,0,Driving Under the Influence,M,2,1,1
+6075,Male,30,White,0,0,4,Possession of Heroin,F,8,1,1
+2992,Male,37,Black,0,0,3,Aiding Escape,F,1,1,0
+2552,Male,24,White,0,0,0,Grand Theft,F,2,1,1
+5041,Male,22,Black,0,0,2,Robbery,F,8,0,0
+4597,Male,27,Black,0,0,1,Grand Theft,F,2,0,0
+2850,Male,43,Black,0,0,7,arrest case no charge,F,4,0,0
+1875,Male,40,Black,0,0,1,arrest case no charge,F,1,0,0
+3315,Male,52,White,0,0,4,Restraining Order Violation,M,3,1,1
+2384,Male,21,Black,0,0,0,Grand Theft,F,4,0,0
+2429,Male,23,White,0,0,0,Possession of Cannabis/Marijuana,F,2,0,1
+4110,Male,26,Black,0,1,24,Driving with a Revoked License,F,10,1,0
+3057,Male,28,Black,0,0,4,Possession of Cannabis/Marijuana,F,5,0,0
+4183,Male,32,Black,0,0,13,Possession of Cannabis/Marijuana,M,9,1,0
+3002,Female,19,Black,0,0,1,Burglary,F,9,1,0
+2719,Male,27,Black,0,0,1,Burglary,F,2,1,0
+5745,Female,31,Black,0,0,4,Battery with a Deadly Weapon,F,8,0,0
+3149,Male,39,White,0,0,0,Fleeing a Law Enforcement Officer,F,1,0,1
+5615,Male,27,White,0,0,0,Grand Theft,F,4,0,1
+2436,Male,29,Black,0,0,2,Introducing Contraband Into Jail,F,9,0,0
+1261,Male,63,White,0,0,0,Battery,M,1,1,1
+946,Female,32,White,0,0,1,Tampering with a Witness,F,2,0,1
+3732,Male,24,White,0,0,0,Possession of Cannabis/Marijuana,F,2,0,1
+5250,Female,31,Black,0,0,0,Fleeing the Scene of an Accident,M,6,0,0
+2046,Male,58,Black,0,0,16,arrest case no charge,F,6,1,0
+4443,Male,67,Black,0,0,8,Criminal Damage of more than $1000,F,4,0,0
+1309,Male,51,White,0,0,6,arrest case no charge,F,1,1,1
+1895,Male,21,White,0,0,3,Possession of Cannabis/Marijuana,F,8,1,1
+1542,Male,27,Black,0,0,5,Burglary,F,9,1,0
+1140,Male,32,Black,0,0,2,arrest case no charge,M,8,0,0
+5754,Female,63,White,0,0,0,Battery,M,1,0,1
+4607,Male,21,Black,0,0,0,Battery,F,4,0,0
+3639,Female,74,Black,0,0,0,Theft,F,1,0,0
+2421,Male,50,Black,1,0,5,Possession of Cocaine,F,2,0,0
+2508,Male,23,White,0,1,2,arrest case no charge,F,8,1,1
+6022,Male,41,Black,1,0,18,arrest case no charge,F,6,1,0
+984,Male,24,Black,0,0,0,Burglary,F,5,0,0
+5769,Male,31,Black,2,0,6,Battery,F,6,0,0
+3430,Male,30,Black,0,0,10,Battery,M,4,1,0
+4568,Male,22,Black,0,1,1,Possession of Cannabis/Marijuana,F,5,0,0
+861,Male,28,Black,0,0,6,Carrying a Concealed Weapon,F,9,1,0
+6020,Male,63,Black,0,0,1,arrest case no charge,F,1,0,0
+4877,Male,33,Black,0,0,12,Tampering With Physical Evidence,F,9,1,0
+3380,Male,48,White,0,0,2,arrest case no charge,F,1,0,1
+1893,Male,48,White,0,0,0,Battery,M,1,0,1
+5453,Male,42,White,0,0,0,Battery,M,1,0,1
+3783,Male,35,White,0,0,2,arrest case no charge,F,2,1,1
+5977,Male,26,White,0,0,1,Battery,M,2,0,1
+911,Male,44,White,0,0,3,Possession of Cocaine,F,1,0,1
+5778,Male,41,Black,0,0,13,Possession of a Controlled Substance,F,10,1,0
+3039,Male,25,Black,1,0,2,Possession of Cocaine,F,9,0,0
+2968,Male,27,Black,0,0,0,Battery,M,1,0,0
+1890,Male,52,Black,0,0,1,Domestic Violence,M,1,1,0
+4380,Male,26,Black,0,1,8,arrest case no charge,F,8,1,0
+1687,Male,46,White,0,0,1,Battery,M,1,1,1
+779,Male,46,Black,0,0,2,Grand Theft,F,2,1,0
+3523,Male,35,Black,0,0,1,Battery,M,5,0,0
+341,Female,39,White,0,0,0,Disorderly Intoxication,M,6,0,1
+4177,Male,24,Black,0,0,1,Grand Theft,F,5,0,0
+5038,Male,69,White,0,0,0,Driving Under the Influence,M,1,1,1
+2661,Male,23,Black,0,0,1,Possession of Cocaine,F,7,0,0
+2381,Male,60,Black,0,0,9,Possession of Cocaine,F,8,0,0
+6039,Male,51,White,0,0,0,arrest case no charge,F,1,0,1
+4296,Male,25,Black,0,0,8,Driving with a Suspended License,F,8,1,0
+5701,Male,23,Black,1,0,5,Burglary,F,8,1,0
+1713,Male,26,Black,0,0,0,Theft,M,5,0,0
+1174,Male,20,Black,0,0,0,Tampering With Physical Evidence,F,4,0,0
+4053,Male,33,Black,0,0,4,Battery,M,3,0,0
+1379,Male,30,Black,0,0,0,Battery,M,1,0,0
+4547,Male,35,White,0,0,4,Battery,F,2,1,1
+804,Male,22,Black,1,1,6,arrest case no charge,F,7,1,0
+560,Male,35,Black,0,0,0,Failure to Obey Police Officer,M,4,0,0
+4701,Male,37,Black,0,0,7,Tampering With Physical Evidence,F,7,0,0
+3899,Male,21,Black,0,0,2,Possession of Cocaine,F,9,1,0
+518,Male,38,White,0,0,0,Possession of Cocaine,F,1,0,1
+6012,Male,33,Black,0,0,2,Driving with a Suspended License,M,4,0,0
+1848,Female,27,White,0,0,4,Fleeing the Scene of an Accident,M,8,1,1
+1349,Male,30,Black,0,0,9,Possession of Cocaine,F,10,1,0
+1444,Male,58,White,0,0,1,arrest case no charge,F,1,0,1
+1099,Male,47,Black,0,0,7,Driving with a Suspended License,F,1,1,0
+199,Male,28,White,0,0,1,arrest case no charge,F,1,0,1
+4056,Male,25,Black,0,0,5,Battery,M,8,1,0
+5339,Female,57,White,0,0,2,Possession of Cocaine,F,1,0,1
+5826,Male,55,White,0,0,2,arrest case no charge,M,1,0,1
+3871,Male,30,Black,0,0,21,Driving with a Revoked License,F,7,1,0
+2930,Male,28,Black,0,0,0,Battery,M,3,0,0
+1196,Female,37,Black,0,0,0,Prostitution,M,4,0,0
+1409,Male,28,White,0,0,0,Forgery,F,2,0,1
+69,Male,32,Black,0,0,0,Battery,F,2,0,0
+252,Female,21,Black,0,0,0,Battery,M,6,0,0
+2488,Male,21,Black,0,0,0,Assault,F,3,0,0
+4290,Male,57,Black,0,0,0,Possession of Cocaine,F,1,1,0
+1557,Male,41,White,0,0,9,Battery,M,6,0,1
+1708,Male,51,Black,0,0,0,Battery,M,1,0,0
+514,Male,27,White,0,0,6,arrest case no charge,F,6,1,1
+829,Male,35,Black,0,0,1,arrest case no charge,M,1,0,0
+4756,Male,23,Black,0,0,0,Possession of Cannabis/Marijuana,F,5,0,0
+1505,Female,21,Black,0,0,0,Grand Theft,F,5,0,0
+5375,Male,26,Black,0,0,5,Battery,M,7,0,0
+3563,Male,26,Black,0,0,1,Domestic Violence,M,6,1,0
+1891,Male,48,White,0,0,0,Driving Under the Influence,M,1,0,1
+2709,Male,30,Black,0,0,14,arrest case no charge,F,6,1,0
+589,Male,24,Black,0,0,1,Battery,M,6,0,0
+1152,Female,33,White,0,0,0,Prostitution,M,2,0,1
+2190,Male,41,Black,0,0,8,Driving with a Revoked License,F,1,1,0
+5811,Male,41,White,0,0,0,Battery with a Deadly Weapon,F,1,0,1
+5494,Male,63,Black,0,0,2,Domestic Violence,M,1,0,0
+1171,Male,27,White,0,0,1,Driving with a Suspended License,M,6,1,1
+5672,Male,31,White,0,0,2,Battery,M,1,1,1
+5196,Male,26,White,0,0,0,Tampering with a Witness,F,6,1,1
+973,Male,35,White,0,0,4,Driving with a Suspended License,F,5,1,1
+4594,Male,38,White,0,0,0,Driving with a Suspended License,M,2,0,1
+2149,Male,62,Black,0,0,3,Driving Under the Influence,M,3,1,0
+4323,Male,20,Black,0,0,2,Principal In The First Degree,F,7,1,0
+4752,Male,25,Black,0,0,1,Possession of Meth,F,2,0,0
+1739,Male,23,Black,0,0,3,Grand Theft,F,6,1,0
+5215,Female,34,White,0,0,4,Battery,M,4,0,1
+737,Male,25,Black,0,0,0,Deprive Law Enforcement Officer of Protection,F,9,1,0
+4389,Male,34,White,0,0,13,Grand Theft,F,8,1,1
+4657,Male,35,Black,0,0,8,Battery,M,6,0,0
+2098,Male,41,Black,2,0,18,Fraud,M,10,1,0
+3809,Male,23,Black,0,0,0,Fleeing a Law Enforcement Officer,F,2,1,0
+399,Male,20,Black,0,0,1,Fraud,F,10,1,0
+3948,Male,22,Black,0,0,0,Burglary,F,5,1,0
+1292,Male,47,Black,4,0,14,Grand Theft,F,9,1,0
+3055,Female,27,White,0,0,0,Grand Theft,F,2,1,1
+5427,Male,22,White,0,0,1,Burglary,F,4,1,1
+470,Male,21,Black,0,2,3,arrest case no charge,F,5,1,0
+882,Male,35,Black,0,0,1,Theft,M,10,1,0
+135,Female,26,Black,0,0,2,Driving Under the Influence,M,4,1,0
+1274,Male,23,White,0,0,0,Burglary,F,3,0,1
+1125,Male,43,White,0,0,2,arrest case no charge,F,1,0,1
+2705,Male,34,Black,0,0,6,arrest case no charge,F,8,1,0
+2206,Male,27,Black,0,0,1,Driving with a Suspended License,F,2,1,0
+5677,Female,31,Black,0,0,1,Battery,F,3,1,0
+1213,Male,22,Black,0,0,0,Driving with a Suspended License,M,3,1,0
+3373,Male,33,Black,0,0,2,Robbery with a Weapon,F,9,1,0
+312,Male,40,White,0,0,0,arrest case no charge,F,7,1,1
+4850,Male,31,Black,0,0,9,Assault,F,8,1,0
+1595,Male,31,Black,0,0,19,Driving with a Revoked License,F,9,1,0
+1378,Male,43,Black,0,0,1,arrest case no charge,F,1,0,0
+2666,Male,23,White,0,0,2,Assault with a Deadly Weapon,F,6,0,1
+1187,Male,27,Black,0,0,3,Grand Theft,F,8,1,0
+4048,Male,37,Black,0,0,3,Battery,M,7,0,0
+3715,Female,32,White,0,0,0,Battery,M,1,0,1
+3004,Male,34,Black,0,0,0,Battery,M,1,1,0
+1206,Male,54,Black,0,0,9,arrest case no charge,M,1,0,0
+3952,Male,28,Black,0,0,0,Domestic Violence,M,2,1,0
+3701,Male,43,Black,0,0,0,Possession of Cannabis/Marijuana,F,5,0,0
+626,Male,23,Black,0,0,0,Grand Theft,F,2,0,0
+4405,Male,33,Black,0,0,1,Battery,F,2,0,0
+161,Male,37,Black,0,0,2,Battery,M,9,1,0
+2893,Male,54,Black,0,0,11,arrest case no charge,F,8,0,0
+42,Male,49,White,0,0,0,Driving Under the Influence,M,1,0,1
+530,Male,61,Black,0,0,15,Theft,F,6,1,0
+80,Male,25,White,0,0,9,Possession of Cannabis/Marijuana,F,8,1,1
+2385,Male,25,Black,0,0,4,Possession of Cocaine,F,8,1,0
+1975,Male,32,White,0,0,2,Possession of a Controlled Substance,F,2,0,1
+5410,Male,26,Black,0,2,27,Battery,M,9,1,0
+1527,Male,25,Black,0,0,4,Forgery,F,6,1,0
+2561,Male,25,White,0,2,9,arrest case no charge,F,9,0,1
+757,Male,32,Black,0,0,4,arrest case no charge,F,5,0,0
+3837,Male,22,Black,0,0,0,Battery,M,6,1,0
+1461,Male,51,Black,0,0,1,arrest case no charge,F,2,0,0
+4173,Male,34,Black,1,0,5,Battery,F,6,0,0
+5718,Male,37,Black,0,0,0,Driving with a Suspended License,M,7,0,0
+1455,Male,47,Black,0,0,6,Tampering with Physical Evidence,F,2,0,0
+1897,Male,47,Black,0,0,0,Battery,M,5,0,0
+3198,Male,21,Black,0,1,1,Carrying a Concealed Weapon,F,7,0,0
+3318,Male,50,White,0,0,0,Child Molestation,F,1,0,1
+4687,Male,26,White,0,0,10,arrest case no charge,F,5,1,1
+4840,Male,26,Black,0,0,1,arrest case no charge,F,8,1,0
+915,Male,50,White,0,0,2,Battery,M,1,0,1
+3018,Male,41,Black,0,0,5,Driving with a Suspended License,M,5,0,0
+5179,Male,35,White,0,0,3,Possession of Cocaine,F,4,0,1
+1543,Female,31,White,0,0,0,Battery,M,9,0,1
+4096,Male,25,White,0,1,6,Forgery,F,8,1,1
+4452,Male,37,Black,0,0,8,arrest case no charge,F,6,0,0
+1323,Male,28,Black,0,0,0,Possession of Cannabis/Marijuana,M,4,1,0
+1963,Female,20,Black,0,0,0,Grand Theft,F,5,0,0
+2059,Male,26,Black,0,1,5,Shooting into a Home,F,7,1,0
+1519,Male,43,White,0,0,4,Battery,M,2,0,1
+4423,Female,23,Black,0,0,2,arrest case no charge,F,5,1,0
+3453,Male,34,White,0,0,2,arrest case no charge,F,7,1,1
+5235,Male,20,Black,1,0,1,Possession of Ecstasy,F,10,1,0
+3446,Female,36,White,0,0,2,Battery with a Deadly Weapon,F,3,0,1
+157,Male,23,Black,0,0,0,Battery,M,2,1,0
+3165,Female,33,Black,0,0,2,Theft,F,2,0,0
+2657,Male,26,White,0,0,2,Grand Theft,F,9,1,1
+34,Male,29,White,0,0,0,Possession of Cannabis/Marijuana,M,2,0,1
+4987,Male,24,White,0,0,6,Burglary,F,10,0,1
+5195,Male,33,Black,0,0,3,Driving with a Revoked License,F,2,0,0
+4311,Male,20,White,0,0,0,Fleeing the Scene of an Accident,F,7,1,1
+543,Male,21,Black,0,0,0,Forgery,F,3,0,0
+1472,Male,51,Black,0,0,0,Possession of Cocaine,F,2,1,0
+5554,Male,22,White,0,0,2,Battery,M,5,1,1
+2031,Male,26,White,0,0,0,Battery,M,6,0,1
+5888,Male,27,Black,0,2,17,Driving with a Revoked License,F,7,1,0
+4479,Male,25,Black,0,0,0,False Information to Law Enforcement Officer During Investigation,M,6,0,0
+550,Male,31,Black,0,0,0,Possession of Cocaine,F,8,1,0
+2814,Male,21,Black,0,0,1,Burglary,F,7,1,0
+810,Male,35,White,0,0,2,Child Abuse,F,1,0,1
+2360,Male,31,White,0,0,3,Possession of a Controlled Substance,F,4,1,1
+6143,Female,24,Black,0,0,0,Possession of a Controlled Substance,F,6,1,0
+2899,Female,36,Black,0,0,5,Battery,F,6,1,0
+2063,Male,24,Black,0,0,0,Battery,M,2,0,0
+3852,Female,35,Black,0,0,2,Child Abuse,F,2,0,0
+2299,Male,44,White,0,0,6,arrest case no charge,F,6,1,1
+435,Female,34,Black,0,0,6,Burglary,F,4,0,0
+2125,Male,46,Black,0,0,0,Possession of Cannabis/Marijuana,F,7,1,0
+5367,Male,24,White,0,0,1,Possession of Cannabis/Marijuana,F,8,1,1
+3964,Female,52,White,0,0,0,Battery,M,1,0,1
+245,Male,34,White,0,0,5,Battery,M,4,0,1
+1122,Female,22,White,0,0,1,Driving Under the Influence,M,3,0,1
+5998,Male,46,Black,0,0,2,arrest case no charge,M,6,0,0
+5815,Female,24,Black,0,0,1,Dealing Cannabis/Marijuana,F,6,1,0
+1155,Male,59,White,0,0,17,arrest case no charge,F,6,1,1
+149,Male,28,Black,0,0,6,Resisting an Officer,M,6,1,0
+5562,Male,32,Black,0,0,0,Possession of Cannabis/Marijuana,M,4,0,0
+3533,Male,39,Black,0,0,21,Driving with a Revoked License,F,10,1,0
+5848,Male,27,White,0,0,2,Battery,M,4,1,1
+2311,Male,20,Black,0,0,0,Battery,M,4,1,0
+3466,Male,20,Black,1,1,2,arrest case no charge,F,8,1,0
+3975,Male,27,Black,0,0,15,Assault,F,10,1,0
+2956,Male,31,White,0,0,5,Driving with a Revoked License,F,5,1,1
+5542,Male,22,White,0,0,1,Possession of a Controlled Substance,F,5,1,1
+536,Male,23,White,0,2,3,Manslaughter,F,5,1,1
+4995,Male,22,Black,0,0,2,Domestic Violence,M,9,1,0
+3501,Male,32,Black,0,0,9,arrest case no charge,M,7,1,0
+770,Female,42,White,0,0,0,Driving Under the Influence,M,1,0,1
+4949,Female,28,Black,0,0,5,arrest case no charge,M,8,0,0
+2881,Male,26,Black,0,0,7,Possession of Cocaine,F,7,0,0
+4227,Male,23,White,0,0,0,Resisting an Officer,M,3,1,1
+2074,Male,19,Black,1,0,1,arrest case no charge,F,7,1,0
+1886,Male,29,Black,0,0,1,Driving Under the Influence,M,2,1,0
+1123,Male,21,Black,2,0,2,Possession of Cocaine,F,10,1,0
+1718,Male,35,White,0,0,1,Possession of Cocaine,F,2,0,1
+5138,Male,22,Black,0,0,0,Purchasing Cannabis/Marijuana,F,4,0,0
+4252,Male,50,White,0,0,9,Driving with a Suspended License,M,6,1,1
+1611,Male,33,Black,0,0,10,Possession of Cocaine,F,9,1,0
+3704,Male,26,Black,0,0,2,Burglary,F,2,0,0
+3668,Male,40,White,0,0,1,Driving Under the Influence,M,4,0,1
+1419,Male,21,White,0,0,0,arrest case no charge,F,3,0,1
+264,Male,27,Black,0,0,0,Battery with a Deadly Weapon,F,2,0,0
+1680,Male,32,Black,0,0,21,Theft,F,9,1,0
+5222,Male,29,Black,0,0,10,Driving with a Revoked License,F,6,1,0
+3738,Male,25,White,0,0,2,Loitering,M,5,1,1
+5397,Male,53,White,0,0,0,,F,2,0,1
+1047,Male,21,White,1,0,1,Dealing Cannabis/Marijuana,F,7,1,1
+4220,Male,23,Black,0,0,1,arrest case no charge,F,9,1,0
+2377,Male,34,Black,0,0,0,Battery,F,9,1,0
+4091,Male,27,White,0,0,0,Grand Theft,F,2,0,1
+82,Male,39,White,0,0,2,Possession of a Controlled Substance,F,1,1,1
+4153,Male,50,White,0,0,1,Battery,F,2,0,1
+1760,Male,42,White,0,0,0,Battery with a Deadly Weapon,F,2,0,1
+5513,Male,27,White,0,0,0,Burglary,F,2,0,1
+881,Male,55,White,0,0,2,Child Molestation,F,1,0,1
+2172,Male,45,Black,0,0,0,Driving with a Revoked License,F,6,1,0
+327,Male,27,Black,0,0,12,Driving with a Revoked License,F,8,1,0
+1770,Female,27,Black,0,0,0,Battery,M,8,1,0
+5350,Female,37,Black,0,0,23,Battery,M,8,1,0
+4582,Male,27,White,0,0,3,Domestic Violence,M,3,0,1
+5107,Male,24,Black,0,0,6,Forgery,F,6,1,0
+5796,Female,24,Black,0,0,0,Battery,M,6,0,0
+2289,Male,24,White,0,0,0,Tampering with a Witness,F,5,1,1
+785,Male,21,Black,0,0,2,Possession of Cocaine,F,9,1,0
+1714,Male,42,White,0,0,1,Battery,M,1,0,1
+3280,Male,24,Black,0,0,1,Possession of Cocaine,F,7,0,0
+6028,Male,26,White,0,0,0,Tampering With Physical Evidence,F,4,0,1
+347,Male,22,White,0,0,0,Fleeing the Scene of an Accident,F,3,0,1
+2096,Male,37,White,0,0,1,Battery,M,6,0,1
+1615,Male,37,Black,0,1,13,Battery,F,8,1,0
+933,Male,23,Black,0,0,1,Fraud,F,6,1,0
+4058,Female,24,Black,0,0,2,Burglary,F,5,1,0
+4146,Male,42,Black,0,0,17,Possession of Cocaine,F,10,1,0
+2324,Female,25,White,0,0,1,Battery,M,5,1,1
+3922,Male,61,Black,0,0,20,Driving with a Suspended License,M,2,1,0
+273,Male,28,White,0,0,2,Battery,M,3,1,1
+907,Male,27,Black,0,0,2,Battery,F,5,0,0
+3694,Male,40,Black,0,0,0,Battery,F,1,0,0
+614,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,F,8,0,0
+870,Male,36,Black,0,0,16,Driving with a Revoked License,F,5,1,0
+1904,Male,53,White,0,0,1,Assault with a Deadly Weapon,M,1,0,1
+6015,Female,28,White,0,0,7,arrest case no charge,F,6,1,1
+3618,Female,21,Black,0,0,0,Possession of a Controlled Substance,F,7,1,0
+6019,Male,28,Black,0,0,2,arrest case no charge,F,2,1,0
+3411,Male,34,White,0,0,0,Fleeing a Law Enforcement Officer,F,1,1,1
+3383,Male,19,Black,0,0,3,Burglary,F,8,1,0
+4505,Male,24,Black,0,0,3,Possession of a Motor Vehicle with Altered Vehicle Identification Number,F,5,1,0
+1087,Female,26,Black,0,0,5,Possession of a Controlled Substance,F,9,1,0
+953,Female,40,White,0,0,0,Battery,M,1,0,1
+916,Male,29,White,0,0,1,Battery,M,6,0,1
+234,Female,22,White,0,0,1,Possession of Cannabis/Marijuana,F,3,0,1
+4588,Female,20,Black,0,0,0,Grand Theft,F,5,0,0
+887,Male,27,Black,0,0,1,Possession of Cannabis/Marijuana,F,3,1,0
+4478,Female,33,White,0,0,0,Driving with a Suspended License,F,1,0,1
+1722,Female,50,Black,0,0,7,Battery,M,4,0,0
+728,Male,24,Black,0,1,5,Possession of Cannabis/Marijuana,F,5,1,0
+4274,Male,59,White,0,0,2,Battery,M,1,1,1
+2202,Male,26,Black,1,0,3,Battery,F,10,1,0
+4782,Male,29,Black,0,0,0,Battery,M,2,0,0
+482,Male,27,Black,0,0,5,Criminal Damage of less than $1000,M,4,1,0
+5042,Female,43,White,0,0,0,Assault,F,1,0,1
+1015,Male,42,Black,0,0,0,Fleeing the Scene of an Accident,M,1,0,0
+4869,Female,25,White,0,0,0,Battery,M,3,0,1
+4141,Male,43,White,0,0,12,Fraud,F,6,0,1
+2040,Male,26,Black,0,0,0,Grand Theft,F,2,0,0
+449,Male,25,Black,0,1,6,arrest case no charge,F,4,1,0
+3429,Male,49,White,0,0,0,Possession of Cocaine,F,1,0,1
+638,Female,29,Black,0,0,3,Possession of Cocaine,F,5,0,0
+4968,Female,25,White,0,0,0,Battery,M,4,0,1
+3946,Female,36,White,0,0,3,Fleeing the Scene of an Accident,F,1,1,1
+1204,Male,42,White,0,0,1,Battery,M,3,1,1
+5910,Male,26,White,0,0,4,Dealing Controlled Substances,F,7,1,1
+4896,Female,43,Black,0,0,0,Battery,M,1,0,0
+5886,Male,31,White,0,0,0,Battery,F,1,0,1
+690,Male,26,White,0,0,8,arrest case no charge,F,4,0,1
+824,Male,26,Black,0,0,0,Battery,M,4,1,0
+1910,Male,30,White,0,0,0,Driving Under the Influence,F,4,1,1
+3207,Female,33,White,0,0,0,Possession of Cannabis/Marijuana,M,6,1,1
+6035,Male,26,Black,0,0,0,Forgery,F,4,0,0
+5141,Male,52,White,0,0,1,Burglary,F,1,0,1
+780,Male,25,Black,0,0,0,Battery,M,2,0,0
+534,Male,27,White,0,0,5,Battery,M,9,0,1
+4090,Male,41,Black,1,1,24,Possession of Cocaine,F,10,1,0
+2154,Male,22,Black,1,0,2,Forgery,F,7,1,0
+3696,Male,34,Black,1,0,10,Possession of a Controlled Substance,F,9,1,0
+4060,Female,26,Black,0,0,3,Possession of Cocaine,F,10,1,0
+1465,Male,57,Black,0,0,0,Battery,F,1,0,0
+4531,Male,62,White,0,0,0,Possession of Cannabis/Marijuana,F,1,0,1
+5695,Male,36,Black,0,0,1,Battery,M,9,0,0
+3807,Female,38,White,0,0,2,Battery,M,3,0,1
+3660,Male,59,White,0,0,3,Battery,M,1,0,1
+703,Male,35,Black,0,0,13,Possession of Cocaine,F,8,1,0
+3400,Male,29,Black,0,2,12,Tampering With Physical Evidence,F,8,1,0
+1869,Female,36,Black,0,0,7,Criminal Damage of less than $1000,F,3,1,0
+573,Male,22,Black,0,0,3,arrest case no charge,F,9,0,0
+3654,Male,29,Black,1,2,6,Forgery,F,6,1,0
+5340,Female,40,White,0,0,0,Driving Under the Influence,M,1,0,1
+5440,Male,29,Black,0,0,2,arrest case no charge,F,6,0,0
+3116,Male,27,Black,0,0,2,arrest case no charge,F,7,1,0
+2819,Female,21,Black,0,0,1,arrest case no charge,F,4,1,0
+2519,Female,26,Black,0,0,3,,F,5,0,0
+3648,Female,39,White,0,1,11,Theft,F,6,1,1
+5731,Male,30,Black,0,0,10,arrest case no charge,F,6,1,0
+3120,Male,37,Black,0,0,11,Battery,M,7,1,0
+2203,Male,37,White,0,0,0,Battery,M,3,0,1
+4430,Male,26,Black,0,0,6,Driving with a Suspended License,M,8,0,0
+3072,Male,72,White,0,0,7,Robbery,F,4,0,1
+556,Male,22,Black,0,1,3,arrest case no charge,F,7,0,0
+888,Male,40,Black,0,0,0,Battery,F,1,0,0
+3225,Male,37,White,0,0,0,Battery,F,3,0,1
+5765,Male,61,Black,0,0,14,Possession of a Controlled Substance,M,2,0,0
+221,Male,30,Black,0,0,2,Carrying a Concealed Weapon,F,6,1,0
+295,Male,21,White,0,0,2,arrest case no charge,F,6,0,1
+3184,Male,22,White,0,0,1,Grand Theft,F,4,0,1
+1655,Male,30,Black,0,0,1,Battery,M,2,0,0
+1255,Male,23,Black,0,0,0,Battery,M,3,1,0
+4964,Male,21,Black,0,0,1,Grand Theft,F,7,1,0
+778,Male,22,Black,0,0,1,Possession of Cocaine,F,7,1,0
+179,Female,28,Black,0,0,1,arrest case no charge,F,9,0,0
+842,Male,29,Black,0,0,0,Driving with a Suspended License,M,2,0,0
+4579,Male,30,Black,0,0,1,Introducing Contraband Into Jail,F,9,0,0
+29,Male,55,White,0,0,0,arrest case no charge,F,1,0,1
+1532,Male,29,Black,0,1,13,Possession of a Controlled Substance,F,10,1,0
+2302,Male,21,Black,0,0,1,Burglary,F,3,0,0
+2662,Male,61,White,0,0,0,Driving Under the Influence,M,1,0,1
+1820,Male,21,Black,0,0,1,Possession of Cocaine,F,9,1,0
+1704,Male,56,Black,0,0,1,arrest case no charge,F,1,0,0
+1102,Male,51,White,0,0,7,Burglary,F,1,1,1
+1432,Male,27,Black,0,0,2,Possession of Cannabis/Marijuana,M,9,0,0
+2609,Female,27,White,0,0,0,Battery,M,3,0,1
+5931,Male,45,White,0,0,0,Possession of Heroin,F,3,0,1
+561,Female,33,Black,0,0,0,Grand Theft,F,3,0,0
+5946,Male,39,White,0,0,0,Battery,M,1,0,1
+4397,Male,41,White,0,0,1,arrest case no charge,F,5,0,1
+125,Female,31,Black,0,0,0,Possession of Oxycodone,F,3,1,0
+1764,Male,39,White,0,0,0,Battery,M,3,0,1
+5566,Male,27,Black,1,0,4,Assault with a Deadly Weapon,F,5,1,0
+419,Female,59,White,0,0,0,Driving Under the Influence,M,1,0,1
+1796,Male,45,White,0,0,9,Theft,F,9,1,1
+1500,Female,43,White,0,0,0,Battery,M,2,0,1
+59,Female,56,Black,0,0,0,Battery,M,1,0,0
+289,Male,37,White,0,0,0,Fraud,F,1,0,1
+847,Male,23,Black,0,0,2,Battery,M,7,0,0
+1711,Male,25,Black,0,0,0,Forgery,F,3,0,0
+5722,Male,49,White,0,0,3,Battery,F,1,0,1
+6094,Male,49,White,0,0,0,Grand Theft,F,1,0,1
+4492,Female,26,Black,0,0,1,Battery with a Deadly Weapon,F,3,1,0
+4883,Male,25,White,0,0,0,Possession of Cocaine,F,5,0,1
+5976,Male,20,Black,0,0,0,Burglary,F,4,0,0
+3123,Female,30,White,0,0,1,Theft,M,3,0,1
+3186,Male,36,Black,10,0,14,Burglary,F,7,1,0
+3063,Male,44,White,0,0,5,arrest case no charge,F,2,0,1
+5137,Male,26,Black,0,0,0,Grand Theft,F,9,0,0
+2951,Female,30,Black,0,0,15,Battery,M,8,1,0
+1075,Male,24,Black,0,0,0,Burglary,F,3,1,0
+4420,Female,40,Black,0,0,2,Grand Theft,F,1,0,0
+5285,Male,40,Black,0,0,20,Driving with a Revoked License,F,7,0,0
+2275,Male,28,White,0,0,4,Possession of Heroin,F,4,1,1
+5781,Male,67,White,0,0,0,Battery,M,1,0,1
+5282,Male,33,Black,0,0,18,Grand Theft,F,10,1,0
+3542,Male,40,Black,0,0,5,Driving with a Suspended License,F,9,1,0
+3249,Male,45,Black,1,0,20,arrest case no charge,M,7,0,0
+5243,Male,61,Black,0,0,8,Possession of Cocaine,F,2,1,0
+5926,Male,41,White,0,0,1,Battery with a Deadly Weapon,F,1,1,1
+4186,Male,26,Black,0,0,5,Burglary,F,7,1,0
+4925,Male,27,Black,0,0,2,Dealing Cannabis/Marijuana,F,6,0,0
+2656,Male,45,White,0,0,3,Stalking,F,1,0,1
+2503,Male,56,Black,0,0,24,Theft,F,8,0,0
+37,Male,29,White,0,0,2,Domestic Violence,M,2,1,1
+2714,Male,22,White,0,0,2,Possession of Cocaine,F,3,1,1
+3742,Male,26,Black,0,3,3,Operating a Vehicle without a Valid Drivers License,M,9,1,0
+1463,Male,46,White,0,0,0,Stalking,F,1,0,1
+4229,Male,30,Black,0,0,3,arrest case no charge,F,2,1,0
+2744,Female,26,Black,0,0,3,Possession of Cannabis/Marijuana,F,2,1,0
+207,Male,32,Black,0,1,14,Assault,F,9,0,0
+3137,Male,59,Black,0,0,22,Theft,F,6,1,0
+4131,Male,34,Black,0,0,4,Dealing Cannabis/Marijuana,F,6,1,0
+5659,Female,41,Black,0,0,7,Possession of Cannabis/Marijuana,F,4,1,0
+3780,Male,23,Black,0,0,5,Grand Theft,F,9,1,0
+1025,Male,29,Black,0,0,0,Battery,M,2,1,0
+2318,Male,37,Black,0,0,5,Possession of Cocaine,F,6,0,0
+2260,Male,26,Black,0,0,0,Grand Theft,F,8,0,0
+4187,Male,26,Black,0,0,10,Driving with a Revoked License,F,8,1,0
+3936,Male,35,Black,0,0,7,arrest case no charge,F,4,0,0
+32,Male,24,White,0,0,1,Battery,M,2,1,1
+2926,Male,33,White,0,0,3,Possession of a Controlled Substance,F,7,1,1
+6026,Male,23,Black,0,0,1,Possession of Cocaine,F,10,1,0
+960,Male,47,Black,0,0,5,arrest case no charge,F,4,0,0
+1742,Male,46,White,0,0,2,Possession of Cannabis/Marijuana,M,4,0,1
+2356,Male,35,Black,0,0,0,Tampering with a Witness,F,1,0,0
+4145,Male,20,Black,0,0,0,Operating a Vehicle without a Valid Drivers License,M,10,1,0
+5094,Male,23,White,0,0,10,arrest case no charge,F,7,0,1
+4159,Male,21,Black,0,0,1,Robbery,F,7,0,0
+4379,Male,33,Black,0,0,7,Grand Theft,F,6,1,0
+3730,Male,21,Black,0,0,0,Grand Theft,F,7,0,0
+590,Male,44,Black,0,0,1,Fraud,F,1,0,0
+1923,Male,27,Black,0,0,25,arrest case no charge,F,10,1,0
+3110,Male,30,Black,0,0,0,Grand Theft,F,1,0,0
+5544,Male,29,Black,0,0,7,Possession of a Controlled Substance,F,4,1,0
+1197,Male,34,White,0,0,0,Assault with a Deadly Weapon,F,2,0,1
+2728,Male,24,Black,1,0,9,arrest case no charge,M,9,1,0
+5242,Male,22,Black,0,0,0,Purchasing Cannabis/Marijuana,F,7,0,0
+2296,Male,31,Black,0,2,8,Battery,M,10,1,0
+3220,Male,34,Black,0,0,13,Possession of a Controlled Substance,F,4,1,0
+4847,Male,44,Black,0,0,0,Driving with a Suspended License,F,1,0,0
+1165,Male,22,Black,0,3,3,Possession of a Controlled Substance,F,9,0,0
+1558,Male,25,Black,0,0,1,Battery,M,3,0,0
+5511,Male,53,Black,0,0,20,arrest case no charge,F,5,0,0
+3819,Male,22,Black,0,0,1,Robbery,F,9,1,0
+3800,Male,55,White,0,0,1,Battery,M,2,0,1
+2923,Male,28,Black,0,0,0,Offense Against Intellectual Property,F,4,0,0
+4161,Male,43,White,0,0,0,Battery,M,4,0,1
+727,Male,48,White,0,0,1,Possession of Cocaine,F,2,0,1
+5236,Male,23,White,0,1,4,Assault,M,9,1,1
+5353,Male,25,Black,0,0,1,Possession of Ecstasy,F,5,1,0
+3293,Male,25,Black,0,0,0,Dealing Ecstasy,F,5,0,0
+463,Male,44,Black,0,0,1,Reckless Driving,M,3,0,0
+4434,Male,22,Black,0,0,0,Possession of a Controlled Substance,F,7,1,0
+5640,Male,26,White,0,0,1,Operating a Vehicle without a Valid Drivers License,M,4,0,1
+5561,Male,34,White,0,0,1,Battery,M,5,0,1
+3100,Male,56,White,0,0,0,Battery,M,1,0,1
+1969,Male,19,Black,0,1,1,arrest case no charge,F,10,1,0
+6089,Female,28,Black,0,0,6,Fraud,M,5,1,0
+3902,Female,31,Black,0,0,0,Battery with a Deadly Weapon,F,1,0,0
+2013,Male,44,Black,0,0,0,Robbery,F,1,0,0
+20,Female,21,White,0,0,0,Introducing Contraband Into Jail,F,4,0,1
+4408,Male,21,Black,0,0,0,Disorderly Conduct,M,3,1,0
+1262,Male,35,Black,0,0,2,Assault,M,7,0,0
+759,Female,29,Black,0,0,1,arrest case no charge,F,5,0,0
+3119,Male,43,Black,0,0,5,Unlawful Possession of Firearm,F,9,0,0
+3517,Female,38,White,0,0,5,arrest case no charge,F,6,1,1
+3749,Male,25,Black,0,1,7,Resisting an Officer with Violence,F,10,1,0
+2554,Male,52,Black,0,0,0,Child Neglect,F,4,1,0
+3295,Female,29,White,0,0,2,Forgery,F,7,1,1
+5157,Male,52,Black,0,0,2,Possession of Cocaine,F,9,1,0
+5795,Female,25,Black,0,0,0,Battery,M,4,1,0
+1417,Female,27,Black,0,0,0,Battery,M,2,0,0
+4455,Male,22,White,0,0,5,Battery,M,5,1,1
+3891,Female,24,Black,0,0,4,Grand Theft,F,3,1,0
+3122,Male,26,Black,0,0,4,Possession of Ecstasy,F,8,1,0
+5136,Male,31,Black,1,1,12,Resisting an Officer,M,8,1,0
+4696,Female,25,White,0,0,1,Aiding Prostitution,M,4,1,1
+2028,Male,39,White,0,0,0,arrest case no charge,F,3,0,1
+3454,Male,70,Black,0,0,0,Driving Under the Influence,M,1,0,0
+2902,Male,23,Black,0,0,2,Carrying a Concealed Weapon,F,4,1,0
+2312,Male,57,White,0,0,0,Battery with a Deadly Weapon,F,1,0,1
+2263,Male,45,White,0,0,19,Theft,F,6,1,1
+3673,Male,31,White,0,0,4,Battery,M,7,1,1
+5507,Female,33,Black,0,0,2,Grand Theft,F,3,1,0
+4924,Male,43,White,0,0,1,Child Neglect,F,1,0,1
+3459,Female,23,White,0,0,2,Battery,M,6,0,1
+698,Male,43,White,0,0,0,Battery,M,1,0,1
+4632,Female,26,Black,0,0,6,arrest case no charge,F,6,1,0
+43,Male,29,Black,0,0,0,Tampering With Physical Evidence,F,4,0,0
+1278,Female,41,White,0,0,0,Battery,M,1,0,1
+93,Male,21,Black,0,0,3,Grand Theft,F,9,1,0
+2637,Male,29,White,0,0,0,Battery,M,1,0,1
+4241,Male,21,Black,0,0,0,Battery,M,2,1,0
+4945,Male,33,Black,0,0,0,Forgery,F,5,0,0
+1193,Female,21,Black,0,0,1,Trespassing,M,3,1,0
+5014,Male,63,White,0,0,0,Criminal Damage of less than $1000,F,1,0,1
+2791,Male,38,Black,0,0,19,arrest case no charge,F,9,1,0
+6065,Female,23,Black,0,0,1,Burglary,F,4,1,0
+4288,Male,37,White,0,0,1,Possession of Cocaine,F,7,1,1
+2413,Male,23,Black,0,0,0,Grand Theft,F,8,1,0
+3970,Male,20,Black,0,0,3,Burglary,F,7,1,0
+1670,Male,48,Black,0,0,5,Possession of Cocaine,F,9,1,0
+2245,Male,54,White,0,0,1,Grand Theft,F,1,0,1
+758,Female,31,White,0,0,1,Possession of Cocaine,F,3,1,1
+450,Male,32,White,0,0,1,arrest case no charge,F,1,1,1
+4749,Male,27,White,0,0,1,Battery,M,3,0,1
+2555,Male,25,Black,0,0,5,Possession of Ecstasy,F,10,1,0
+5020,Male,27,Black,0,0,0,Battery,M,1,0,0
+1578,Female,36,White,0,0,3,Possession of Cocaine,F,4,0,1
+3264,Male,39,Black,0,0,7,Assault,F,8,1,0
+3271,Male,29,Black,0,0,16,Fleeing a Law Enforcement Officer,F,10,1,0
+3844,Male,58,White,0,0,3,Driving Under the Influence,M,2,0,1
+5259,Male,50,Black,0,0,15,Battery,M,8,0,0
+5971,Male,21,Black,0,0,1,Battery,M,5,0,0
+1645,Male,69,White,0,0,0,Driving Under the Influence,M,1,0,1
+230,Male,25,White,0,0,0,Dealing Controlled Substances,F,5,0,1
+1802,Female,46,Black,0,0,0,Driving with a Suspended License,F,1,0,0
+5928,Male,61,Black,0,0,11,Possession of Cocaine,F,3,0,0
+5699,Male,29,Black,1,0,8,Possession of Cocaine,F,10,1,0
+4711,Male,35,Black,0,0,1,Battery,M,4,0,0
+4474,Male,33,Black,4,0,12,Dealing Cocaine,F,10,1,0
+2426,Male,55,White,0,0,1,arrest case no charge,F,2,1,1
+424,Male,66,Black,0,0,33,Criminal Damage of more than $1000,F,6,1,0
+2821,Male,28,White,0,0,2,arrest case no charge,F,2,1,1
+3600,Male,36,Black,0,0,4,Battery with a Deadly Weapon,F,5,0,0
+4819,Male,52,Black,0,0,2,Driving Under the Influence,M,1,0,0
+2649,Female,30,Black,0,0,0,Battery,M,3,0,0
+4887,Male,43,Black,0,0,4,arrest case no charge,F,1,1,0
+1644,Male,25,Black,0,0,1,Burglary,F,3,1,0
+1928,Male,44,White,0,0,0,Possession of Cocaine,F,2,1,1
+2562,Male,21,Black,0,0,0,Battery,M,10,1,0
+4065,Male,26,White,0,0,5,Assault,M,5,0,1
+2931,Male,44,White,0,0,0,Battery,M,1,1,1
+5066,Male,27,Black,0,0,21,Possession of a Controlled Substance,F,7,1,0
+2741,Male,37,Black,0,0,14,Driving with a Revoked License,F,8,0,0
+4261,Male,26,Black,0,0,2,Grand Theft,F,3,1,0
+5965,Male,21,White,0,0,0,Battery,M,7,0,1
+3423,Male,26,Black,0,0,3,Dealing Cannabis/Marijuana,F,6,1,0
+5389,Female,26,White,0,0,3,Possession of a Controlled Substance,F,6,1,1
+3628,Male,56,Black,0,0,0,False Imprisonment,F,2,0,0
+1743,Male,56,Black,0,0,1,arrest case no charge,F,2,0,0
+2165,Male,61,White,0,0,0,Driving Under the Influence,M,1,0,1
+5749,Male,22,Black,0,0,0,Battery,M,4,0,0
+2487,Male,35,Black,0,0,0,Tampering With Physical Evidence,F,4,0,0
+3849,Female,23,Black,0,1,1,Battery,M,5,0,0
+293,Female,21,White,0,0,0,Possession of Cocaine,F,6,0,1
+1804,Male,41,White,0,0,0,Driving Under the Influence,M,1,0,1
+2548,Male,28,Black,0,0,9,Battery,M,5,0,0
+3890,Female,56,Black,0,0,1,Possession of Cocaine,F,2,1,0
+4862,Male,32,White,0,0,0,Battery,F,6,1,1
+806,Male,20,White,0,0,0,Possession of Cannabis/Marijuana,F,4,0,1
+5015,Male,27,Black,0,0,1,Assault,F,4,1,0
+5761,Male,30,Black,0,0,3,Battery,M,5,1,0
+4114,Male,25,Black,0,0,1,Battery,M,6,1,0
+5657,Male,25,Black,0,0,3,Assault,F,3,1,0
+1643,Male,26,Black,0,0,8,arrest case no charge,F,8,1,0
+1438,Female,44,White,0,0,4,Possession of Cocaine,F,6,1,1
+2883,Male,35,Black,0,0,1,Possession of Cannabis/Marijuana,F,2,0,0
+3413,Male,29,Black,0,0,4,Driving with a Suspended License,F,2,0,0
+4068,Male,24,White,0,0,0,Dealing Cannabis/Marijuana,F,2,0,1
+5939,Male,25,White,0,0,2,Possession of Cocaine,F,5,1,1
+1226,Male,22,Black,0,0,3,arrest case no charge,F,5,1,0
+1217,Male,49,Black,0,0,4,Battery,M,2,0,0
+2137,Male,25,Black,0,0,2,arrest case no charge,F,4,0,0
+3627,Female,52,White,0,0,0,Battery with a Deadly Weapon,F,1,0,1
+5178,Female,22,White,0,0,0,Battery,M,5,0,1
+4669,Male,27,Black,0,0,2,,F,4,0,0
+4001,Female,22,Black,0,0,0,Possession of Cannabis/Marijuana,M,8,1,0
+5431,Male,48,Black,0,0,4,arrest case no charge,F,8,0,0
+3312,Male,23,White,0,0,0,Possession of a Controlled Substance,F,9,1,1
+4247,Male,33,White,0,0,10,Grand Theft,F,9,0,1
+2815,Male,23,Black,0,0,0,Child Molestation,M,4,0,0
+3567,Male,28,Black,0,0,3,arrest case no charge,F,7,0,0
+1763,Male,29,White,0,0,7,Battery,M,7,1,1
+5124,Male,28,Black,0,0,0,Criminal Damage of less than $1000,F,3,1,0
+2796,Male,30,Black,0,0,8,arrest case no charge,F,9,1,0
+5176,Male,31,White,0,0,1,arrest case no charge,F,2,0,1
+4350,Female,51,White,0,0,1,Battery,M,2,0,1
+2790,Female,29,White,0,0,0,Battery,M,2,0,1
+3672,Female,54,Black,0,0,6,Theft,F,4,0,0
+164,Male,45,White,0,0,2,Child Molestation,F,3,0,1
+3075,Male,60,Black,0,0,0,Burglary,F,1,0,0
+1541,Male,55,White,0,0,0,Battery,M,5,0,1
+1018,Male,32,Black,0,0,4,arrest case no charge,F,6,1,0
+3296,Male,46,White,0,0,2,arrest case no charge,F,3,1,1
+3681,Male,36,White,0,0,1,arrest case no charge,F,2,0,1
+4181,Female,31,Black,0,0,0,Battery,F,3,0,0
+1916,Male,35,White,0,0,0,Possession of Cocaine,F,5,1,1
+3308,Male,50,White,0,0,9,Burglary,F,3,1,1
+3980,Male,22,Black,0,0,0,Burglary,F,3,1,0
+3712,Male,43,Black,0,0,0,Forgery,F,5,1,0
+3064,Male,57,White,0,0,1,Assault with a Deadly Weapon,F,2,0,1
+5710,Male,32,Black,0,0,0,Operating a Vehicle without a Valid Drivers License,M,9,0,0
+5625,Male,25,Black,0,0,6,Possession of Ecstasy,F,7,1,0
+3355,Male,24,Black,0,0,1,Battery,M,3,0,0
+5611,Female,24,Black,0,0,2,Grand Theft,F,6,1,0
+4210,Male,20,Black,0,0,0,Tampering With Physical Evidence,F,8,1,0
+6115,Male,35,Black,0,0,12,Battery,M,6,1,0
+170,Female,37,White,0,0,0,Fleeing the Scene of an Accident,M,3,0,1
+4094,Male,34,White,0,0,5,Possession of Cocaine,F,2,0,1
+1887,Male,46,Black,0,0,10,Battery,F,5,1,0
+4656,Male,53,Black,0,0,3,Battery,F,6,1,0
+2932,Male,19,Black,2,1,3,Carrying a Concealed Weapon,F,10,1,0
+5517,Male,67,White,0,0,0,Child Abuse,F,1,0,1
+2863,Female,23,White,0,0,1,Battery,M,6,0,1
+3827,Male,25,Black,0,0,1,Possession of Ecstasy,F,3,0,0
+6087,Female,42,White,0,0,4,Battery,F,8,1,1
+974,Female,28,White,0,0,0,Intoxicated Dangering of Safety of Another,M,4,0,1
+5253,Male,54,Black,0,0,21,Possession of Cocaine,F,6,0,0
+3219,Male,30,White,0,0,0,Driving Under the Influence,M,4,0,1
+5520,Male,49,Black,0,0,0,Possession of Cocaine,F,1,0,0
+4203,Female,30,Black,0,0,8,Forgery,F,7,1,0
+2975,Male,38,White,0,0,5,Robbery,F,1,1,1
+1359,Male,31,Black,0,0,5,arrest case no charge,F,5,1,0
+2139,Female,21,Black,0,3,4,arrest case no charge,M,8,1,0
+278,Male,28,White,0,0,1,Possession of Cannabis/Marijuana,F,5,0,1
+1195,Male,29,White,0,0,0,Battery,M,3,0,1
+3183,Male,33,White,0,0,1,arrest case no charge,F,8,1,1
+4651,Male,30,Black,0,0,1,Battery,F,3,1,0
+4336,Male,23,Black,0,0,0,Battery,M,5,0,0
+5602,Male,20,White,0,0,0,Battery,M,4,0,1
+3027,Female,43,Black,0,0,2,Possession of Cocaine,F,3,0,0
+5650,Male,46,White,0,0,0,,F,2,1,1
+31,Female,33,White,0,0,4,Battery,M,5,1,1
+1335,Male,29,Black,0,0,2,Driving with a Suspended License,M,1,0,0
+2529,Female,30,Black,0,0,3,Driving with a Suspended License,F,6,1,0
+745,Male,23,Black,1,0,3,Grand Theft,F,9,0,0
+1746,Male,24,Black,0,0,1,Battery,M,4,1,0
+316,Male,42,Black,0,0,1,arrest case no charge,F,1,0,0
+1649,Female,24,Black,0,0,6,arrest case no charge,M,6,0,0
+3550,Male,57,Black,0,0,0,Battery,M,1,0,0
+4287,Male,32,Black,0,0,0,Battery,F,3,0,0
+2998,Male,27,Black,0,1,11,Battery,F,8,0,0
+2847,Male,25,Black,0,0,0,Battery,M,2,0,0
+4072,Female,39,White,0,0,0,Driving Under the Influence,M,2,0,1
+2006,Male,57,White,0,0,0,Battery with a Deadly Weapon,F,1,0,1
+11,Female,47,White,0,0,1,arrest case no charge,F,1,1,1
+1905,Female,19,White,0,0,0,Battery,F,3,1,1
+1272,Male,38,White,0,0,0,Possession of Cocaine,F,1,0,1
+2242,Male,26,White,0,0,0,Battery,M,2,0,1
+2835,Male,48,Black,0,0,6,arrest case no charge,F,3,0,0
+6046,Female,49,White,0,0,2,Domestic Violence,M,3,0,1
+2025,Male,21,Black,0,0,0,Grand Theft,F,7,1,0
+3575,Male,24,Black,0,0,2,Trespassing,M,8,1,0
+480,Male,40,White,0,0,5,Child Neglect,F,4,0,1
+5289,Male,57,White,0,0,7,arrest case no charge,F,1,0,1
+5536,Male,30,Black,1,0,9,Restraining Order Violation,M,4,1,0
+2342,Male,30,Black,0,1,9,Driving with a Revoked License,F,6,1,0
+1827,Male,46,Black,0,0,5,Assault,F,5,1,0
+5371,Male,22,Black,0,0,0,Burglary,F,3,1,0
+4557,Male,27,Black,0,0,4,Possession of a Controlled Substance,F,8,1,0
+4771,Male,37,White,0,0,3,Driving with a Revoked License,F,8,0,1
+5455,Female,55,White,0,0,0,Battery,M,1,0,1
+3830,Male,25,Black,0,0,0,Possession of Cannabis/Marijuana,F,4,1,0
+46,Male,31,Black,0,0,15,Armed Burglary,F,5,0,0
+2698,Male,26,Black,0,0,2,Burglary,F,2,1,0
+5034,Male,32,White,0,0,0,Battery,M,3,0,1
+1031,Male,47,White,0,0,0,Driving Under the Influence,M,1,0,1
+5935,Male,59,White,0,0,0,Domestic Violence,M,2,1,1
+5252,Male,34,White,0,0,4,Driving with a Revoked License,F,5,0,1
+5691,Male,41,Black,0,0,12,Possession of a Controlled Substance,F,6,1,0
+1701,Female,33,Black,0,0,0,Battery,M,1,0,0
+2867,Male,38,Black,0,0,1,Battery,M,1,0,0
+2859,Male,21,White,0,0,0,Possession of Cannabis/Marijuana,F,7,1,1
+2798,Male,59,Black,0,0,8,Possession of Cocaine,F,4,0,0
+5229,Male,20,Black,0,0,0,Assault,M,5,1,0
+5390,Female,23,White,0,0,0,Possession of Meth,F,6,0,1
+251,Male,58,White,0,0,2,Assault,F,3,0,1
+3884,Male,31,Black,0,0,0,,M,2,0,0
+3623,Male,36,Black,3,0,16,arrest case no charge,F,8,1,0
+3923,Male,24,White,0,0,2,Possession of Cannabis/Marijuana,F,6,0,1
+3014,Male,25,Black,0,1,9,arrest case no charge,F,7,0,0
+1275,Male,21,White,0,0,5,Possession of a Controlled Substance,F,8,1,1
+4960,Male,24,Black,5,1,10,Possession of Cocaine,F,10,1,0
+2470,Female,43,White,0,0,0,Grand Theft,M,2,0,1
+1062,Male,30,White,0,0,9,Theft,M,6,1,1
+798,Male,24,Black,0,0,2,Forgery,F,7,0,0
+1017,Male,28,Black,0,0,5,arrest case no charge,F,6,1,0
+4935,Female,74,White,0,0,0,Disorderly Intoxication,M,1,0,1
+1956,Male,31,Black,0,0,7,Grand Theft,F,4,1,0
+830,Male,32,White,0,0,8,Theft,F,9,1,1
+5240,Male,22,Black,0,0,1,Possession of Cannabis/Marijuana,F,9,1,0
+6156,Male,28,Black,0,0,1,arrest case no charge,F,2,0,0
+353,Male,20,Black,0,0,0,Grand Theft,F,7,1,0
+5868,Male,71,White,0,0,3,Driving Under the Influence,M,1,0,1
+1069,Female,53,White,0,0,1,Battery,M,3,0,1
+3197,Male,33,Black,0,0,1,Battery,M,1,1,0
+1576,Male,24,Black,0,0,0,Felon in Possession of Firearm,F,10,1,0
+2703,Female,31,Black,0,0,0,Driving with a Suspended License,F,5,1,0
+1176,Male,36,Black,0,0,0,Driving with a Revoked License,F,8,0,0
+1328,Male,38,Black,0,0,10,Robbery with a Weapon,F,4,1,0
+748,Male,42,White,0,0,3,Possession of Cocaine,F,4,0,1
+2313,Male,51,Black,0,0,8,Theft,M,6,1,0
+4736,Male,57,Black,0,0,16,Battery,M,5,1,0
+257,Female,32,Black,0,0,5,Battery with a Deadly Weapon,F,1,0,0
+5633,Male,51,Black,0,0,1,Possession of Cocaine,F,5,0,0
+1908,Female,27,White,0,0,0,Burglary,F,2,0,1
+6170,Female,33,Black,0,0,3,Battery,M,2,0,0
+3510,Male,32,Black,0,0,0,Battery,M,7,0,0
+1535,Male,28,White,0,0,0,Dealing Controlled Substances,F,7,0,1
+6038,Male,52,White,0,0,1,Battery,M,1,0,1
+3494,Female,54,White,0,0,0,Battery,M,1,0,1
+4404,Male,40,Black,0,0,8,Assault,M,6,1,0
+2799,Male,21,White,0,0,1,Battery,M,4,1,1
+240,Male,70,White,0,0,1,Battery,M,1,0,1
+5413,Male,22,Black,0,0,0,Possession of Cannabis/Marijuana,M,6,0,0
+5570,Male,28,Black,0,0,5,Driving with a Revoked License,F,5,1,0
+4916,Male,32,White,0,0,3,arrest case no charge,F,5,0,1
+4943,Female,42,White,0,0,0,Possession of a Controlled Substance,F,2,1,1
+3126,Male,37,White,0,0,4,Assault,M,4,1,1
+6070,Male,47,Black,0,0,14,Battery,M,6,0,0
+1710,Male,61,Black,0,0,5,Possession of Cocaine,F,2,0,0
+4165,Male,24,Black,0,0,0,Obstruction of Fire Equipment,F,2,0,0
+5461,Male,30,White,0,0,0,Driving Under the Influence,M,2,0,1
+2673,Male,28,Black,0,0,9,Fraud,F,7,1,0
+4339,Male,55,Black,0,0,0,Battery,M,1,1,0
+623,Male,24,Black,0,0,0,Battery,F,3,0,0
+5932,Male,21,White,0,2,3,Possession of a Controlled Substance,F,10,1,1
+5301,Male,21,Black,0,0,0,Grand Theft,F,5,0,0
+2278,Male,31,White,0,0,3,Driving Under the Influence,M,4,1,1
+4506,Male,41,Black,0,0,7,arrest case no charge,M,3,0,0
+681,Male,28,White,0,0,2,Possession of Cannabis/Marijuana,F,6,0,1
+5909,Female,31,White,0,0,1,Battery,M,1,1,1
+4529,Male,36,Black,0,0,1,Driving Under the Influence,M,1,0,0
+4875,Male,35,Black,0,0,0,Possession of a Controlled Substance,F,3,0,0
+5182,Female,34,Black,0,0,0,Possession of a Controlled Substance,F,1,0,0
+4853,Male,61,White,0,0,4,Forgery,F,6,0,1
+3087,Male,41,Black,0,0,7,arrest case no charge,F,4,0,0
+355,Male,58,Black,0,0,21,arrest case no charge,M,7,1,0
+3992,Male,26,Black,0,0,3,Burglary,F,10,1,0
+3703,Male,55,Black,0,0,0,Theft,F,1,0,0
+3365,Female,39,Black,0,0,4,Assault with a Deadly Weapon,F,6,0,0
+4537,Male,32,White,0,0,6,Driving with a Revoked License,F,8,0,1
+4483,Male,45,White,0,0,21,Grand Theft,F,6,1,1
+4543,Male,37,White,0,0,1,arrest case no charge,F,2,1,1
+6151,Male,32,White,0,0,0,Possession of Cannabis/Marijuana,F,2,0,1
+5152,Female,30,White,0,0,0,Battery,M,2,0,1
+975,Male,56,Black,0,0,0,Neglect of an Elderly Person,F,1,0,0
+4373,Female,28,White,0,0,6,Theft,M,10,1,1
+3848,Male,26,Black,0,0,6,Driving with a Suspended License,M,10,1,0
+1437,Female,28,Black,0,0,2,Possession of a Controlled Substance,F,5,1,0
+4918,Male,21,Black,0,2,8,arrest case no charge,F,9,1,0
+677,Male,20,White,0,0,0,Grand Theft,F,4,0,1
+2873,Male,49,Black,0,0,1,arrest case no charge,M,1,0,0
+3505,Female,51,White,0,0,0,Battery,M,1,1,1
+1970,Male,53,White,0,0,1,arrest case no charge,F,1,0,1
+4081,Male,33,Black,0,0,3,Grand Theft,F,6,1,0
+2866,Male,29,Black,0,0,5,Possession of Cannabis/Marijuana,F,8,1,0
+3433,Male,55,Black,0,0,5,Battery,F,4,1,0
+5591,Female,55,White,0,0,0,Battery,F,1,0,1
+5381,Male,20,Black,0,0,2,Grand Theft,F,5,1,0
+5001,Male,36,Black,0,0,0,Battery,M,6,0,0
+2457,Male,40,Black,0,0,6,Possession of Cocaine,F,7,0,0
+2949,Male,44,Black,0,0,7,arrest case no charge,F,4,0,0
+4225,Male,26,Black,0,0,1,Grand Theft,F,1,1,0
+2715,Male,29,Black,0,0,2,Drug Trafficking,F,4,1,0
+4783,Male,24,White,0,0,0,Fraud,F,3,0,1
+6092,Male,56,Black,0,0,0,Battery,M,2,0,0
+1946,Male,53,Black,0,0,1,Driving Under the Influence,M,2,0,0
+4975,Female,39,Black,0,0,3,Forgery,F,5,1,0
+2480,Female,22,White,0,0,2,Possession of Cannabis/Marijuana,M,5,0,1
+5457,Male,23,Black,0,0,0,Battery,M,4,0,0
+896,Female,50,White,0,0,30,arrest case no charge,M,6,1,1
+2845,Male,31,Black,5,0,10,arrest case no charge,F,9,1,0
+1388,Female,23,Black,0,0,2,Grand Theft,F,7,1,0
