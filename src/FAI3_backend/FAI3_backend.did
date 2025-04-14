@@ -189,6 +189,18 @@ type GenericError = record {
     details: vec record { key: text; value: text }; // Additional info as key-value pairs  
 };
 
+type UpdatedDetails = record {
+  name: text;
+  details: ModelDetails;
+};
+
+type ModelDetailsHistory = record {
+  name: text;
+  details: ModelDetails;
+  version: nat;
+  timestamp: nat64;
+};
+
 service : () -> {
     // User management
     "whoami": () -> (principal);
@@ -202,10 +214,11 @@ service : () -> {
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
     "get_owners": (nat) -> (vec principal);
-    "update_model": (nat, text, ModelDetails) -> (bool);
+    "update_model": (nat, text, ModelDetails, bool) -> (bool);
+    "get_details_history": (nat) -> (vec ModelDetailsHistory);
 
     // Data point management
-    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap, vec text) -> (); //New call for custom privileged fields
+    "add_dataset": (nat, vec vec float64, vec bool, vec bool, HashMap, vec text, UpdatedDetails) -> (); //New call for custom privileged fields
     "add_data_point": (nat, bool, vec nat, vec text, bool, vec float64) -> ();   
     "delete_data_point": (nat, nat) -> ();
 

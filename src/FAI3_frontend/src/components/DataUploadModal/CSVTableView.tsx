@@ -28,7 +28,7 @@ export default function CSVTableView() {
           <Button variant="secondary" onClick={closeFile}>
             Use another file
           </Button>
-          <Button className="bg-slate-700" onClick={() => setCurrentStep(3)}>
+          <Button className="bg-slate-700" onClick={() => setCurrentStep(4)}>
             Add images
           </Button>
           <Button onClick={() => setCurrentStep(currentStep + 1)}>

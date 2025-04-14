@@ -151,6 +151,7 @@ pub struct Model {
     pub(crate) model_name: String,
     pub(crate) owners: Vec<Principal>,
     pub(crate) details: ModelDetails,
+    pub(crate) details_history: Vec<ModelDetailsHistory>,
     pub(crate) model_type: ModelType,
     pub(crate) cached_thresholds: Option<CachedThresholds>,
     pub(crate) cached_selections: Option<Vec<String>>,
@@ -176,6 +177,14 @@ pub struct ModelDetails {
     pub(crate) framework: String,
     pub(crate) objective: String,
     pub(crate) url: String,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct ModelDetailsHistory {
+    pub(crate) name: String,
+    pub(crate) details: ModelDetails,
+    pub(crate) version: u128,
+    pub(crate) timestamp: u64,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]

@@ -1,10 +1,18 @@
 use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS, NEXT_DATA_POINT_ID
 };
-use candid::{Principal};
-use crate::types::get_classifier_model_data;
+use crate::types::{get_classifier_model_data, ModelDetails};
 use crate::types::{ModelType, KeyValuePair};
 use std::collections::HashMap;
+use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
+
+use crate::model::update_model;
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub(crate) struct UpdatedDetails {
+    name: String,
+    details: ModelDetails,
+}
 
 #[ic_cdk::update]
 pub fn add_dataset(
@@ -14,7 +22,9 @@ pub fn add_dataset(
     predictions: Vec<bool>,
     privileged: Vec<KeyValuePair>,
     selection_labels: Vec<String>,
+    model_details: UpdatedDetails,
 ) {
+
     check_cycles_before_action();
 
     // Verify that all columns have consistent lengths (unchanged)
@@ -80,12 +90,20 @@ pub fn add_dataset(
                 let mut model_data = get_classifier_model_data(&model);
                 model_data.data_points.push(data_point);
                 model.model_type = ModelType::Classifier(model_data);
+
                 models.insert(model_id, model.clone());
                 let current_id = *next_data_point_id.get();
                 next_data_point_id.set(current_id + 1).unwrap();
             }
         });
     });
+
+    update_model(
+        model_id,
+        model_details.name.clone(),
+        model_details.details.clone(),
+        false
+    );
 }
 
 #[ic_cdk::update]
