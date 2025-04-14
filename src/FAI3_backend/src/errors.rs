@@ -1,5 +1,6 @@
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug, CandidType, Serialize, Deserialize, PartialEq)]
 pub struct GenericError {
@@ -23,9 +24,11 @@ impl GenericError {
     pub const EMPTY_INPUT: u16 = 101;
     pub const INVALID_FORMAT: u16 = 102;
 
+    pub const RESOURCE_ERROR: u16 = 300;
     pub const NOT_FOUND: u16 = 301;
     pub const ALREADY_EXISTS: u16 = 302;
     pub const INVALID_RESOURCE_FORMAT: u16 = 103;
+    pub const INVALID_MODEL_TYPE: u16 = 304;
 
     // External resource errors
     pub const EXTERNAL_RESOURCE_GENERIC_ERROR: u16 = 400;
@@ -47,5 +50,11 @@ impl GenericError {
     pub fn with_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.details.push((key.into(), value.into()));
         self
+    }
+}
+
+impl fmt::Display for GenericError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: {}", self.code, self.message, )
     }
 }
