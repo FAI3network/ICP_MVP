@@ -51,6 +51,7 @@ pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> 
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
+                    version: 0,
                 },
             );
 
@@ -89,9 +90,11 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                         cat_metrics_history: Vec::new(),
                         hugging_face_url,
                         evaluations: Vec::new(),
+                        average_fairness_metrics: None,
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
+                    version: 0,
                 },
             );
 

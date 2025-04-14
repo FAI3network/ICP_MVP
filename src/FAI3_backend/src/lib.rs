@@ -1,15 +1,15 @@
 pub(crate) mod cycles_management;
-mod types;
+pub mod types;
 mod admin_management;
 mod data_management;
 mod model;
 mod metrics_calculation;
 mod hugging_face;
-mod context_association_test;
-mod llm_fairness;
+pub mod context_association_test;
+pub mod llm_fairness;
 mod utils;
-mod errors;
-
+pub mod errors;
+use errors::GenericError;
 use candid::Principal;
 
 use ic_cdk_macros::*;
@@ -91,4 +91,16 @@ fn whoami() -> Principal {
 #[query]
 fn ping() -> String {
     "Canister is alive!".to_string()
+}
+
+pub(crate) fn get_model_from_memory(model_id: u128) -> Result<Model, GenericError> {
+    let model = MODELS.with(|models| {
+        let models = models.borrow_mut();
+        models.get(&model_id)
+    });
+
+    match model {
+        Some(model) => Ok(model),
+        None => Err(GenericError::new(GenericError::NOT_FOUND, "Model not found"))
+    }
 }

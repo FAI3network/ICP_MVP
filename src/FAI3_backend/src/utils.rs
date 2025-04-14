@@ -1,4 +1,4 @@
-use crate::{Model};
+use crate::Model;
 use candid::Principal;
 
 pub fn is_owner(model: &Model, caller: Principal) {
@@ -20,23 +20,24 @@ where
     }
 }
 
+/// Shuffless a vector in a cross-platform safe way
 pub fn seeded_vector_shuffle<T: Clone>(mut elements: Vec<T>, seed: u32) -> Vec<T> {
     let len = elements.len();
     if len <= 1 {
-        return elements; // No need to shuffle
+        return elements;
     }
-
-    let mut rng = seed as u64; // Use u64 to prevent overflow
-
+    
+    // Use a simple but consistent PRNG algorithm with fixed-width types
+    let mut state = seed as u32;
+    
     for i in (1..len).rev() {
-        rng ^= rng << 13;
-        rng ^= rng >> 7;
-        rng ^= rng << 17;
-
-        let j = (rng as usize) % (i + 1); // Generate pseudo-random index
-        elements.swap(i, j);
+        // Update state using a simple but consistent algorithm
+        state = state.wrapping_mul(1664525).wrapping_add(1013904223); // Linear congruential generator
+        
+        // Convert to range [0, i] in a consistent way
+        let j = (state as u32) % (i as u32 + 1);
+        elements.swap(i, j as usize);
     }
-
+    
     elements
 }
-

@@ -98,10 +98,9 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     };
 
     // 4) Make the outcall. The second param is cycles to spend (0 if none).
-    let (response_tuple,): (HttpResponse,) = http_request(request_arg, 20000000000)
+    let (response_tuple,): (HttpResponse,) = http_request(request_arg, 30000000000)
         .await
         .map_err(|(code, msg)| format!("HTTP request failed. Code: {:?}, Msg: {}", code, msg))?;
-
     let response = response_tuple;
 
     // Convert the `Nat` status code to u64

@@ -123,7 +123,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                 <>
                   <div className="w-full flex justify-between">
                     <Button onClick={() => { setEditOrUpload("upload") }}>
-                      Upload Data
+                      Evaluate
                     </Button>
 
                     {
@@ -158,13 +158,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <strong>Framework:</strong> {model.details?.framework}
                   </p>
                   <p>
-                    <strong>Version:</strong> {model.details?.version}
-                  </p>
-                  <p>
-                    <strong>Size:</strong> {model.details?.size}
-                  </p>
-                  <p>
-                    <strong>Accuracy:</strong> {model.details?.accuracy}
+                    <strong>Version:</strong> {model?.version}
                   </p>
                   <p>
                     <strong>Objective:</strong>{" "}
