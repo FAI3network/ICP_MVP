@@ -1,14 +1,14 @@
 pub(crate) mod cycles_management;
-mod types;
+pub mod types;
 mod admin_management;
 mod data_management;
 mod model;
 mod metrics_calculation;
 mod hugging_face;
-mod context_association_test;
-mod llm_fairness;
+pub mod context_association_test;
+pub mod llm_fairness;
 mod utils;
-mod errors;
+pub mod errors;
 
 use candid::Principal;
 
