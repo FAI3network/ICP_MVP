@@ -249,6 +249,7 @@ pub struct LLMModelData {
     pub cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
     pub evaluations: Vec<ModelEvaluationResult>,
     pub average_fairness_metrics: Option<AverageLLMFairnessMetrics>,
+    pub language_evaluations: Vec<LanguageEvaluationResult>,
 }
 
 impl Default for LLMModelData {
@@ -259,6 +260,7 @@ impl Default for LLMModelData {
             cat_metrics_history: Vec::new(),
             evaluations: Vec::new(),
             average_fairness_metrics: None,
+            language_evaluations: Vec::new(),
         }
     }
 }
@@ -309,15 +311,15 @@ pub struct CachedThresholds {
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
-    pub(crate) model_id: u128,
-    pub(crate) model_name: String,
-    pub(crate) owners: Vec<Principal>,
-    pub(crate) details: ModelDetails,
-    pub(crate) details_history: Vec<ModelDetailsHistory>,
-    pub(crate) model_type: ModelType,
-    pub(crate) cached_thresholds: Option<CachedThresholds>,
-    pub(crate) cached_selections: Option<Vec<String>>,
-    pub(crate) version: u128,
+    pub model_id: u128,
+    pub model_name: String,
+    pub owners: Vec<Principal>,
+    pub details: ModelDetails,
+    pub details_history: Vec<ModelDetailsHistory>,
+    pub model_type: ModelType,
+    pub cached_thresholds: Option<CachedThresholds>,
+    pub cached_selections: Option<Vec<String>>,
+    pub version: u128,
 }
 
 impl Storable for Model {
@@ -495,4 +497,95 @@ pub struct LLMMetricsAPIResult {
     pub invalid_responses: u32,
     pub call_errors: u32,
     pub counter_factual: Option<CounterFactualModelEvaluationResult>,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct LanguageEvaluationDataPoint {
+    pub prompt: String,
+    pub response: Option<String>,
+    pub valid: bool,
+    pub error: bool,
+    pub correct_answer: String,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct LanguageEvaluationResult {
+    pub language_model_evaluation_id: u128,
+    pub timestamp: u64,
+    pub languages: Vec<String>,
+    pub data_points: Vec<LanguageEvaluationDataPoint>,
+    // Prompt templates might have a different template for every language
+    pub prompt_templates: Vec<(String, String)>,
+    pub metrics: LanguageEvaluationMetrics,
+    pub metrics_per_language: Vec<(String, LanguageEvaluationMetrics)>,
+    pub max_queries: usize,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct LanguageEvaluationMetrics {
+    pub overall_accuracy: Option<f32>,
+    pub accuracy_on_valid_responses: Option<f32>,
+    pub format_error_rate: Option<f32>,
+    pub n: u32,
+    pub error_count: u32,
+    pub invalid_responses: u32,
+    pub correct_responses: u32,
+    pub incorrect_responses: u32,
+}
+
+impl LanguageEvaluationMetrics {
+    pub fn new() -> Self {
+        Self {
+            overall_accuracy: None,
+            accuracy_on_valid_responses: None,
+            format_error_rate: None,
+            n: 0,
+            error_count: 0,
+            invalid_responses: 0,
+            incorrect_responses: 0,
+            correct_responses: 0,
+        }
+    }
+
+    pub fn add_error(&mut self) {
+        self.error_count += 1;
+    }
+
+    pub fn add_invalid(&mut self) {
+        self.invalid_responses += 1;
+    }
+
+    pub fn add_incorrect(&mut self) {
+        self.incorrect_responses += 1;
+    }
+
+    pub fn add_correct(&mut self) {
+        self.correct_responses += 1;
+    }
+
+    pub fn valid_responses(&self) -> u32 {
+        return self.correct_responses + self.incorrect_responses;
+    }
+
+    pub fn calculate_rates(&mut self) {
+        self.n = self.error_count + self.invalid_responses + self.incorrect_responses + self.correct_responses;
+ 
+        if self.n > 0 && self.error_count < self.n {
+            // overall accuracy does not consider Hugging Face errors.
+            self.overall_accuracy = Some(self.correct_responses as f32 / ((self.correct_responses + self.incorrect_responses + self.invalid_responses) as f32));
+
+            if self.valid_responses() > 0 {
+                self.format_error_rate = Some(self.invalid_responses as f32 / (self.n as f32 - self.error_count as f32));
+                let valid_responses = self.n - self.invalid_responses - self.error_count;
+                if valid_responses > 0 {
+                    // Adjust accuracy calculations based on valid responses
+                    self.accuracy_on_valid_responses = Some((self.correct_responses as f32) / ((self.correct_responses + self.incorrect_responses) as f32));
+                } else {
+                    self.accuracy_on_valid_responses = Some(0.0);
+                }
+            }
+
+            
+        }
+    }
 }

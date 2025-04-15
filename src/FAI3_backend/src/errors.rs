@@ -24,7 +24,8 @@ impl GenericError {
     // Specific errors within categories
     pub const EMPTY_INPUT: u16 = 101;
     pub const INVALID_FORMAT: u16 = 102;
-
+    pub const INVALID_ARGUMENT: u16 = 103;
+    
     pub const RESOURCE_ERROR: u16 = 300;
     pub const NOT_FOUND: u16 = 301;
     pub const ALREADY_EXISTS: u16 = 302;

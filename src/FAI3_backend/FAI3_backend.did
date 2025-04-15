@@ -98,6 +98,17 @@ type ContextAssociationTestMetricsBag = record {
 
 type HashMap = vec record { key: text; value: nat };
 
+type LLMDataPointCounterFactual = record {
+    prompt: opt text;
+    response: opt text;
+    valid: bool;
+    error: bool;
+    target: bool;
+    timestamp: nat64;
+    predicted: opt bool;
+    features: vec float64;
+};
+
 type LLMDataPoint = record {
     data_point_id: nat;
     target: bool;
@@ -108,12 +119,14 @@ type LLMDataPoint = record {
     response: opt text;
     valid: bool;
     error: bool;
+    counter_factual: opt LLMDataPointCounterFactual;
 };
 
 type CounterFactualModelEvaluationResult = record {
   change_rate_overall: float32;
   change_rate_sensible_attributes: vec float32;
   total_sensible_attributes: vec nat32;
+  sensible_attribute: text;
 };
 
 type ModelEvaluationResult = record {
@@ -133,6 +146,8 @@ type LLMModelData = record {
      cat_metrics: opt ContextAssociationTestMetricsBag;
      cat_metrics_history: vec ContextAssociationTestMetricsBag;
      evaluations: vec ModelEvaluationResult;
+     language_evaluations: vec LanguageEvaluationResult;
+     average_fairness_metrics: opt AverageLLMFairnessMetrics;
 };
 
 type ModelType = variant {
@@ -199,7 +214,8 @@ type ModelDetailsHistory = record {
   details: ModelDetails;
   version: nat;
   timestamp: nat64;
-  
+};
+
 type LLMMetricsAPIResult = record {
   "metrics": Metrics;
   "queries": nat64;
@@ -219,6 +235,36 @@ type AverageLLMFairnessMetrics = record {
   recall: float32;
   counter_factual_overall_change_rate: float32;
   model_evaluation_ids: vec nat;
+};
+
+type LanguageEvaluationDataPoint = record {
+    prompt: text;
+    response: opt text;
+    valid: bool;
+    error: bool;
+    correct_answer: text;
+};
+
+type LanguageEvaluationMetrics = record {
+    overall_accuracy: opt float32;
+    accuracy_on_valid_responses: opt float32;
+    format_error_rate: opt float32;
+    n: nat32;
+    error_count: nat32;
+    invalid_responses: nat32;
+    correct_responses: nat32;
+    incorrect_responses: nat32;
+};
+
+type LanguageEvaluationResult = record {
+    language_model_evaluation_id: nat;
+    timestamp: nat64;
+    languages: vec text;
+    data_points: vec LanguageEvaluationDataPoint;
+    prompt_templates: vec record {text; text};
+    metrics: LanguageEvaluationMetrics;
+    metrics_per_language: vec record {text; LanguageEvaluationMetrics};
+    max_queries: nat64;
 };
 
 service : () -> {
@@ -276,4 +322,6 @@ service : () -> {
 
     "set_config": (text, text) -> ();
     "get_config": (text) -> (variant { Ok: text; Err: GenericError }) query;
+
+    "llm_evaluate_languages": (model_id : nat, languages : vec text, max_queries : nat64, seed : nat32) -> (variant { Ok : LanguageEvaluationResult; Err : text });
 }

@@ -3,8 +3,6 @@ use crate::{
 };
 
 use crate::types::{get_classifier_model_data, ModelDetails};
-use candid::Principal;
-
 use crate::types::{ModelType, KeyValuePair};
 use std::collections::HashMap;
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};

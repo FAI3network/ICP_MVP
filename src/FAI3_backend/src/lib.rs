@@ -7,6 +7,7 @@ mod metrics_calculation;
 mod hugging_face;
 pub mod context_association_test;
 pub mod llm_fairness;
+pub mod llm_language_evaluations;
 mod utils;
 pub mod errors;
 mod config_management;
@@ -75,10 +76,18 @@ thread_local! {
         ).unwrap()
     );
 
+
     static CONFIGURATION: RefCell<StableBTreeMap<String, String, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(6)))
         )
+    );
+
+    static NEXT_LLM_LANGUAGE_EVALUATION_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(7))),
+            1
+        ).unwrap()
     );
 }
 
