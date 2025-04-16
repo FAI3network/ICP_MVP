@@ -19,6 +19,7 @@ impl GenericError {
     // Resource error: 300
     // External resource error: 400
     // Internal error: 500
+    // Configuration error: 600
 
     // Specific errors within categories
     pub const EMPTY_INPUT: u16 = 101;
@@ -35,6 +36,8 @@ impl GenericError {
     pub const HUGGING_FACE_ERROR_RATE_REACHED: u16 = 401;
 
     pub const GENERIC_SYSTEM_FAILURE: u16 = 500;
+
+    pub const CONFIGURATION_KEY_NOT_FOUND: u16 = 601;
     
     pub fn new(code: u16, message: impl Into<String>) -> Self {
         let category: u16 = (code / 100) * 100;
@@ -56,5 +59,12 @@ impl GenericError {
 impl fmt::Display for GenericError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: {}", self.code, self.message, )
+    }
+}
+
+
+impl From<GenericError> for String {
+    fn from(err: GenericError) -> Self {
+        format!("Error {}: {}", err.code, err.message)
     }
 }

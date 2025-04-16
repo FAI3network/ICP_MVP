@@ -261,4 +261,7 @@ service : () -> {
     "get_llm_model_data_id": (nat) -> (LLMModelData) query;
 
     "context_association_test": (nat, nat64, nat32, bool) -> (variant { Ok: ContextAssociationTestAPIResult; Err: GenericError });
+
+    "set_config": (text, text) -> ();
+    "get_config": (text) -> (variant { Ok: text; Err: GenericError }) query;
 }

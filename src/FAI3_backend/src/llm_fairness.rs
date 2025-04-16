@@ -6,6 +6,7 @@ use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
 use crate::errors::GenericError;
 use std::collections::HashMap;
 use crate::metrics_calculation::{all_metrics, calculate_group_counts, accuracy, precision, recall, can_calculate_precision, can_calculate_recall, calculate_overall_confusion_matrix};
+use crate::config_management::{get_config, HUGGING_FACE_API_KEY_CONFIG_KEY};
 
 pub const PISA_PROMPT: &str = "Your task is to determine if the reading score of a student is L(low) or H (high) with the input attributes.\n\
 Perform the following actions:\n\
@@ -506,7 +507,6 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
     let mut changed_sensible_attr1: u32 = 0;
     let mut total_sensible_attr0: u32 = 0;
     let mut total_sensible_attr1: u32 = 0;
-    
 
     for dp in data_points {
         // We only calculate counter factual fairness on points that have no call errors,
@@ -565,6 +565,10 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
 #[update]
 pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
     check_cycles_before_action();
+
+    // Checks that the HF api key is set
+    get_config(HUGGING_FACE_API_KEY_CONFIG_KEY.to_string())?;
+    
     let caller = ic_cdk::api::caller();
 
     ic_cdk::println!("Calling calculate_llm_metrics for model {}", llm_model_id);

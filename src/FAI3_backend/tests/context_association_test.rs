@@ -4,7 +4,7 @@ use FAI3_backend::errors::GenericError;
 use pocket_ic::PocketIc;
 mod common;
 use common::{
-    create_pic, create_llm_model, get_model,
+    create_pic, create_llm_model, get_model, add_hf_api_key,
     wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body
 };
 
@@ -19,6 +19,8 @@ fn cat_test(returned_texts: Vec<&str>) -> (PocketIc, Principal, u128, ContextAss
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
     assert_eq!(model_id, 1);
+
+    add_hf_api_key(&pic, canister_id, model_id);
 
     // Calling context_association_test
     let max_queries: usize = returned_texts.len();
@@ -68,6 +70,8 @@ fn test_llm_cat_generic_error_on_multiple_wrong_hugging_face_responses() {
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
     assert_eq!(model_id, 1);
+
+    add_hf_api_key(&pic, canister_id, model_id);
 
     // Calling context_association_test
     let max_queries: usize = 2;
@@ -121,6 +125,8 @@ fn test_llm_cat_test_wrong_hugging_face_responses() {
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
     assert_eq!(model_id, 1);
+
+    add_hf_api_key(&pic, canister_id, model_id);
 
     // Calling context_association_test
     let max_queries: usize = 4;
