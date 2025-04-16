@@ -8,42 +8,42 @@ use std::borrow::Cow;
 
 pub type PrivilegedMap = HashMap<String, u128>;
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct DataPoint {
-    pub(crate) data_point_id: u128,
-    pub(crate) target: bool,
-    pub(crate) privileged_map: PrivilegedMap,
-    pub(crate) predicted: bool,
-    pub(crate) features: Vec<f64>,
-    pub(crate) timestamp: u64,
+    pub data_point_id: u128,
+    pub target: bool,
+    pub privileged_map: PrivilegedMap,
+    pub predicted: bool,
+    pub features: Vec<f64>,
+    pub timestamp: u64,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LLMDataPointCounterFactual {
-    pub(crate) prompt: Option<String>,
-    pub(crate) response: Option<String>,
-    pub(crate) valid: bool,
-    pub(crate) error: bool,
-    pub(crate) target: bool,
-    pub(crate) timestamp: u64,
-    pub(crate) predicted: Option<bool>,
-    pub(crate) features: Vec<f64>,
+    pub prompt: Option<String>,
+    pub response: Option<String>,
+    pub valid: bool,
+    pub error: bool,
+    pub target: bool,
+    pub timestamp: u64,
+    pub predicted: Option<bool>,
+    pub features: Vec<f64>,
 }
 
 // Represents a data point for using LLMs as classifiers
 // So the same classifier metrics can be calculated over this
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LLMDataPoint {
-    pub(crate) data_point_id: u128,
-    pub(crate) target: bool,
-    pub(crate) predicted: Option<bool>,
-    pub(crate) features: Vec<f64>,
-    pub(crate) timestamp: u64,
-    pub(crate) prompt: String,
-    pub(crate) response: Option<String>,
-    pub(crate) valid: bool,
-    pub(crate) error: bool,
-    pub(crate) counter_factual: Option<LLMDataPointCounterFactual>,
+    pub data_point_id: u128,
+    pub target: bool,
+    pub predicted: Option<bool>,
+    pub features: Vec<f64>,
+    pub timestamp: u64,
+    pub prompt: String,
+    pub response: Option<String>,
+    pub valid: bool,
+    pub error: bool,
+    pub counter_factual: Option<LLMDataPointCounterFactual>,
 }
 
 impl LLMDataPoint { 
@@ -68,81 +68,243 @@ impl LLMDataPoint {
     }
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub(crate) struct KeyValuePair {
-    pub(crate) key: String,
-    pub(crate) value: u128,
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+pub struct KeyValuePair {
+    pub key: String,
+    pub value: u128,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct CounterFactualModelEvaluationResult {
-    pub(crate) change_rate_overall: f32,
-    pub(crate) change_rate_sensible_attributes: Vec<f32>,
-    pub(crate) total_sensible_attributes: Vec<u32>,
-    pub(crate) sensible_attribute: String,
+    pub change_rate_overall: f32,
+    pub change_rate_sensible_attributes: Vec<f32>,
+    pub total_sensible_attributes: Vec<u32>,
+    pub sensible_attribute: String,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct ModelEvaluationResult {
-    pub(crate) model_evaluation_id: u128,
-    pub(crate) dataset: String,
-    pub(crate) timestamp: u64,
-    pub(crate) metrics: Metrics,
-    pub(crate) privileged_map: Vec<KeyValuePair>,
+    pub model_evaluation_id: u128,
+    pub dataset: String,
+    pub timestamp: u64,
+    pub metrics: Metrics,
+    pub privileged_map: Vec<KeyValuePair>,
     // data_points is to be used in the future,
     // To replace the metrics and metrics_history
-    pub(crate) data_points: Option<Vec<DataPoint>>,
-    pub(crate) llm_data_points: Option<Vec<LLMDataPoint>>,
-    pub(crate) prompt_template: Option<String>,
-    pub(crate) counter_factual: Option<CounterFactualModelEvaluationResult>,
+    pub data_points: Option<Vec<DataPoint>>,
+    pub llm_data_points: Option<Vec<LLMDataPoint>>,
+    pub prompt_template: Option<String>,
+    pub counter_factual: Option<CounterFactualModelEvaluationResult>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct AverageMetrics {
     pub statistical_parity_difference: Option<f32>,
-    pub(crate) disparate_impact: Option<f32>,
+    pub disparate_impact: Option<f32>,
     pub average_odds_difference: Option<f32>,
-    pub(crate) equal_opportunity_difference: Option<f32>,
+    pub equal_opportunity_difference: Option<f32>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct PrivilegedIndex {
-    pub(crate) variable_name: String,
-    pub(crate) value: f32,
+    pub variable_name: String,
+    pub value: f32,
 }
 
-
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct Metrics {
-    pub(crate) statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) disparate_impact: Option<Vec<PrivilegedIndex>>,
-    pub(crate) average_odds_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) equal_opportunity_difference: Option<Vec<PrivilegedIndex>>,
-    pub(crate) average_metrics: AverageMetrics,
-    pub(crate) accuracy: Option<f32>,
-    pub(crate) precision: Option<f32>,
-    pub(crate) recall: Option<f32>,
-    pub(crate) timestamp: u64,
+    pub statistical_parity_difference: Option<Vec<PrivilegedIndex>>,
+    pub disparate_impact: Option<Vec<PrivilegedIndex>>,
+    pub average_odds_difference: Option<Vec<PrivilegedIndex>>,
+    pub equal_opportunity_difference: Option<Vec<PrivilegedIndex>>,
+    pub average_metrics: AverageMetrics,
+    pub accuracy: Option<f32>,
+    pub precision: Option<f32>,
+    pub recall: Option<f32>,
+    pub timestamp: u64,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ClassifierModelData {
-    pub(crate) data_points: Vec<DataPoint>,
-    pub(crate) metrics: Metrics,
-    pub(crate) metrics_history: Vec<Metrics>,
+    pub data_points: Vec<DataPoint>,
+    pub metrics: Metrics,
+    pub metrics_history: Vec<Metrics>,
 }
 
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct AverageLLMFairnessMetrics {
+    pub model_id: u128,
+    pub statistical_parity_difference: f32,
+    pub disparate_impact: f32,
+    pub average_odds_difference: f32,
+    pub equal_opportunity_difference: f32,
+    pub accuracy: f32,
+    pub precision: f32,
+    pub recall: f32,
+    pub counter_factual_overall_change_rate: f32,
+    // evaluation ids used to calculate this metrics
+    pub model_evaluation_ids: Vec<u128>,
+}
+
+impl AverageLLMFairnessMetrics {
+    // New function initializing with last_computed_evaluation_id as None
+    pub fn new(model_id: u128) -> Self {
+        AverageLLMFairnessMetrics {
+            model_id,
+            statistical_parity_difference: 0.0,
+            disparate_impact: 0.0,
+            average_odds_difference: 0.0,
+            equal_opportunity_difference: 0.0,
+            accuracy: 0.0,
+            precision: 0.0,
+            recall: 0.0,
+            counter_factual_overall_change_rate: 0.0,
+            model_evaluation_ids: Vec::new(),
+        }
+    }
+    
+    /// Adds a new dataset's metrics to the averages, updating each metric and the count.
+    pub fn add_metrics(&mut self, model_evaluation: &ModelEvaluationResult) {
+        self.model_evaluation_ids.push(model_evaluation.model_evaluation_id);
+
+        let metrics = &model_evaluation.metrics;
+
+        // This iterates over the PrivilegedIndex
+        // But normally for LLMs, it should have length 1
+        if let Some(spd) = &metrics.statistical_parity_difference {
+            if !spd.is_empty() {
+                self.statistical_parity_difference += spd.iter().map(|index| index.value).sum::<f32>() / spd.len() as f32;
+            }
+        }
+        if let Some(di) = &metrics.disparate_impact {
+            if !di.is_empty() {
+                self.disparate_impact += di.iter().map(|index| index.value).sum::<f32>() / di.len() as f32;
+            }
+        }
+        if let Some(aod) = &metrics.average_odds_difference {
+            if !aod.is_empty() {
+                self.average_odds_difference += aod.iter().map(|index| index.value).sum::<f32>() / aod.len() as f32;
+            }
+        }
+        if let Some(eod) = &metrics.equal_opportunity_difference {
+            if !eod.is_empty() {
+                self.equal_opportunity_difference += eod.iter().map(|index| index.value).sum::<f32>() / eod.len() as f32;
+            }
+        }
+        if let Some(acc) = metrics.accuracy {
+            self.accuracy += acc;
+        }
+        if let Some(prec) = metrics.precision {
+            self.precision += prec;
+        }
+        if let Some(rec) = metrics.recall {
+            self.recall += rec;
+        }
+        if let Some(counter_factual) = &model_evaluation.counter_factual {
+            self.counter_factual_overall_change_rate += counter_factual.change_rate_overall;
+        }
+    }
+
+    pub fn count(&self) -> usize {
+        self.model_evaluation_ids.len()
+    }
+    
+    /// Finalizes the averages by dividing each summed metric by the count of contributing datasets.
+    pub fn finalize_averages(&mut self) {
+        let count = self.count() as f32;
+        if count > 0.0 {
+            self.statistical_parity_difference /= count ;
+            self.disparate_impact /= count ;
+            self.average_odds_difference /= count ;
+            self.equal_opportunity_difference /= count ;
+            self.accuracy /= count ;
+            self.precision /= count ;
+            self.recall /= count ;
+            self.counter_factual_overall_change_rate /= count ;
+        }
+    }
+
+    /// Returns the last computed evaluation id
+    pub fn last_computed_evaluation_id(&self) -> u128 {
+        // Returns the max of the model_evaluation_ids linked to this type
+        self.model_evaluation_ids.iter().copied().max().unwrap_or(0)
+    }
+
+    /// Given a vector of ModelEvaluationResult, it returns the one that was calculated last, ordered by id and filtering by dataset
+    /// If no one is found, it returns an error
+    pub fn last_computed_evaluation_id_for_dataset(evaluations: &Vec<ModelEvaluationResult>, dataset: String) -> Result<ModelEvaluationResult, String> {
+        evaluations.iter()
+            .filter(|e| e.dataset == dataset)
+            .max_by(|a, b| a.model_evaluation_id.cmp(&b.model_evaluation_id))
+            .cloned()
+            .ok_or_else(|| format!("No evaluations found for the dataset `{}`.", dataset))
+    }
+}
+
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LLMModelData {
-    pub(crate) hugging_face_url: String,
-    pub(crate) cat_metrics: Option<ContextAssociationTestMetricsBag>,
-    pub(crate) cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
-    pub(crate) evaluations: Vec<ModelEvaluationResult>,
+    pub hugging_face_url: String,
+    pub cat_metrics: Option<ContextAssociationTestMetricsBag>,
+    pub cat_metrics_history: Vec<ContextAssociationTestMetricsBag>,
+    pub evaluations: Vec<ModelEvaluationResult>,
+    pub average_fairness_metrics: Option<AverageLLMFairnessMetrics>,
+}
+
+impl Default for LLMModelData {
+    fn default() -> Self {
+        Self {
+            hugging_face_url: String::from(""),
+            cat_metrics: None,
+            cat_metrics_history: Vec::new(),
+            evaluations: Vec::new(),
+            average_fairness_metrics: None,
+        }
+    }
+}
+
+impl LLMModelData {
+    /// Returns last model evaluations for some datasets
+    pub fn get_last_model_evaluations(&self, datasets: Vec<String>) -> Result<Vec<ModelEvaluationResult>, String> {
+        if datasets.len() == 0 {
+            return Err("Datasets length cannot be zero".to_string());
+        }
+        
+        let mut ret = Vec::new();
+
+        let mut found = HashMap::<String, ModelEvaluationResult>::new();
+        let mut count = 0;
+
+        for evaluation in &self.evaluations {
+            if !datasets.contains(&evaluation.dataset) {
+                continue;
+            }
+            
+            if found.contains_key(&evaluation.dataset) {
+                if found.get(&evaluation.dataset).unwrap().model_evaluation_id < evaluation.model_evaluation_id {
+                    found.insert(evaluation.dataset.clone(), evaluation.clone());
+                }
+            } else {
+                found.insert(evaluation.dataset.clone(), evaluation.clone());
+                count+=1;
+            }
+        }
+
+        if count < datasets.len() {
+            return Err("Not all required datasets have been found".to_string());
+        }
+
+        for key in found.keys() {
+            ret.push(found.get(key).unwrap().clone());
+        }
+        
+        return Ok(ret);
+    }
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub(crate) struct CachedThresholds {
-    pub(crate) thresholds: Option<HashMap<String, (f64, bool)>>
+pub struct CachedThresholds {
+    pub thresholds: Option<HashMap<String, (f64, bool)>>
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -173,10 +335,10 @@ impl Storable for Model {
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {
-    pub(crate) description: String,
-    pub(crate) framework: String,
-    pub(crate) objective: String,
-    pub(crate) url: String,
+    pub description: String,
+    pub framework: String,
+    pub objective: String,
+    pub url: String,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -230,59 +392,59 @@ pub enum ContextAssociationTestResult {
     Other,
 }
 
-#[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
+#[derive(Serialize, Deserialize, CandidType, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestMetrics {
-    pub(crate) stereotype: u32,
-    pub(crate) anti_stereotype: u32,
-    pub(crate) neutral: u32,
-    pub(crate) other: u32,
+    pub stereotype: u32,
+    pub anti_stereotype: u32,
+    pub neutral: u32,
+    pub other: u32,
 }
 
-#[derive(Serialize, Deserialize, CandidType, Clone, Debug)]
+#[derive(Serialize, Deserialize, CandidType, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestMetricsBag {
-    pub(crate) general: ContextAssociationTestMetrics,
-    pub(crate) intersentence: ContextAssociationTestMetrics,
-    pub(crate) intrasentence: ContextAssociationTestMetrics,
-    pub(crate) gender: ContextAssociationTestMetrics,
-    pub(crate) race: ContextAssociationTestMetrics,
-    pub(crate) religion: ContextAssociationTestMetrics,
-    pub(crate) profession: ContextAssociationTestMetrics,
-    pub(crate) error_count: u32,
-    pub(crate) error_rate: f32,
-    pub(crate) total_queries: u32,
-    pub(crate) timestamp: u64,
-    pub(crate) intrasentence_prompt_template: String,
-    pub(crate) intersentence_prompt_template: String,
-    pub(crate) seed: u32,
+    pub general: ContextAssociationTestMetrics,
+    pub intersentence: ContextAssociationTestMetrics,
+    pub intrasentence: ContextAssociationTestMetrics,
+    pub gender: ContextAssociationTestMetrics,
+    pub race: ContextAssociationTestMetrics,
+    pub religion: ContextAssociationTestMetrics,
+    pub profession: ContextAssociationTestMetrics,
+    pub error_count: u32,
+    pub error_rate: f32,
+    pub total_queries: u32,
+    pub timestamp: u64,
+    pub intrasentence_prompt_template: String,
+    pub intersentence_prompt_template: String,
+    pub seed: u32,
     // precalculated fields
-    pub(crate) icat_score_intra: f32,
-    pub(crate) icat_score_inter: f32,
-    pub(crate) icat_score_gender: f32,
-    pub(crate) icat_score_race: f32,
-    pub(crate) icat_score_profession: f32,
-    pub(crate) icat_score_religion: f32,
-    pub(crate) general_lms: f32,
-    pub(crate) general_ss: f32,
-    pub(crate) general_n: u32,
-    pub(crate) icat_score_general: f32,
-    pub(crate) data_points: Vec<ContextAssociationTestDataPoint>,
+    pub icat_score_intra: f32,
+    pub icat_score_inter: f32,
+    pub icat_score_gender: f32,
+    pub icat_score_race: f32,
+    pub icat_score_profession: f32,
+    pub icat_score_religion: f32,
+    pub general_lms: f32,
+    pub general_ss: f32,
+    pub general_n: u32,
+    pub icat_score_general: f32,
+    pub data_points: Vec<ContextAssociationTestDataPoint>,
 }
 
-#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub enum ContextAssociationTestType {
     Intrasentence,
     Intersentence,
 }
 
-#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug)]
+#[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestDataPoint {
-    pub(crate) data_point_id: u128,
-    pub(crate) prompt: String,
-    pub(crate) answer: Option<String>,
-    pub(crate) result: Option<ContextAssociationTestResult>,
-    pub(crate) error: bool,
-    pub(crate) test_type: ContextAssociationTestType,
-    pub(crate) timestamp: u64,
+    pub data_point_id: u128,
+    pub prompt: String,
+    pub answer: Option<String>,
+    pub result: Option<ContextAssociationTestResult>,
+    pub error: bool,
+    pub test_type: ContextAssociationTestType,
+    pub timestamp: u64,
 }
 
 impl Storable for ClassifierModelData {
@@ -310,7 +472,7 @@ impl Storable for LLMModelData {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-#[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone)]
+#[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone, PartialEq)]
 pub struct ContextAssociationTestAPIResult {
     pub error_count: u32,
     pub general_ss: f32, 

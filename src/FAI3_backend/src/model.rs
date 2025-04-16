@@ -102,6 +102,7 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                         cat_metrics_history: Vec::new(),
                         hugging_face_url,
                         evaluations: Vec::new(),
+                        average_fairness_metrics: None,
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
@@ -276,3 +277,4 @@ pub fn get_details_history(model_id: u128) -> Vec<ModelDetailsHistory> {
         model.details_history.clone()
     })
 }
+
