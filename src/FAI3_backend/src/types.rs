@@ -309,14 +309,15 @@ pub struct CachedThresholds {
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct Model {
-    pub model_id: u128,
-    pub model_name: String,
-    pub owners: Vec<Principal>,
-    pub details: ModelDetails,
-    pub model_type: ModelType,
-    pub cached_thresholds: Option<CachedThresholds>,
-    pub version: u128,
-    pub cached_selections: Option<Vec<String>>
+    pub(crate) model_id: u128,
+    pub(crate) model_name: String,
+    pub(crate) owners: Vec<Principal>,
+    pub(crate) details: ModelDetails,
+    pub(crate) details_history: Vec<ModelDetailsHistory>,
+    pub(crate) model_type: ModelType,
+    pub(crate) cached_thresholds: Option<CachedThresholds>,
+    pub(crate) cached_selections: Option<Vec<String>>,
+    pub(crate) version: u128,
 }
 
 impl Storable for Model {
@@ -338,6 +339,14 @@ pub struct ModelDetails {
     pub framework: String,
     pub objective: String,
     pub url: String,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct ModelDetailsHistory {
+    pub(crate) name: String,
+    pub(crate) details: ModelDetails,
+    pub(crate) version: u128,
+    pub(crate) timestamp: u64,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]

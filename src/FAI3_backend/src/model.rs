@@ -5,7 +5,7 @@ use crate::{
 use candid::Principal;
 use std::vec;
 use crate::types::get_classifier_model_data;
-use crate::types::{ModelType, ClassifierModelData, LLMModelData};
+use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory};
 
 #[ic_cdk::update]
 pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -26,9 +26,15 @@ pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> 
                 current_id,
                 Model {
                     model_id: current_id,
-                    model_name,
+                    model_name: model_name.clone(),
                     owners: vec![caller],
-                    details: model_details,
+                    details: model_details.clone(),
+                    details_history: vec![ModelDetailsHistory {
+                        name: model_name,
+                        details: model_details,
+                        version: 0,
+                        timestamp: ic_cdk::api::time(),
+                    }],
                     model_type: ModelType::Classifier( ClassifierModelData {
                         data_points: Vec::new(),
                         metrics: Metrics {
@@ -82,9 +88,15 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                 current_id,
                 Model {
                     model_id: current_id,
-                    model_name,
+                    model_name: model_name.clone(),
                     owners: vec![caller],
-                    details: model_details,
+                    details: model_details.clone(),
+                    details_history: vec![ModelDetailsHistory {
+                        name: model_name,
+                        details: model_details,
+                        version: 0,
+                        timestamp: ic_cdk::api::time(),
+                    }],
                     model_type: ModelType::LLM( LLMModelData {
                         cat_metrics: None,
                         cat_metrics_history: Vec::new(),
@@ -203,7 +215,7 @@ pub fn get_owners(model_id: u128) -> Vec<Principal> {
 }
 
 #[ic_cdk::update]
-pub fn update_model(model_id: u128, model_name: String, model_details: ModelDetails) -> bool {
+pub fn update_model(model_id: u128, model_name: String, model_details: ModelDetails, edit: bool) -> bool {
     check_cycles_before_action();
     let caller: Principal = ic_cdk::api::caller();
     let mut status = false;
@@ -212,8 +224,29 @@ pub fn update_model(model_id: u128, model_name: String, model_details: ModelDeta
         let mut models = models.borrow_mut();
         let mut model = models.get(&model_id).expect("Model not found"); 
         is_owner(&model, caller);
-        model.model_name = model_name;
-        model.details = model_details;
+        model.model_name = model_name.clone();
+        model.details = model_details.clone();
+
+        let timestamp: u64 = ic_cdk::api::time();
+
+        let latest_details = if edit {model.details_history.pop().unwrap()} else {
+            model.details_history.last().unwrap().clone()
+        };
+
+        let latest_version = if edit { latest_details.version } else { 
+            model.version = latest_details.version + 1;
+            model.version
+        };
+
+        model.details_history.push(
+            ModelDetailsHistory {
+                name: model_name,
+                details: model_details,
+                version: latest_version,
+                timestamp,
+            }
+        );
+
         models.insert(model_id, model);
 
         status = true;
@@ -233,3 +266,15 @@ pub fn get_llm_model_data_id(model_id: u128) -> LLMModelData {
         }
     })
 }
+
+#[ic_cdk::query]
+pub fn get_details_history(model_id: u128) -> Vec<ModelDetailsHistory> {
+    check_cycles_before_action();
+
+    MODELS.with(|models| {
+        let models = models.borrow();
+        let model = models.get(&model_id).expect("Model not found");
+        model.details_history.clone()
+    })
+}
+

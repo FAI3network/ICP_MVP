@@ -13,9 +13,9 @@ export default function UploadDataFile() {
 
   const handleNextStep = () => {
     if (Array.isArray(file)) {
-      if (file.length > 0 && file[0].type.includes("csv")) setCurrentStep(1);
+      if (file.length > 0 && file[0].type.includes("csv")) setCurrentStep(2);
     } else if (file?.type.includes("csv")) {
-      setCurrentStep(1);
+      setCurrentStep(2);
     }
   }
 

@@ -7,15 +7,19 @@ import ColumnSelectionSection from "./ColumnSelectionSection";
 import CSVTableView from "./CSVTableView";
 import UploadDataFile from "./UploadDataFile";
 import { DataUploadContext } from "./utils";
+import { FormBody } from "../AddModelModal";
+import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import UpdateModel from "./UpdateModel";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, cachedSelections, onClose = () => { } }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, onClose: () => void }) {
+export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, cachedSelections, onClose = () => { }, modelInfo }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, onClose: () => void, modelInfo: { id: number, name: string, details: ModelDetails } }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
   const [uploadedContent, setUploadedContent] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [additionalImages, setAdditionalImages] = useState<any[]>([]);
+  const [newModelInfo, setNewModelInfo] = useState<{ name: string, details: ModelDetails }>({ name: modelInfo.name, details: modelInfo.details });
 
   const { modelId } = useParams();
 
@@ -91,10 +95,11 @@ export default function DataUploadModal({ fetchModel, latestVars, cachedThreshol
   });
 
   const steps = [
+    <UpdateModel newModel={newModelInfo} setNewModel={setNewModelInfo} />,
     <UploadDataFile />,
     <CSVTableView />,
-    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={cachedThresholds} cachedSelections={cachedSelections} />,
-    <ImageUploader />
+    <ColumnSelectionSection fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={cachedThresholds} cachedSelections={cachedSelections} details={newModelInfo} />,
+    <ImageUploader />,
   ];
 
   return (
