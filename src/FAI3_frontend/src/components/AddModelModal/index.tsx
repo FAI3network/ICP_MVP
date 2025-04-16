@@ -7,7 +7,6 @@ import { toast } from "sonner";
 interface ModelDetails {
   description: string;
   framework: string;
-  version: string;
   objective: string;
   url: string;
 }
