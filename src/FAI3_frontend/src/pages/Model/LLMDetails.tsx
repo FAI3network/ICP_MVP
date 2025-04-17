@@ -18,7 +18,7 @@ import {
   LineChartchart,
   TabChart
 } from "../../components/charts";
-import { DataUploadModal, AddModelModal } from "../../components";
+import { DataUploadModal, AddModelModal, LLMTestsModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { useAuthClient, useDataContext, toasts } from "../../utils";
@@ -28,7 +28,9 @@ import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics, Generi
 export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const { modelId } = useParams();
   const [loading, setLoading] = useState(false);
-  const [isOwner, setIsOwner] = useState(false)
+  const [isOwner, setIsOwner] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openTestModal, setOpenTestModal] = useState(false);
   const { address, webapp } = useAuthClient();
   const { fetchModels } = useDataContext();
 
@@ -148,13 +150,16 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
               isOwner && (
                 <>
                   <div className="w-full flex justify-between">
-                    <Button onClick={runCAT}>
+                    {/* <Button onClick={runCAT}> */}
+                    <Button onClick={() => setOpenTestModal(true)}>
                       Run test
                     </Button>
 
-                    <AddModelModal modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} is_llm hf_url={model.model_type.LLM.hugging_face_url} />
+                    <LLMTestsModal isOpen={openTestModal} onClose={() => setOpenTestModal(false)} />
 
-                    <Button onClick={openModal}>
+                    <AddModelModal isOpen={openEditModal} onClose={() => setOpenEditModal(false)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} is_llm hf_url={model.model_type.LLM.hugging_face_url} />
+
+                    <Button onClick={() => setOpenEditModal(true)}>
                       Edit Model
                     </Button>
                   </div>

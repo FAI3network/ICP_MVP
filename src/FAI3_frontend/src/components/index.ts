@@ -4,6 +4,7 @@ import FileUpload from "./FileUpload";
 import DataUploadModal from "./DataUploadModal";
 import Providers from "./Providers";
 import AddModelModal from "./AddModelModal";
+import LLMTestsModal from "./LLMTestsModal";
 
 export {
   Layout,
@@ -11,5 +12,6 @@ export {
   FileUpload,
   DataUploadModal,
   Providers,
-  AddModelModal
+  AddModelModal,
+  LLMTestsModal
 }
