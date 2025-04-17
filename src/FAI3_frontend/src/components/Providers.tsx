@@ -29,7 +29,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     if (authClient) {
       (async () => {
         if (await authClient.isAuthenticated()) {
-          connect({ alreadyConnected: true });
+          connect(true);
           return;
         }
         setConnecting(false);
@@ -46,7 +46,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     iiUrl = `https://${process.env.CANISTER_ID_INTERNET_IDENTITY}.dfinity.network`;
   }
 
-  const connect = async ({ alreadyConnected = false }) => {
+  const connect = async (alreadyConnected = false) => {
     if (!authClient) return;
     setConnecting(true);
 

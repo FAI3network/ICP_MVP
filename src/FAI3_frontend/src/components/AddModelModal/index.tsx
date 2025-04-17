@@ -3,16 +3,9 @@ import { useEffect, useState } from "react";
 import { useAuthClient, useDataContext } from "@/utils";
 import { Toggle } from "@/components/ui/toggle";
 import { toast } from "sonner";
+import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
-interface ModelDetails {
-  description: string;
-  framework: string;
-  version: string;
-  objective: string;
-  url: string;
-}
-
-export default function AddModelModal({ onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel, is_llm, hf_url }: { onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any>, is_llm?: boolean, hf_url?: string }) {
+export default function AddModelModal({ isOpen = false, onClose = () => { }, name = null, details = null, update = false, modelId, fetchModel, is_llm, hf_url }: { isOpen?: boolean; onClose?: () => void, name?: string | null, details?: ModelDetails | null, update?: boolean, modelId?: number, fetchModel?: () => Promise<any>, is_llm?: boolean, hf_url?: string }) {
   const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm: boolean, hf_url: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -68,7 +61,7 @@ export default function AddModelModal({ onClose = () => { }, name = null, detail
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} isOpen={isOpen}>
       {
         loading ? (
           <ModalContent closeButton={false}>

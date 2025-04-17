@@ -53,7 +53,7 @@ export default function Navbar() {
                       <Button onClick={disconnect}>Logout</Button>
                     </>
                   ) : (
-                    <Button onClick={connect}>Connect</Button>
+                    <Button onClick={() => connect()}>Connect</Button>
                   )
                 }
               </div>

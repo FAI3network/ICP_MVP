@@ -4,38 +4,46 @@ import { X } from "lucide-react";
 import { Button } from "./button";
 
 interface ModalContextType {
-  isOpen: boolean;
+  isModalOpen: boolean;
   open: () => void;
   close: () => void;
 }
 
 const ModalContext = React.createContext<ModalContextType>({
-  isOpen: false,
+  isModalOpen: false,
   open: () => { },
   close: () => { },
 });
 
 let modalInstance: { open: () => void; close: () => void } | null = null;
 
-export const Modal = React.forwardRef(({ className, onClose = null, ...props }: any, ref) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+export const Modal = React.forwardRef(({ className, onClose = null, isOpen = false, ...props }: any, ref) => {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-  const open = () => setIsOpen(true);
+  const open = () => setIsModalOpen(true);
   const close = () => {
-    setIsOpen(false)
+    setIsModalOpen(false)
     onClose && onClose()
   };
+
+  React.useEffect(() => {
+    if (isOpen) {
+      open();
+    } else {
+      close();
+    }
+  }, [isOpen]);
 
   modalInstance = { open, close };
 
   return (
-    <ModalContext.Provider value={{ isOpen, open, close }}>
+    <ModalContext.Provider value={{ isModalOpen, open, close }}>
       <div
         className={cn(
           "fixed inset-0 z-30 bg-black bg-opacity-50 p-4 w-full h-full",
           className
         )}
-        style={{ display: isOpen ? "flex" : "none" }}
+        style={{ display: isModalOpen ? "flex" : "none" }}
         onClick={close}
       >
         <div className={cn("relative w-full h-full flex items-center justify-center", className)} {...props} />
@@ -74,7 +82,7 @@ ModalTrigger.displayName = "ModalTrigger"
 
 export const ModalContent = React.forwardRef(({ className, closeButton = true, ...props }: any, ref) => (
   <ModalContext.Consumer>
-    {({ isOpen, close }) => (
+    {({ isModalOpen, close }) => (
       <div
         ref={ref}
         className={cn("bg-white max-w-full max-h-full rounded-lg p-4 relative overflow-y-auto", className)}
