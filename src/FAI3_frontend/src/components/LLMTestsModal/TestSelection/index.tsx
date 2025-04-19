@@ -16,6 +16,7 @@ const catFormSchema = z.object({
 const fairnessFormSchema = z.object({
   max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
   seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
+  dataset: z.string().min(1, "Dataset must be selected"),
 });
 
 export default function TestSelection({ setLoading }: { setLoading: (loading: boolean) => void }) {
@@ -36,6 +37,7 @@ export default function TestSelection({ setLoading }: { setLoading: (loading: bo
     defaultValues: {
       max_queries: 10,
       seed: 0,
+      dataset: "",
     },
   });
 
