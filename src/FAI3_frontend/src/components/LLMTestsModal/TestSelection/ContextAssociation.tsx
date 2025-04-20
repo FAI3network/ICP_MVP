@@ -12,7 +12,7 @@ interface formSchemaType {
   seed: number;
   shuffle: boolean;
 }
-export default function ContextAssociation({ form, formSchema }: { form: UseFormReturn<formSchemaType, any, formSchemaType>; formSchema: z.ZodObject<any> }) {
+export default function ContextAssociation({ form }: { form: UseFormReturn<formSchemaType, any, formSchemaType> }) {
   return (
     <Form {...form}>
       <form className="space-y-8 flex flex-col text-left w-full">
