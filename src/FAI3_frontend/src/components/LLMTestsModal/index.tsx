@@ -1,4 +1,4 @@
-import { Modal, CircularProgress, ModalContent, ModalBody } from "../ui";
+import { Modal, CircularProgress, ModalContent, ModalBody, Button } from "../ui";
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
@@ -6,12 +6,12 @@ import { useParams } from "react-router-dom";
 import { LLMTestsContext } from "./utils";
 import TestSelection from "./TestSelection";
 
-export default function LLMTestsModal({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
+export default function LLMTestsModal({ isOpen, onClose, fetchModel }: { isOpen?: boolean; onClose?: () => void; fetchModel: () => void }) {
   const [currentStep, setCurrentStep] = useState(0);
   const { modelId } = useParams();
   const [loading, setLoading] = useState(false);
 
-  const steps = [<TestSelection setLoading={setLoading} />];
+  const steps = [<TestSelection setLoading={setLoading} fetchModel={fetchModel} />];
 
   return (
     <LLMTestsContext.Provider value={{ modelId, currentStep, setCurrentStep }}>

@@ -1,10 +1,10 @@
-import { AuthClientContext, DataContext } from '../utils';
+import { AuthClientContext, DataContext } from "../utils";
 import { AuthClient } from "@dfinity/auth-client";
-import { HttpAgent, Actor, ActorSubclass, ActorMethod } from '@dfinity/agent';
-import { idlFactory, canisterId } from '../../../declarations/FAI3_backend';
-import { useEffect, useState } from 'react';
-import { Model } from '../../../declarations/FAI3_backend/FAI3_backend.did';
-import { FAI3_backend } from '../../../declarations/FAI3_backend';
+import { HttpAgent, Actor, ActorSubclass, ActorMethod } from "@dfinity/agent";
+import { idlFactory, canisterId } from "../../../declarations/FAI3_backend";
+import { useEffect, useState } from "react";
+import { Model } from "../../../declarations/FAI3_backend/FAI3_backend.did";
+import { FAI3_backend } from "../../../declarations/FAI3_backend";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [webapp, setWebApp] = useState<ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> | undefined>();
@@ -23,7 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         setAuthClient(await AuthClient.create());
       }
     })();
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (authClient) {
@@ -35,7 +35,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         setConnecting(false);
       })();
     }
-  }, [authClient])
+  }, [authClient]);
 
   let iiUrl: string;
   if (process.env.DFX_NETWORK === "local") {
@@ -56,7 +56,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           identityProvider: iiUrl,
           onSuccess: resolve,
           onError: reject,
-          maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000)
+          maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000),
         });
       }).catch((err) => {
         console.error(err);
@@ -98,7 +98,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     setWebApp(webapp);
     setConnected(true);
     setConnecting(false);
-  }
+  };
 
   const disconnect = () => {
     if (!authClient) return;
@@ -107,16 +107,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     setAddress("");
     setWebApp(undefined);
     setConnected(false);
-  }
+  };
 
   const fetchModels = async () => {
-    const models: Model[] = connected ?
-      await (webapp?.get_all_models() as Promise<Model[]>)
-      :
-      await FAI3_backend.get_all_models().catch((err) => {
-        console.error(err);
-        return [];
-      });
+    const models: Model[] = connected
+      ? await (webapp?.get_all_models() as Promise<Model[]>)
+      : await FAI3_backend.get_all_models().catch((err) => {
+          console.error(err);
+          return [];
+        });
 
     console.log(models);
 
@@ -124,9 +123,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     let LLMlist = [];
 
     for (let i = 0; i < models.length; i++) {
-      if ('LLM' in models[i].model_type) {
+      if ("LLM" in models[i].model_type) {
         LLMlist.push(models[i]);
-      } else if ('Classifier' in models[i].model_type) {
+      } else if ("Classifier" in models[i].model_type) {
         classifierList.push(models[i]);
       }
     }
@@ -150,9 +149,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels, ClassifierModels, setClassifierModels }}>
-      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
-        {children}
-      </AuthClientContext.Provider>
+      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>{children}</AuthClientContext.Provider>
     </DataContext.Provider>
   );
 }
