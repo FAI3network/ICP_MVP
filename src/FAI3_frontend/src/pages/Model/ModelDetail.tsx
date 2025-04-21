@@ -1,17 +1,5 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  Button,
-  openModal
-} from "../../components/ui";
-import {
-  LineChartchart,
-  TabChart
-} from "../../components/charts";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button, openModal } from "../../components/ui";
+import { LineChartchart, TabChart } from "../../components/charts";
 import { DataUploadModal, AddModelModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
@@ -22,27 +10,27 @@ import { Principal } from "@dfinity/principal";
 export function ModelDetail({ model, metrics, fetchModel }: any) {
   const { modelId } = useParams();
   const [loading, setLoading] = useState(false);
-  const [isOwner, setIsOwner] = useState(false)
+  const [isOwner, setIsOwner] = useState(false);
   const { address, webapp } = useAuthClient();
   const [editOrUpload, setEditOrUpload] = useState<string | null>(null);
   const latestVars = metrics[metrics.length - 1]?.AOD?.map((v: any) => v.variable_name);
+  const [openEvalModal, setOpenEvalModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
-      setIsOwner(false)
+      setIsOwner(false);
       return;
-    };
+    }
 
-    setIsOwner(model.owners.map((o: any) => Principal.fromUint8Array(o._arr).toString()).includes(address))
-
-  }, [model, address])
+    setIsOwner(model.owners.map((o: any) => Principal.fromUint8Array(o._arr).toString()).includes(address));
+  }, [model, address]);
 
   const chartConfig = {
     SPD: {
       label: "Statistical Parity Difference",
       color: "#2563eb",
-      description:
-        "The statistical parity difference measures the difference in the positive outcome rates between the unprivileged group and the privileged group.",
+      description: "The statistical parity difference measures the difference in the positive outcome rates between the unprivileged group and the privileged group.",
       footer: {
         unfair: "SPD significantly different from 0 (e.g., -0.4 or 0.4)",
         fair: "SPD close to 0 (e.g., -0.1 to 0.1)",
@@ -54,11 +42,9 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     DI: {
       label: "Disparate Impact",
       color: "#60a5fa",
-      description:
-        "Disparate impact compares the ratio of the positive outcome rates between the unprivileged group and the privileged group.",
+      description: "Disparate impact compares the ratio of the positive outcome rates between the unprivileged group and the privileged group.",
       footer: {
-        unfair:
-          "DI significantly different from 1 (e.g., less than 0.8 or greater than 1.25)",
+        unfair: "DI significantly different from 1 (e.g., less than 0.8 or greater than 1.25)",
         fair: "DI close to 1 (e.g., 0.8 to 1.25)",
       },
       fairRange: [0.8, 1.25],
@@ -68,8 +54,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     AOD: {
       label: "Average Odds Difference",
       color: "#10b981",
-      description:
-        "The average odds difference measures the difference in false positive rates and true positive rates between the unprivileged group and the privileged group.",
+      description: "The average odds difference measures the difference in false positive rates and true positive rates between the unprivileged group and the privileged group.",
       footer: {
         fair: "AOD close to 0 (e.g., -0.1 to 0.1)",
         unfair: "AOD significantly different from 0 (e.g., -0.2 or 0.2)",
@@ -81,8 +66,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
     EOD: {
       label: "Equal Opportunity Difference",
       color: "#f97316",
-      description:
-        "The equal opportunity difference measures the difference in true positive rates between the unprivileged group and the privileged group.",
+      description: "The equal opportunity difference measures the difference in true positive rates between the unprivileged group and the privileged group.",
       footer: {
         fair: "EOD close to 0 (e.g., -0.1 to 0.1)",
         unfair: "EOD significantly different from 0 (e.g., -0.2 or 0.2)",
@@ -96,61 +80,52 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
   const teststat = async () => {
     // const res = await webapp?.add_dataset.inspect();
     // console.log(res)
-  }
+  };
 
   useEffect(() => {
-    editOrUpload != null && openModal()
-  }, [editOrUpload])
+    editOrUpload != null && openModal();
+  }, [editOrUpload]);
 
   return (
     <div className="grid min-h-screen w-full bg-white">
-      {
-        loading && (
-          <div className="w-full text-center">Loading...</div>
-        )
-      }
+      {loading && <div className="w-full text-center">Loading...</div>}
       {model && metrics && !loading && (
-        <section className="grid gap-8 p-6 md:p-10"> 
+        <section className="grid gap-8 p-6 md:p-10">
           <div className="text-center relative w-full">
             <h1 className="text-4xl font-bold pb-3">{model.model_name}</h1>
-            <h3>
-              Get a detailed overview of the model&apos;s architecture and
-              performance.
-            </h3>
+            <h3>Get a detailed overview of the model&apos;s architecture and performance.</h3>
 
-            {
-              isOwner && (
-                <>
-                  <div className="w-full flex justify-between">
-                    <Button onClick={() => { setEditOrUpload("upload") }}>
-                      Evaluate
-                    </Button>
+            {isOwner && (
+              <>
+                <div className="w-full flex justify-between">
+                  <Button
+                    onClick={() => {
+                      setOpenEvalModal(true);
+                    }}
+                  >
+                    Evaluate
+                  </Button>
 
-                    {
-                      editOrUpload === "edit" ? (
-                        <AddModelModal onClose={() => setEditOrUpload(null)} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
-                      ) : editOrUpload == "upload" ? (
-                        <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} cachedSelections={model.cached_selections} onClose={() => setEditOrUpload(null)} modelInfo={{id: parseInt(modelId!), name:model.model_name, details: model.details}} />
-                      ) : null
-                    }
+                  <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} cachedSelections={model.cached_selections} isOpen={openEvalModal} onClose={() => setOpenEvalModal(false)} />
 
+                  <AddModelModal onClose={() => setOpenEditModal(false)} isOpen={openEditModal} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
 
-                    <Button onClick={() => { setEditOrUpload("edit") }}>
-                      Edit Model
-                    </Button>
-                  </div>
-                </>
-              )
-            }
-
+                  <Button
+                    onClick={() => {
+                      setOpenEditModal(true);
+                    }}
+                  >
+                    Edit Model
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
           <div className="grid gap-8 lg:grid-cols-2 lg:h-[500px]">
             <Card className="bg-[#fffaeb]">
               <CardHeader className="">
                 <CardTitle>Model Details</CardTitle>
-                <CardDescription className="text-md">
-                  {model.details?.description}
-                </CardDescription>
+                <CardDescription className="text-md">{model.details?.description}</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-8 max-h-96">
                 <div className="grid gap-4 h-fit text-lg">
@@ -161,187 +136,128 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
                     <strong>Version:</strong> {model?.version}
                   </p>
                   <p>
-                    <strong>Objective:</strong>{" "}
-                    {model.details?.objective}
+                    <strong>Objective:</strong> {model.details?.objective}
                   </p>
                   <p>
-                    <strong>URL:</strong>{" "}
-                    {model.details?.url}
+                    <strong>URL:</strong> {model.details?.url}
                   </p>
                 </div>
               </CardContent>
             </Card>
-            {
-              metrics.length > 0 && (
-                <TabChart chartData={metrics} chartConfig={chartConfig} />
-              )
-            }
+            {metrics.length > 0 && <TabChart chartData={metrics} chartConfig={chartConfig} />}
           </div>
-          {
-            metrics.length > 0 ? (
-              <>
+          {metrics.length > 0 ? (
+            <>
+              <Card className="bg-[#fffaeb]">
+                <CardHeader>
+                  <CardTitle>Model Performance Summary</CardTitle>
+                  <CardDescription>Key metrics for the latest model run.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-6">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-4xl font-bold">{model.model_type?.Classifier ? Number(model.model_type?.Classifier?.metrics.accuracy[0]).toFixed(2) : "N/A"}</div>
+                    <div className="text-muted-foreground">Accuracy</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-4xl font-bold">{model.model_type?.Classifier ? Number(model.model_type?.Classifier?.metrics.precision[0]).toFixed(2) : "N/A"}</div>
+                    <div className="text-muted-foreground">Precision</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-4xl font-bold">{model.model_type?.Classifier ? Number(model.model_type?.Classifier?.metrics.recall[0]).toFixed(2) : "N/A"}</div>
+                    <div className="text-muted-foreground">Recall</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="grid gap-8 lg:grid-cols-2">
                 <Card className="bg-[#fffaeb]">
                   <CardHeader>
-                    <CardTitle>Model Performance Summary</CardTitle>
-                    <CardDescription>
-                      Key metrics for the latest model run.
-                    </CardDescription>
+                    <CardTitle>{chartConfig.SPD.label}</CardTitle>
+                    <CardDescription>{chartConfig.SPD.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-3 gap-6">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-4xl font-bold">
-                        {
-                          model.model_type?.Classifier ? (
-                            Number(model.model_type?.Classifier?.metrics.accuracy[0]).toFixed(2)
-                          ) : (
-                            "N/A"
-                          )
-                        }
-                      </div>
-                      <div className="text-muted-foreground">Accuracy</div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-4xl font-bold">
-                        {
-                          model.model_type?.Classifier ? (
-                            Number(model.model_type?.Classifier?.metrics.precision[0]).toFixed(2)
-                          ) : (
-                            "N/A"
-                          )
-                        }
-                      </div>
-                      <div className="text-muted-foreground">Precision</div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-4xl font-bold">
-                        {
-                          model.model_type?.Classifier ? (
-                            Number(model.model_type?.Classifier?.metrics.recall[0]).toFixed(2)
-                          ) : (
-                            "N/A"
-                          )
-                        }
-                      </div>
-                      <div className="text-muted-foreground">Recall</div>
-                    </div>
+                  <CardContent>
+                    <LineChartchart
+                      dataKey="SPD"
+                      label={chartConfig.SPD.label}
+                      color={chartConfig.SPD.color}
+                      chartData={metrics}
+                      unfairRange={chartConfig.SPD.unfairRange}
+                      maxVal={metrics.reduce((max: any, p: any) => (p.average.SPD > max ? p.average.SPD : max), metrics[0]?.average.SPD)}
+                      minVal={metrics.reduce((min: any, p: any) => (p.average.SPD < min ? p.average.SPD : min), metrics[0]?.average.SPD)}
+                    />
                   </CardContent>
+                  <CardFooter className="flex flex-col text-sm">
+                    <p>Unfair outcome: {chartConfig.SPD.footer.unfair}</p>
+                    <p>Fair outcome: {chartConfig.SPD.footer.unfair}</p>
+                  </CardFooter>
                 </Card>
-                <div className="grid gap-8 lg:grid-cols-2">
-                  <Card className="bg-[#fffaeb]">
-                    <CardHeader>
-                      <CardTitle>{chartConfig.SPD.label}</CardTitle>
-                      <CardDescription>{chartConfig.SPD.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <LineChartchart
-                        dataKey="SPD"
-                        label={chartConfig.SPD.label}
-                        color={chartConfig.SPD.color}
-                        chartData={metrics}
-                        unfairRange={chartConfig.SPD.unfairRange}
-                        maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.average.SPD > max ? p.average.SPD : max),
-                          metrics[0]?.average.SPD
-                        )}
-                        minVal={metrics.reduce(
-                          (min: any, p: any) => (p.average.SPD < min ? p.average.SPD : min),
-                          metrics[0]?.average.SPD
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter className="flex flex-col text-sm">
-                      <p>Unfair outcome: {chartConfig.SPD.footer.unfair}</p>
-                      <p>Fair outcome: {chartConfig.SPD.footer.unfair}</p>
-                    </CardFooter>
-                  </Card>
-                  <Card className="bg-[#fffaeb]">
-                    <CardHeader>
-                      <CardTitle>{chartConfig.DI.label}</CardTitle>
-                      <CardDescription>{chartConfig.DI.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <LineChartchart
-                        dataKey="DI"
-                        label={chartConfig.DI.label}
-                        color={chartConfig.DI.color}
-                        chartData={metrics}
-                        unfairRange={chartConfig.DI.unfairRange}
-                        maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.average.DI > max ? p.average.DI : max),
-                          metrics[0]?.average.DI
-                        )}
-                        minVal={metrics.reduce(
-                          (min: any, p: any) => (p.average.DI < min ? p.average.DI : min),
-                          metrics[0]?.average.DI
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter className="flex flex-col text-sm">
-                      <p>Unfair outcome: {chartConfig.DI.footer.unfair}</p>
-                      <p>Fair outcome: {chartConfig.DI.footer.unfair}</p>
-                    </CardFooter>
-                  </Card>
-                  <Card className="bg-[#fffaeb]">
-                    <CardHeader>
-                      <CardTitle>{chartConfig.AOD.label}</CardTitle>
-                      <CardDescription>{chartConfig.AOD.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <LineChartchart
-                        dataKey="AOD"
-                        label={chartConfig.AOD.label}
-                        color={chartConfig.AOD.color}
-                        chartData={metrics}
-                        unfairRange={chartConfig.AOD.unfairRange}
-                        maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.average.AOD > max ? p.average.AOD : max),
-                          metrics[0]?.average.AOD
-                        )}
-                        minVal={metrics.reduce(
-                          (min: any, p: any) => (p.average.AOD < min ? p.average.AOD : min),
-                          metrics[0]?.average.AOD
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter className="flex flex-col text-sm">
-                      <p>Unfair outcome: {chartConfig.AOD.footer.unfair}</p>
-                      <p>Fair outcome: {chartConfig.AOD.footer.unfair}</p>
-                    </CardFooter>
-                  </Card>
-                  <Card className="bg-[#fffaeb]">
-                    <CardHeader>
-                      <CardTitle>{chartConfig.EOD.label}</CardTitle>
-                      <CardDescription>{chartConfig.EOD.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <LineChartchart
-                        dataKey="EOD"
-                        label={chartConfig.EOD.label}
-                        color={chartConfig.EOD.color}
-                        chartData={metrics}
-                        unfairRange={chartConfig.EOD.unfairRange}
-                        maxVal={metrics.reduce(
-                          (max: any, p: any) => (p.average.EOD > max ? p.average.EOD : max),
-                          metrics[0]?.average.EOD
-                        )}
-                        minVal={metrics.reduce(
-                          (min: any, p: any) => (p.average.EOD < min ? p.average.EOD : min),
-                          metrics[0]?.average.EOD
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter className="flex flex-col text-sm ">
-                      <p>Unfair outcome: {chartConfig.EOD.footer.unfair}</p>
-                      <p>Fair outcome: {chartConfig.EOD.footer.unfair}</p>
-                    </CardFooter>
-                  </Card>
-                </div>
-              </>
-            ) : (
-              <div className="w-full text-center">No metrics available</div>
-            )
-          }
-
+                <Card className="bg-[#fffaeb]">
+                  <CardHeader>
+                    <CardTitle>{chartConfig.DI.label}</CardTitle>
+                    <CardDescription>{chartConfig.DI.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <LineChartchart
+                      dataKey="DI"
+                      label={chartConfig.DI.label}
+                      color={chartConfig.DI.color}
+                      chartData={metrics}
+                      unfairRange={chartConfig.DI.unfairRange}
+                      maxVal={metrics.reduce((max: any, p: any) => (p.average.DI > max ? p.average.DI : max), metrics[0]?.average.DI)}
+                      minVal={metrics.reduce((min: any, p: any) => (p.average.DI < min ? p.average.DI : min), metrics[0]?.average.DI)}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex flex-col text-sm">
+                    <p>Unfair outcome: {chartConfig.DI.footer.unfair}</p>
+                    <p>Fair outcome: {chartConfig.DI.footer.unfair}</p>
+                  </CardFooter>
+                </Card>
+                <Card className="bg-[#fffaeb]">
+                  <CardHeader>
+                    <CardTitle>{chartConfig.AOD.label}</CardTitle>
+                    <CardDescription>{chartConfig.AOD.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <LineChartchart
+                      dataKey="AOD"
+                      label={chartConfig.AOD.label}
+                      color={chartConfig.AOD.color}
+                      chartData={metrics}
+                      unfairRange={chartConfig.AOD.unfairRange}
+                      maxVal={metrics.reduce((max: any, p: any) => (p.average.AOD > max ? p.average.AOD : max), metrics[0]?.average.AOD)}
+                      minVal={metrics.reduce((min: any, p: any) => (p.average.AOD < min ? p.average.AOD : min), metrics[0]?.average.AOD)}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex flex-col text-sm">
+                    <p>Unfair outcome: {chartConfig.AOD.footer.unfair}</p>
+                    <p>Fair outcome: {chartConfig.AOD.footer.unfair}</p>
+                  </CardFooter>
+                </Card>
+                <Card className="bg-[#fffaeb]">
+                  <CardHeader>
+                    <CardTitle>{chartConfig.EOD.label}</CardTitle>
+                    <CardDescription>{chartConfig.EOD.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <LineChartchart
+                      dataKey="EOD"
+                      label={chartConfig.EOD.label}
+                      color={chartConfig.EOD.color}
+                      chartData={metrics}
+                      unfairRange={chartConfig.EOD.unfairRange}
+                      maxVal={metrics.reduce((max: any, p: any) => (p.average.EOD > max ? p.average.EOD : max), metrics[0]?.average.EOD)}
+                      minVal={metrics.reduce((min: any, p: any) => (p.average.EOD < min ? p.average.EOD : min), metrics[0]?.average.EOD)}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex flex-col text-sm ">
+                    <p>Unfair outcome: {chartConfig.EOD.footer.unfair}</p>
+                    <p>Fair outcome: {chartConfig.EOD.footer.unfair}</p>
+                  </CardFooter>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <div className="w-full text-center">No metrics available</div>
+          )}
         </section>
       )}
     </div>
