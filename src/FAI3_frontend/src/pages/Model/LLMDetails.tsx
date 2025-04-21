@@ -156,12 +156,6 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                     <strong>Version:</strong> {model.details?.version}
                   </p>
                   <p>
-                    <strong>Size:</strong> {model.details?.size}
-                  </p>
-                  <p>
-                    <strong>Accuracy:</strong> {model.details?.accuracy}
-                  </p>
-                  <p>
                     <strong>Objective:</strong> {model.details?.objective}
                   </p>
                   <p>
@@ -228,9 +222,9 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                   </CardContent>
                 </Card>
 
-                <TabChart chartConfig={generalChartConfig} chartData={metrics} />
+                <TabChart chartConfig={generalChartConfig} chartData={metrics} title={"General"} />
 
-                <TabChart chartConfig={icatChartConfig} chartData={metrics} />
+                <TabChart chartConfig={icatChartConfig} chartData={metrics} title={"ICAT Scores"} />
               </>
             ) : (
               <div className="w-full text-center">No metrics available</div>

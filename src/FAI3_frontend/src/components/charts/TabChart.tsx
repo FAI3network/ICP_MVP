@@ -1,28 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  Button,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Checkbox,
-  Select
-} from "../ui";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Table, TableHeader, TableRow, TableHead, TableBody, TableCell, Button, Tabs, TabsContent, TabsList, TabsTrigger, Checkbox, Select } from "../ui";
 import BarChartchart from "./BarChartchart";
 
-export default function TabChart({ chartData, chartConfig }: any) {
+export default function TabChart({ chartData, chartConfig, title = "Model Metrics", description = "Visualize the performance of your AI model over time." }: any) {
   const allMetricsKeys: string[] = Object.values(chartConfig).map((config: any) => config.key);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(allMetricsKeys || []);
   const [selectedMetricsString, setSelectedMetricsString] = useState<string>(allMetricsKeys.join(", "));
@@ -39,16 +19,13 @@ export default function TabChart({ chartData, chartConfig }: any) {
     console.log(selectedMetricsString);
   }, [selectedMetricsString]);
 
-
   return (
     <Tabs defaultValue="chart" className="">
       <TabsContent value="chart" className="pt-0 mt-0 h-full">
         <Card className="bg-[#fffaeb] h-full">
           <CardHeader className="relative">
-            <CardTitle>Model Metrics</CardTitle>
-            <CardDescription>
-              Visualize the performance of your AI model over time.
-            </CardDescription>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
             <TabsList className="grid w-[200px] grid-cols-2 absolute right-5 top-5">
               <TabsTrigger value="chart">Chart</TabsTrigger>
               <TabsTrigger value="table">Table</TabsTrigger>
@@ -58,13 +35,7 @@ export default function TabChart({ chartData, chartConfig }: any) {
             <div className="mb-4 flex flex-wrap gap-4 items-center">
               <p className="text-sm font-medium ">Filter metrics:</p>
 
-              <Select
-                options={allMetricsKeys}
-                selection={selectedMetricsString}
-                setSelection={setSelectedMetricsString}
-                placeholder="Filter metrics..."
-                multiple
-              />
+              <Select options={allMetricsKeys} selection={selectedMetricsString} setSelection={setSelectedMetricsString} placeholder="Filter metrics..." multiple />
             </div>
             <BarChartchart chartConfig={filteredChartConfig} chartData={chartData} />
           </CardContent>
@@ -74,9 +45,7 @@ export default function TabChart({ chartData, chartConfig }: any) {
         <Card className="bg-[#fffaeb] h-full">
           <CardHeader className="relative">
             <CardTitle>Model Runs</CardTitle>
-            <CardDescription>
-              Detailed information about each model run.
-            </CardDescription>
+            <CardDescription>Detailed information about each model run.</CardDescription>
             <TabsList className="grid w-[200px] grid-cols-2 absolute right-5 top-5">
               <TabsTrigger value="chart">Chart</TabsTrigger>
               <TabsTrigger value="table">Table</TabsTrigger>
@@ -84,56 +53,43 @@ export default function TabChart({ chartData, chartConfig }: any) {
           </CardHeader>
           <CardContent>
             <div className="mb-4 flex flex-wrap gap-4">
-              <Select
-                options={allMetricsKeys}
-                selection={selectedMetricsString}
-                setSelection={setSelectedMetricsString}
-                placeholder="Filter metrics..."
-                multiple
-              />
+              <Select options={allMetricsKeys} selection={selectedMetricsString} setSelection={setSelectedMetricsString} placeholder="Filter metrics..." multiple />
             </div>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Version</TableHead>
-                  {
-                    Object.values(chartConfig).map((config: any, index: number) => (
-                      selectedMetrics.includes(config.key) &&
-                      <TableHead key={index}>{config.label}</TableHead>
-                    ))
-                  }
+                  {Object.values(chartConfig).map((config: any, index: number) => selectedMetrics.includes(config.key) && <TableHead key={index}>{config.label}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {chartData.map((row: any, index: number) => (
                   <TableRow key={index}>
-                    <TableCell>{new Date(Number(row.timestamp) / 1e6).toISOString().split('T')[0]}</TableCell>
+                    <TableCell>{new Date(Number(row.timestamp) / 1e6).toISOString().split("T")[0]}</TableCell>
                     <TableCell>{index + 1} </TableCell>
-                    {
-                      allMetricsKeys.map((key: string, idx: number) => {
-                        if (!selectedMetrics.includes(key)) return null;
+                    {allMetricsKeys.map((key: string, idx: number) => {
+                      if (!selectedMetrics.includes(key)) return null;
 
-                        if (key.includes('.')) {
-                          const parts = key.split('.');
-                          let value = row;
-                          for (const part of parts) {
-                            value = value?.[part];
-                            if (value === undefined) break;
-                          }
-                          return <TableCell key={idx}>{value !== undefined ? value : '-'}</TableCell>;
+                      if (key.includes(".")) {
+                        const parts = key.split(".");
+                        let value = row;
+                        for (const part of parts) {
+                          value = value?.[part];
+                          if (value === undefined) break;
                         }
+                        return <TableCell key={idx}>{value !== undefined ? value : "-"}</TableCell>;
+                      }
 
-                        return <TableCell key={idx}>{row[key] !== undefined ? row[key] : '-'}</TableCell>;
-                      })
-                    }
+                      return <TableCell key={idx}>{row[key] !== undefined ? row[key] : "-"}</TableCell>;
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
-      </TabsContent >
-    </Tabs >
+      </TabsContent>
+    </Tabs>
   );
 }
