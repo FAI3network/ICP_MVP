@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button, openModal, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui";
-import { LineChartchart, TabChart } from "../../components/charts";
+import { LineChartchart, TabChart, FairnessCharts } from "../../components/charts";
 import { DataUploadModal, AddModelModal, LLMTestsModal } from "../../components";
 import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
@@ -15,6 +15,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const [openTestModal, setOpenTestModal] = useState(false);
   const { address, webapp } = useAuthClient();
   const { fetchModels } = useDataContext();
+  const catMetricsHistory = model?.model_type.LLM.cat_metrics_history as ContextAssociationTestMetricsBag[];
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
@@ -167,27 +168,26 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                 </div>
               </CardContent>
             </Card>
-            {metrics.length > 0 ? (
-              <>
-                <Card className="bg-[#fffaeb] h-full">
-                  <CardHeader className="relative">
-                    <CardTitle>Model Runs</CardTitle>
-                    <CardDescription>Detailed information about each model run.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="overflow-auto h-[350px]">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Stereotype</TableHead>
-                          <TableHead>Anti Stereotype</TableHead>
-                          <TableHead>Neutral</TableHead>
-                          <TableHead>Other</TableHead>
-                          <TableHead>Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {/* {chartData.map((row: any, index: number) => (
+            {catMetricsHistory.length > 0 && (
+              <Card className="bg-[#fffaeb] h-full">
+                <CardHeader className="relative">
+                  <CardTitle>Model Runs</CardTitle>
+                  <CardDescription>Detailed information about each model run.</CardDescription>
+                </CardHeader>
+                <CardContent className="overflow-auto h-[350px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Stereotype</TableHead>
+                        <TableHead>Anti Stereotype</TableHead>
+                        <TableHead>Neutral</TableHead>
+                        <TableHead>Other</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {/* {chartData.map((row: any, index: number) => (
                           <TableRow key={index}>
                             <TableCell>{row.timestamp}</TableCell>
                             <TableCell>{row.average.SPD}</TableCell>
@@ -196,40 +196,42 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
                             <TableCell>{row.average.EOD}</TableCell>
                           </TableRow>
                         ))} */}
-                        {metrics.map((testResults: ContextAssociationTestMetricsBag, index: number) => {
-                          let rows: any[] = [];
+                      {catMetricsHistory.map((testResults: ContextAssociationTestMetricsBag, index: number) => {
+                        let rows: any[] = [];
 
-                          for (let i of ["gender", "general", "intersentence", "intrasentence", "profession", "race", "religion"]) {
-                            const testResult: ContextAssociationTestMetrics = testResults[i as keyof Omit<ContextAssociationTestMetricsBag, "timestamp">] as ContextAssociationTestMetrics;
-                            const row = (
-                              <TableRow key={index + i}>
-                                <TableCell>{i}</TableCell>
-                                <TableCell>{testResult.stereotype}</TableCell>
-                                <TableCell>{testResult.anti_stereotype}</TableCell>
-                                <TableCell>{testResult.neutral}</TableCell>
-                                <TableCell>{testResult.other}</TableCell>
-                                <TableCell>{new Date(Number(testResults.timestamp / 1000000n)).toLocaleDateString()}</TableCell>
-                              </TableRow>
-                            );
+                        for (let i of ["gender", "general", "intersentence", "intrasentence", "profession", "race", "religion"]) {
+                          const testResult: ContextAssociationTestMetrics = testResults[i as keyof Omit<ContextAssociationTestMetricsBag, "timestamp">] as ContextAssociationTestMetrics;
+                          const row = (
+                            <TableRow key={index + i}>
+                              <TableCell>{i}</TableCell>
+                              <TableCell>{testResult.stereotype}</TableCell>
+                              <TableCell>{testResult.anti_stereotype}</TableCell>
+                              <TableCell>{testResult.neutral}</TableCell>
+                              <TableCell>{testResult.other}</TableCell>
+                              <TableCell>{new Date(Number(testResults.timestamp / 1000000n)).toLocaleDateString()}</TableCell>
+                            </TableRow>
+                          );
 
-                            rows.push(row);
-                          }
+                          rows.push(row);
+                        }
 
-                          return rows;
-                        })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-
-                <TabChart chartConfig={generalChartConfig} chartData={metrics} title={"General"} />
-
-                <TabChart chartConfig={icatChartConfig} chartData={metrics} title={"ICAT Scores"} />
-              </>
-            ) : (
-              <div className="w-full text-center">No metrics available</div>
+                        return rows;
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             )}
           </div>
+          {catMetricsHistory.length > 0 && (
+            <div className="grid gap-8 lg:grid-cols-2">
+              <TabChart chartConfig={generalChartConfig} chartData={catMetricsHistory} title={"General"} />
+
+              <TabChart chartConfig={icatChartConfig} chartData={catMetricsHistory} title={"ICAT Scores"} />
+            </div>
+          )}
+          {metrics.length > 0 && <FairnessCharts metrics={metrics} />}
+          {catMetricsHistory.length == 0 && metrics.length == 0 && <div className="w-full text-center">No metrics available</div>}
         </section>
       )}
     </div>

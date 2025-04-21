@@ -3,7 +3,7 @@ import { ModelDetail } from "./ModelDetail";
 import LLMDetails from "./LLMDetails";
 import { useParams } from "react-router-dom";
 import { useAuthClient } from "../../utils";
-import { Model as ModelAsType, ClassifierModelData, LLMModelData, ContextAssociationTestMetricsBag } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { Model as ModelAsType, ClassifierModelData, LLMModelData, ContextAssociationTestMetricsBag, Metrics, ModelEvaluationResult } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import { FAI3_backend } from "../../../../declarations/FAI3_backend";
 
 interface Metric {
@@ -30,45 +30,40 @@ export default function Model() {
 
     setModelWithDetails(model);
 
-    const isClassifier = 'Classifier' in model?.model_type ? true : false;
+    const isClassifier = "Classifier" in model?.model_type ? true : false;
 
-    if (isClassifier) {
-      const classifierData = (model?.model_type as { Classifier: ClassifierModelData }).Classifier;
-      const metricsHistory = classifierData?.metrics_history;
+    const classifierData = (model?.model_type as { Classifier: ClassifierModelData }).Classifier;
+    const metricsHistory = isClassifier ? (model?.model_type as { Classifier: ClassifierModelData }).Classifier?.metrics_history : (model?.model_type as { LLM: LLMModelData }).LLM?.evaluations;
 
-      if (!Array.isArray(metricsHistory)) {
-        console.error("Invalid metrics response");
-        return;
-      }
-
-      const metricsList: any[] = [];
-
-      for (let metric of metricsHistory) {
-        metricsList.push({
-          timestamp: metric.timestamp,
-          SPD: metric.statistical_parity_difference[0],
-          DI: metric.disparate_impact[0],
-          AOD: metric.average_odds_difference[0],
-          EOD: metric.equal_opportunity_difference[0],
-          average: {
-            SPD: metric.average_metrics.statistical_parity_difference[0],
-            DI: metric.average_metrics.disparate_impact[0],
-            AOD: metric.average_metrics.average_odds_difference[0],
-            EOD: metric.average_metrics.equal_opportunity_difference[0]
-          }
-        });
-      }
-
-      console.log(metricsList);
-
-      setMetrics(metricsList);
-    } else {
-      const llmData = (model?.model_type as { LLM: LLMModelData }).LLM;
-
-
-      setMetrics(llmData.cat_metrics_history);
+    if (!Array.isArray(metricsHistory)) {
+      console.error("Invalid metrics response");
+      return;
     }
-    // console.log(metricsList);
+
+    const metricsList: any[] = [];
+
+    for (let metric of metricsHistory) {
+      if (!isClassifier) metric = (metric as ModelEvaluationResult).metrics as Metrics;
+
+      // Ensure metric is treated as Metrics type
+      const metricsData = metric as Metrics;
+
+      metricsList.push({
+        timestamp: metricsData.timestamp,
+        SPD: metricsData.statistical_parity_difference[0],
+        DI: metricsData.disparate_impact[0],
+        AOD: metricsData.average_odds_difference[0],
+        EOD: metricsData.equal_opportunity_difference[0],
+        average: {
+          SPD: metricsData.average_metrics.statistical_parity_difference[0],
+          DI: metricsData.average_metrics.disparate_impact[0],
+          AOD: metricsData.average_metrics.average_odds_difference[0],
+          EOD: metricsData.average_metrics.equal_opportunity_difference[0],
+        },
+      });
+    }
+
+    setMetrics(metricsList);
   };
 
   useEffect(() => {
@@ -86,11 +81,10 @@ export default function Model() {
     fetchModel();
   }, [modelId]);
 
-
   return (
     <>
       {modelWithDetails && Object.keys(modelWithDetails).length > 0 ? (
-        'Classifier' in modelWithDetails?.model_type ? (
+        "Classifier" in modelWithDetails?.model_type ? (
           <ModelDetail model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
         ) : (
           <LLMDetails model={modelWithDetails} metrics={metrics} fetchModel={fetchModel} />
