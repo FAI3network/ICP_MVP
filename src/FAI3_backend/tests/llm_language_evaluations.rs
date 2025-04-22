@@ -3,7 +3,7 @@ use FAI3_backend::types::{get_llm_model_data, LanguageEvaluationResult, Language
 use FAI3_backend::errors::GenericError;
 mod common;
 use common::{
-    create_pic, create_llm_model, get_model,
+    create_pic, create_llm_model, get_model, add_hf_api_key,
     wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body, wait_for_mocks_strings,
 };
 use FAI3_backend::llm_language_evaluations::LanguageEvaluationAnswer;
@@ -18,6 +18,7 @@ fn json_answer(answer: &str) -> String {
 fn test_language_evaluations_with_multiple_languages() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 0;
     let max_queries: usize = 10;
     
@@ -106,6 +107,7 @@ fn test_language_evaluations_with_multiple_languages() {
 fn test_language_evaluations_perfect_score() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 0;
     let max_queries: usize = 5;
     
@@ -176,6 +178,7 @@ fn test_language_evaluations_perfect_score() {
 fn test_language_evaluations_non_perfect_score() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 0;
     let max_queries: usize = 5;
     
@@ -246,6 +249,7 @@ fn test_language_evaluations_non_perfect_score() {
 fn test_language_evaluations_with_invalid_answers() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 0;
     let max_queries: usize = 5;
     
@@ -315,6 +319,7 @@ fn test_language_evaluations_with_invalid_answers() {
 fn test_hugging_face_invalid_json_responses() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 1;
     let max_queries: usize = 2;
     
@@ -372,6 +377,7 @@ fn test_hugging_face_invalid_json_responses() {
 fn test_language_evaluations_with_invalid_json() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 1;
     let max_queries: usize = 2;
     
@@ -432,6 +438,7 @@ fn test_language_evaluations_with_invalid_json() {
 fn test_language_evaluations_with_unknown_languages() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 1;
     let max_queries: usize = 1;
     
@@ -462,6 +469,7 @@ fn test_language_evaluations_with_unknown_languages() {
 fn test_language_evaluations_with_0_languages_should_error() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
     let seed: u32 = 1;
     let max_queries: usize = 1;
     

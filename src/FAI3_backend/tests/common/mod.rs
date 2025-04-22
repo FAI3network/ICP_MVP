@@ -10,7 +10,7 @@ use pocket_ic::{
     },
 };
 use FAI3_backend::types::{
-    Model, ModelDetails, KeyValuePair, PrivilegedIndex,
+    Model, ModelDetails, UpdatedDetails, KeyValuePair, PrivilegedIndex,
 };
 
 // 2T cycles
@@ -172,7 +172,15 @@ pub fn add_dataset(
     model_id: u128, features: Vec<Vec<f64>>, labels: Vec<bool>,
     predictions: Vec<bool>, privileged: Vec<KeyValuePair>, selection_labels: Vec<String>) -> Result<(), candid::Error> {
 
-    let encoded_args = encode_args((model_id, features, labels, predictions, privileged, selection_labels)).unwrap();
+    let encoded_args = encode_args((model_id, features, labels, predictions, privileged, selection_labels, UpdatedDetails {
+        name: "new name".to_string(),
+        details: ModelDetails {
+            description: "...".to_string(),
+            framework: "...".to_string(),
+            objective: "...".to_string(),
+            url: "...".to_string(),
+        },
+    })).unwrap();
     // Testing add_classifier_model.
     let create_model_reply = pic.update_call(
         canister_id,

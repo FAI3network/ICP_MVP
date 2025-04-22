@@ -344,6 +344,12 @@ pub struct ModelDetails {
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
+pub struct UpdatedDetails {
+    pub name: String,
+    pub details: ModelDetails,
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetailsHistory {
     pub(crate) name: String,
     pub(crate) details: ModelDetails,
