@@ -3,10 +3,16 @@ import { Actor, HttpAgent } from "@dfinity/agent";
 import { canisterId, idlFactory } from "../../../declarations/FAI3_backend";
 import { useEffect, useState, useContext } from "react";
 import { Button, CircularProgress } from "./ui";
-import { useAuthClient, formatAddress } from "../utils";
+import { useAuthClient, formatAddress, useDataContext } from "../utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function Navbar() {
   const { authClient, address, webapp, connect, disconnect, connecting } = useAuthClient();
+  const { workerProcesses } = useDataContext();
 
   const copyAddress = async () => {
     await navigator.clipboard.writeText(address);
@@ -42,6 +48,32 @@ export default function Navbar() {
                 {
                   webapp && authClient ? (
                     <>
+                      {
+                        workerProcesses.length > 0 && (
+                          <Popover>
+                            <PopoverTrigger className="flex flex-row items-center justify-center p-2 text-sm gap-1">
+                            <div className="relative group">
+                              <div className="flex flex-row items-center justify-center p-2 text-sm gap-1">
+                                {workerProcesses.length} <CircularProgress className="size-4" />
+                              </div>
+                            </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-min">
+                              <div className="flex flex-col whitespace-nowrap">
+                                <h3 className="text-base font-semibold">Running Tests</h3>
+                                <ul className="flex flex-col gap-2 text-sm">
+                                  {workerProcesses.map((process: string, index: number) => (
+                                    <li key={index} className="flex flex-row items-center justify-between">
+                                      <p>{process}</p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )
+                      }
+
                       <div className="relative group">
                         <p className="text-sm mx-2 cursor-pointer" onClick={copyAddress}>
                           {formatAddress(address)}

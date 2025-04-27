@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { useAuthClient, toasts, useDataContext } from "@/utils";
 import { GenericError } from "../../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { useWorker } from "@/hooks";
 
 const catFormSchema = z.object({
   max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
@@ -28,6 +29,7 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
   const { modelId } = useParams();
   const { webapp } = useAuthClient();
   const { fetchModels } = useDataContext();
+  const { runTest } = useWorker();
 
   const catForm = useForm<z.infer<typeof catFormSchema>>({
     resolver: zodResolver(catFormSchema),
@@ -51,37 +53,40 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
     setLoading(true);
     if (selectedTest.includes("Context Association")) {
       await catForm.handleSubmit(async (data) => {
-        console.log("Context Association Data", data);
+        // console.log("Context Association Data", data);
 
-        const res = await webapp?.context_association_test(BigInt(modelId!), data.max_queries, data.seed, data.shuffle);
-        if (res && typeof res === "object" && res !== null && "Err" in res) {
-          console.error("Failed to run context association test:", res.Err);
-          const err = res.Err as GenericError;
-          toasts.genericErrorToast(err);
-        } else {
-          console.log(res);
-        }
+        // const res = await webapp?.context_association_test(BigInt(modelId!), data.max_queries, data.seed, data.shuffle);
+        // if (res && typeof res === "object" && res !== null && "Err" in res) {
+        //   console.error("Failed to run context association test:", res.Err);
+        //   const err = res.Err as GenericError;
+        //   toasts.genericErrorToast(err);
+        // } else {
+        //   console.log(res);
+        // }
+
+        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, shuffle: data.shuffle}, "CAT");
       })();
     }
     if (selectedTest.includes("Fairness")) {
       await fairnessForm.handleSubmit(async (data) => {
-        console.log("Fairness Data", data);
+        // console.log("Fairness Data", data);
 
-        data.dataset.forEach(async (dataset) => {
-          console.log("Dataset", dataset);
-          const res = await webapp?.calculate_llm_metrics(BigInt(modelId!), dataset, data.max_queries, data.seed);
+        // data.dataset.forEach(async (dataset) => {
+        //   console.log("Dataset", dataset);
+        //   const res = await webapp?.calculate_llm_metrics(BigInt(modelId!), dataset, data.max_queries, data.seed);
 
-          console.log("Fairness Result", res);
-        });
+        //   console.log("Fairness Result", res);
+        // });
 
-        const res = await webapp?.average_llm_metrics(BigInt(modelId!), data.dataset);
-        if (res && typeof res === "object" && res !== null && "Err" in res) {
-          console.error("Failed to run context association test:", res.Err);
-          const err = res.Err as GenericError;
-          toasts.genericErrorToast(err);
-        } else {
-          console.log(res);
-        }
+        // const res = await webapp?.average_llm_metrics(BigInt(modelId!), data.dataset);
+        // if (res && typeof res === "object" && res !== null && "Err" in res) {
+        //   console.error("Failed to run Fairness test:", res.Err);
+        //   const err = res.Err as GenericError;
+        //   toasts.genericErrorToast(err);
+        // } else {
+        //   console.log(res);
+        // }
+        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset}, "FAIRNESS");
       })();
     }
 

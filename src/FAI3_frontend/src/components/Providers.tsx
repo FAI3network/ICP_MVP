@@ -16,6 +16,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [LLMModels, setLLMModels] = useState<any[]>([]);
   const [ClassifierModels, setClassifierModels] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [workerProcesses, setWorkerProcesses] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -149,8 +150,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels, ClassifierModels, setClassifierModels }}>
-      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>{children}</AuthClientContext.Provider>
+    <DataContext.Provider value={{ Models, setModels, fetchModels, LLMModels, setLLMModels, ClassifierModels, setClassifierModels, workerProcesses, setWorkerProcesses }}>
+      <AuthClientContext.Provider value={{ authClient, address, connect, disconnect, webapp, connected, isAdmin, connecting }}>
+        {children}
+      </AuthClientContext.Provider>
     </DataContext.Provider>
   );
 }

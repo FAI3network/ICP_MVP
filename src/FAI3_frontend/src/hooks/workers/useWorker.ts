@@ -1,0 +1,132 @@
+import { useAuthClient, useDataContext } from "@/utils";
+import { useState, useCallback } from "react";
+import { set } from "zod";
+import { toasts } from "@/utils";
+
+type WorkerTypes = {
+  CAT: string;
+  FAIRNESS: string;
+};
+
+type BaseWorkerData = {
+  modelId: string;
+  max_queries: number;
+  seed: number;
+};
+
+type WorkerDataTypes = BaseWorkerData & (
+  { shuffle: boolean } | 
+  { dataset: string[] }
+);
+
+export function useWorker() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const { webapp } = useAuthClient();
+  const { workerProcesses, setWorkerProcesses } = useDataContext();
+
+  const runTest = useCallback((data: WorkerDataTypes, workerType: keyof WorkerTypes) => {
+    if (!webapp) {
+      console.error("Webapp is not initialized.");
+      return;
+    }
+
+    // Check if test for this model is already running
+    if (workerProcesses.includes(workerType)) {
+      toasts.errrorToast(`${workerType} is already running.`);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    setWorkerProcesses([...workerProcesses, workerType]);
+
+    // Create a new worker
+    const worker = new Worker(new URL("./metricTestWorker.ts", import.meta.url), { type: "module" });
+
+    worker.onmessage = async (event) => {
+      const { type, payload, requestId } = event.data;
+      
+      if (type === "API_REQUEST") {
+        try {
+          // Execute the requested API call using webapp
+          let result;
+          switch (payload.method) {
+            case "context_association_test":
+              result = await webapp?.context_association_test(
+                BigInt(payload.modelId), 
+                payload.max_queries, 
+                payload.seed, 
+                payload.shuffle
+              );
+              break;
+            case "fairness_test":
+              const { modelId, max_queries, seed, dataset } = payload;
+              dataset.forEach((item: string) => {
+                result = webapp?.calculate_llm_metrics(
+                  BigInt(modelId),
+                  item,
+                  max_queries,
+                  seed
+                );
+              });
+              result = webapp?.average_llm_metrics(
+                BigInt(modelId),
+                dataset
+              );
+              break;
+          }
+          
+          // Send result back to worker
+          worker.postMessage({
+            type: "API_RESPONSE",
+            requestId,
+            success: true,
+            data: result
+          });
+        } catch (error: any) {
+          console.error("Error in worker:", error);
+          worker.postMessage({
+            type: "API_RESPONSE",
+            requestId,
+            success: false,
+            error: error.message
+          });
+        }
+      } else if (type === "COMPLETE") {
+        // Handle worker completion
+        setLoading(false);
+        if (payload.success) {
+          setResult(payload.data);
+          toasts.successToast(`${workerType} completed successfully.`);
+        } else {
+          setError(payload.error);
+          toasts.errrorToast(`Error in ${workerType}: ${payload.error}`);
+        }
+        worker.terminate();
+        setWorkerProcesses((prev: Array<keyof WorkerTypes>) => 
+          prev.filter((type) => type !== workerType)
+        );
+      }
+    };
+  
+    // Send initial data to worker
+    worker.postMessage({
+      type: 'INIT',
+      data: data,
+      test: workerType,
+    });
+
+    toasts.successToast(`${workerType} is running.`);
+
+    // Return a function to cancel the operation if needed
+    return () => {
+      worker.terminate();
+      setLoading(false);
+    };
+  }, [workerProcesses, setWorkerProcesses]);
+
+  return { runTest, loading, error, result, workerProcesses };
+}
