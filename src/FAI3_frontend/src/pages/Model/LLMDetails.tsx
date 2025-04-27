@@ -1,7 +1,7 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button, openModal, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui";
-import { LineChartchart, TabChart, FairnessCharts } from "../../components/charts";
-import { DataUploadModal, AddModelModal, LLMTestsModal } from "../../components";
-import { useState, useEffect, useContext } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui";
+import { TabChart, FairnessCharts } from "../../components/charts";
+import { AddModelModal, LLMTestsModal } from "../../components";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuthClient, useDataContext, toasts } from "../../utils";
 import { Principal } from "@dfinity/principal";

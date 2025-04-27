@@ -25,6 +25,62 @@ const genericErrorToast = (err: GenericError) => {
   );
 }
 
+const errrorToast = (message: string) => {
+  toast.error(
+    <div className="bg-red-50 p-3 border-l-4 border-red-500 rounded">
+      <p className="font-semibold text-red-600">Error</p>
+      <p className="text-red-900">{message}</p>
+    </div>,
+    {
+      duration: 5000,
+      style: { background: "#FFF3F4", color: "#B91C1C", border: "1px solid #FCA5A1" },
+    }
+  );
+}
+
+const infoToast = (message: string) => {
+  toast.info(
+    <div className="bg-blue-50 p-3 border-l-4 border-blue-500 rounded">
+      <p className="font-semibold text-blue-600">Info</p>
+      <p className="text-blue-900">{message}</p>
+    </div>,
+    {
+      duration: 5000,
+      style: { background: "#EFF6FF", color: "#1E3A8A", border: "1px solid #BFDBFE" },
+    }
+  );
+}
+
+const successToast = (message: string) => {
+  toast.success(
+    <div className="bg-green-50 p-3 border-l-4 border-green-500 rounded">
+      <p className="font-semibold text-green-600">Success</p>
+      <p className="text-green-900">{message}</p>
+    </div>,
+    {
+      duration: 5000,
+      style: { background: "#ECFDF5", color: "#065F46", border: "1px solid #6EE7B7" },
+    }
+  );
+}
+
+const warningToast = (message: string) => {
+  toast.warning(
+    <div className="bg-yellow-50 p-3 border-l-4 border-yellow-500 rounded">
+      <p className="font-semibold text-yellow-600">Warning</p>
+      <p className="text-yellow-900">{message}</p>
+    </div>,
+    {
+      duration: 5000,
+      style: { background: "#FEFCE8", color: "#78350F", border: "1px solid #FBBF24" },
+    }
+  );
+}
+
 export const toasts = {
-  genericErrorToast
+  genericErrorToast,
+  errrorToast,
+  infoToast,
+  successToast,
+  warningToast,
 }
