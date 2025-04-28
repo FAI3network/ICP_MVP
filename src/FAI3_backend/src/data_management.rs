@@ -2,20 +2,12 @@ use crate::{
     check_cycles_before_action, is_owner, DataPoint, MODELS, NEXT_DATA_POINT_ID
 };
 
-use crate::types::{get_classifier_model_data, ModelDetails};
-use candid::Principal;
-
+use crate::types::{get_classifier_model_data, UpdatedDetails};
 use crate::types::{ModelType, KeyValuePair};
 use std::collections::HashMap;
-use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
+use candid::Principal;
 
 use crate::model::update_model;
-
-#[derive(CandidType, CandidDeserialize, Clone, Debug)]
-pub(crate) struct UpdatedDetails {
-    name: String,
-    details: ModelDetails,
-}
 
 #[ic_cdk::update]
 /// Adds a dataset to an specified model.

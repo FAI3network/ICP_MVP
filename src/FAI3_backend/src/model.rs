@@ -103,6 +103,7 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                         hugging_face_url,
                         evaluations: Vec::new(),
                         average_fairness_metrics: None,
+                        language_evaluations: Vec::new(),
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
