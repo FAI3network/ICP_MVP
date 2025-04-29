@@ -64,15 +64,15 @@ export function useWorker() {
               break;
             case "fairness_test":
               const { modelId, max_queries, seed, dataset } = payload;
-              dataset.forEach((item: string) => {
-                result = webapp?.calculate_llm_metrics(
+              for (const item of dataset.values()) {
+                result = await webapp?.calculate_llm_metrics(
                   BigInt(modelId),
                   item,
                   max_queries,
                   seed
                 );
-              });
-              result = webapp?.average_llm_metrics(
+              };
+              result = await webapp?.average_llm_metrics(
                 BigInt(modelId),
                 dataset
               );
