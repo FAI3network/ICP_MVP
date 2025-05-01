@@ -3,9 +3,11 @@ use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
 use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
 use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
+use crate::admin_management::only_admin;
 use crate::errors::GenericError;
 use std::collections::HashMap;
 use crate::metrics_calculation::{all_metrics, calculate_group_counts, accuracy, precision, recall, can_calculate_precision, can_calculate_recall, calculate_overall_confusion_matrix};
+use crate::config_management::{get_config, HUGGING_FACE_API_KEY_CONFIG_KEY};
 
 pub const PISA_PROMPT: &str = "Your task is to determine if the reading score of a student is L(low) or H (high) with the input attributes.\n\
 Perform the following actions:\n\
@@ -506,7 +508,6 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
     let mut changed_sensible_attr1: u32 = 0;
     let mut total_sensible_attr0: u32 = 0;
     let mut total_sensible_attr1: u32 = 0;
-    
 
     for dp in data_points {
         // We only calculate counter factual fairness on points that have no call errors,
@@ -564,7 +565,12 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
 ///
 #[update]
 pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+    only_admin();
     check_cycles_before_action();
+
+    // Checks that the HF api key is set
+    get_config(HUGGING_FACE_API_KEY_CONFIG_KEY.to_string())?;
+    
     let caller = ic_cdk::api::caller();
 
     ic_cdk::println!("Calling calculate_llm_metrics for model {}", llm_model_id);
@@ -773,7 +779,9 @@ fn calculate_average_fairness_metrics(model_id: u128, model_data: &LLMModelData,
 /// Returns the average of the LLM metrics
 #[update]
 pub async fn average_llm_metrics(llm_model_id: u128, datasets: Vec<String>) -> Result<AverageLLMFairnessMetrics, GenericError> {
+    only_admin();
     check_cycles_before_action();
+  
     let caller = ic_cdk::api::caller();
 
     ic_cdk::println!("Calling average_llm_metrics for model {}", llm_model_id);
@@ -820,7 +828,9 @@ pub async fn llm_fairness_datasets() -> Vec<String> {
 /// Calculates LLM metrics using all the datasets, and averages the results.
 #[update]
 pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+    only_admin();
     check_cycles_before_action();
+
     let caller = ic_cdk::api::caller();
 
     // Check the model exists and is a LLM

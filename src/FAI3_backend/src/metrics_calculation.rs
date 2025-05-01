@@ -308,7 +308,6 @@ pub(crate) fn calculate_all_metrics(
         model_data.metrics.timestamp = ic_cdk::api::time();
         model_data.metrics_history.push(model_data.metrics.clone());
         model.model_type = ModelType::Classifier(model_data);
-        model.version += 1;
         models.insert(model_id, model.clone());
     });
 

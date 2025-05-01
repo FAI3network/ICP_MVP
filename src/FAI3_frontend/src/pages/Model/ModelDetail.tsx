@@ -58,7 +58,7 @@ export function ModelDetail({ model, metrics, fetchModel }: any) {
 
                   <DataUploadModal fetchModel={fetchModel} latestVars={latestVars} cachedThresholds={model.cached_thresholds} cachedSelections={model.cached_selections} isOpen={openEvalModal} onClose={() => setOpenEvalModal(false)} />
 
-                  <AddModelModal onClose={() => setOpenEditModal(false)} isOpen={openEditModal} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} />
+                  <AddModelModal onClose={() => setOpenEditModal(false)} isOpen={openEditModal} modelId={parseInt(modelId!)} name={model.model_name} details={model.details} update fetchModel={fetchModel} modelInfo={{id: parseInt(modelId!), name:model.model_name, details: model.details}} />
 
                   <Button
                     onClick={() => {

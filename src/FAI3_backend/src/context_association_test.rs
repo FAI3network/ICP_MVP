@@ -4,6 +4,7 @@ use std::fmt;
 use crate::hugging_face::call_hugging_face;
 use crate::types::{ContextAssociationTestResult, ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestDataPoint, ContextAssociationTestType, get_llm_model_data, ModelType, ContextAssociationTestAPIResult};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
+use crate::admin_management::only_admin;
 use crate::errors::GenericError;
 use crate::utils::{is_owner, seeded_vector_shuffle};
 
@@ -569,6 +570,7 @@ async fn process_context_association_test_intersentence(
 ///
 #[update]
 pub async fn context_association_test(llm_model_id: u128, max_queries: usize, seed: u32, shuffle_questions: bool) -> Result<ContextAssociationTestAPIResult, GenericError> {
+    only_admin();
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 

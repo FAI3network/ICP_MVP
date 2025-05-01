@@ -6,8 +6,9 @@ import { DataUploadContext } from "./utils";
 import { useAuthClient, useDataContext } from "../../utils";
 import { toast } from "sonner";
 import { features } from "process";
+import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
-export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds, cachedSelections }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any }) {
+export default function ColumnSelectionSection({ fetchModel, latestVars, cachedThresholds, cachedSelections, details }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, details: {name: string, details: ModelDetails} }) {
   const { modelId, table, columns, currentStep, setCurrentStep }: {
     modelId: string | undefined,
     table: Table<any>,
@@ -122,8 +123,10 @@ export default function ColumnSelectionSection({ fetchModel, latestVars, cachedT
 
     }
 
+    console.log("new model details", details);
+
     if (valid) {
-      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables, [columnLabels.labels, columnLabels.predictions]);
+      await webapp?.add_dataset(BigInt(modelId!), features, labels, predictions, privilegedVariables, [columnLabels.labels, columnLabels.predictions], details);
       await webapp?.calculate_all_metrics(BigInt(modelId!), [thresholdValues]);
       await fetchModel();
       await fetchModels();

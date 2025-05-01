@@ -9,7 +9,7 @@ use FAI3_backend::errors::GenericError;
 use std::collections::HashMap;
 mod common;
 use common::{
-    create_pic, create_llm_model, get_model,
+    create_pic, create_llm_model, get_model, add_hf_api_key,
     wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body
 };
 
@@ -85,6 +85,8 @@ fn llm_fairness_with_variable_queries_test(
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
     assert_eq!(model_id, 1);  // Assuming model creation is always returning model_id as 1 in mock
+
+    add_hf_api_key(&pic, canister_id, model_id);
 
     // Preparing the request with the dynamic number of max_queries based on returned_texts length
     let max_queries: usize = returned_texts.len();  // Now this is dynamic
@@ -185,6 +187,8 @@ fn test_llm_fairness_wrong_json_response() {
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
     assert_eq!(model_id, 1);
+
+    add_hf_api_key(&pic, canister_id, model_id);
 
     // Calling context_association_test
     let max_queries: usize = 2;
@@ -479,9 +483,11 @@ fn test_calculate_all_llm_metrics_integration() {
     let (pic, canister_id) = create_pic();
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name);
+    add_hf_api_key(&pic, canister_id, model_id);
+
     let seed: u32 = 1;
     let max_queries: usize = 16;
-
+    
     // Submit an update call to the test canister to calculate all LLM metrics
     let encoded_args = encode_args((model_id, max_queries, seed)).unwrap();
     let call_id = pic.submit_call(
@@ -558,6 +564,9 @@ fn test_llm_fairness_datasets_integration_should_return_a_list_of_strings() {
 fn test_average_llm_metrics_integration_happy_path() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+
+    add_hf_api_key(&pic, canister_id, model_id);
+    
     let seed: u32 = 1;
     let max_queries: usize = 20;
 
@@ -702,6 +711,9 @@ fn test_average_llm_metrics_integration_happy_path() {
 fn test_average_llm_metrics_should_error_when_dataset_was_not_calculated() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+
+    add_hf_api_key(&pic, canister_id, model_id);
+    
     let seed: u32 = 1;
     let max_queries: usize = 16;
 

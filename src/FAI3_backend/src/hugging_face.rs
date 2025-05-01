@@ -1,4 +1,5 @@
-
+use crate::CONFIGURATION;
+use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
 use serde::{Deserialize, Serialize};
 
 use ic_cdk::api::management_canister::http_request::{
@@ -9,10 +10,10 @@ use num_traits::cast::ToPrimitive;
 use crate::types::HuggingFaceResponseItem;
 
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models";
-const HUGGING_FACE_BEARER_TOKEN: &str = "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";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HuggingFaceRequestParameters {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<Vec<char>>,
     pub max_new_tokens: Option<u32>,
     pub temperature: Option<f32>,
@@ -73,6 +74,13 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
 
     // ic_cdk::println!("{}", String::from_utf8(json_payload.clone()).unwrap());
 
+    let hugging_face_bearer_token = CONFIGURATION.with(|config| {
+        let config_tree = config.borrow();
+
+        let not_found_error_message = format!("{} config key should be set.", HUGGING_FACE_API_KEY_CONFIG_KEY.to_string());
+        return config_tree.get(&HUGGING_FACE_API_KEY_CONFIG_KEY.to_string()).expect(not_found_error_message.as_str());
+    });
+
     // 2) Prepare headers
     let headers = vec![
         HttpHeader {
@@ -81,7 +89,7 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
         },
         HttpHeader {
             name: "Authorization".to_string(),
-            value: format!("Bearer {}", HUGGING_FACE_BEARER_TOKEN),
+            value: format!("Bearer {}", hugging_face_bearer_token),
         },
     ];
 

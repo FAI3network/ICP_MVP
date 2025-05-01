@@ -4,12 +4,13 @@ use ic_management_canister_types::CanisterId;
 use pocket_ic::{
     PocketIc,
     common::rest::{
+        RawMessageId,
         CanisterHttpReply, CanisterHttpResponse,
         MockCanisterHttpResponse, CanisterHttpRequest,
     },
 };
 use FAI3_backend::types::{
-    Model, ModelDetails, KeyValuePair, PrivilegedIndex,
+    Model, ModelDetails, UpdatedDetails, KeyValuePair, PrivilegedIndex,
 };
 
 // 2T cycles
@@ -67,6 +68,21 @@ pub fn create_llm_model(pic: &PocketIc, canister_id: CanisterId, model_name: Str
     let decoded_reply: u128 = decode_one(&create_model_reply).expect("Failed to decode create model reply");
 
     return decoded_reply;
+}
+
+/// Adds a mock Hugging Face API key to a model
+pub fn add_hf_api_key(pic: &PocketIc, canister_id: CanisterId, model_id: u128) {
+    let encoded_args = encode_args(("hugging_face_api_key", "fake-hf-api-key-value")).unwrap();
+    
+    // Testing add_classifier_model.
+    let update_call_reply = pic.update_call(
+        canister_id,
+        Principal::anonymous(),
+        "set_config",
+        encoded_args
+    ).expect("Failed to add a mocked Hugging Face API key");
+
+    decode_one::<()>(&update_call_reply).expect("Failed to decode create model reply");
 }
 
 pub fn get_all_models(pic: &PocketIc, canister_id: CanisterId) -> Vec<Model> {
@@ -156,7 +172,15 @@ pub fn add_dataset(
     model_id: u128, features: Vec<Vec<f64>>, labels: Vec<bool>,
     predictions: Vec<bool>, privileged: Vec<KeyValuePair>, selection_labels: Vec<String>) -> Result<(), candid::Error> {
 
-    let encoded_args = encode_args((model_id, features, labels, predictions, privileged, selection_labels)).unwrap();
+    let encoded_args = encode_args((model_id, features, labels, predictions, privileged, selection_labels, UpdatedDetails {
+        name: "new name".to_string(),
+        details: ModelDetails {
+            description: "...".to_string(),
+            framework: "...".to_string(),
+            objective: "...".to_string(),
+            url: "...".to_string(),
+        },
+    })).unwrap();
     // Testing add_classifier_model.
     let create_model_reply = pic.update_call(
         canister_id,
@@ -265,4 +289,23 @@ pub fn mock_correct_hugging_face_response_body(generated_text: &str) -> String {
             }
         }
     ]).to_string()
+}
+
+pub fn wait_for_mocks_strings(pic: &PocketIc, call_id: RawMessageId, mocked_texts: &Vec<String>) -> Vec<u8> {
+    // Mocking HTTP responses based on returned_texts
+    for text in mocked_texts {
+        wait_for_http_request(&pic);
+        let canister_http_requests = pic.get_canister_http();
+        if canister_http_requests.is_empty() {
+            break;
+        }
+        
+        let canister_http_request = &canister_http_requests[0];
+        let mock_hf_response_body = mock_correct_hugging_face_response_body(text.as_str());
+        
+        let mock_canister_http_response = mock_http_response(canister_http_request, mock_hf_response_body);
+        pic.mock_canister_http_response(mock_canister_http_response);
+    }
+
+    return pic.await_call(call_id).unwrap();
 }
