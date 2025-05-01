@@ -1,5 +1,8 @@
 use crate::CONFIGURATION;
-use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
+use crate::config_management::{
+    HUGGING_FACE_API_KEY_CONFIG_KEY,
+    HUGGING_FACE_INFERENCE_PROVIDER_CONFIG_KEY,
+};
 use serde::{Deserialize, Serialize};
 
 use ic_cdk::api::management_canister::http_request::{
@@ -10,6 +13,7 @@ use num_traits::cast::ToPrimitive;
 use crate::types::HuggingFaceResponseItem;
 
 const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models";
+const HUGGING_FACE_INFERENCE_PROVIDER_URL: &str = "https://router.huggingface.co";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HuggingFaceRequestParameters {
@@ -33,6 +37,77 @@ pub struct HuggingFaceRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HuggingFaceResponse {
     generated_text: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaResponse {
+    choices: Vec<NovitaChoice>,
+    created: i64,
+    id: String,
+    model: String,
+    object: String,
+    system_fingerprint: String,
+    usage: NovitaUsage,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaChoice {
+    content_filter_results: NovitaContentFilterResults,
+    finish_reason: String,
+    index: i32,
+    message: NovitaMessage,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaContentFilterResults {
+    hate: NovitaFilterResult,
+    jailbreak: NovitaJailbreakResult,
+    profanity: NovitaFilterResult,
+    self_harm: NovitaFilterResult,
+    sexual: NovitaFilterResult,
+    violence: NovitaFilterResult,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaFilterResult {
+    filtered: bool,
+    #[serde(default)]
+    detected: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaJailbreakResult {
+    detected: bool,
+    filtered: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaMessage {
+    content: String,
+    role: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct NovitaUsage {
+    completion_tokens: i32,
+    completion_tokens_details: Option<serde_json::Value>,
+    prompt_tokens: i32,
+    prompt_tokens_details: Option<serde_json::Value>,
+    total_tokens: i32,
+}
+
+// OpenAI compatible API request, for inference providers
+#[derive(Serialize, Deserialize, Clone)]
+pub struct OpenAIRequest {
+    model: String,
+    messages: Vec<OpenAIMessage>,
+    max_tokens: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct OpenAIMessage {
+    role: String,
+    content: String,
 }
 
 /// Calls Hugging Face, returning the HF response.
@@ -66,10 +141,11 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     
     // 1) Prepare JSON payload
     let payload = HuggingFaceRequest {
-        inputs: input_text,
+        inputs: input_text.clone(),
         parameters: Some(parameters), 
     };
-    let json_payload =
+
+    let mut json_payload =
         serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
 
     // ic_cdk::println!("{}", String::from_utf8(json_payload.clone()).unwrap());
@@ -96,8 +172,43 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     // 3) Construct the argument
     //    - Wrap json_payload in Some(...)
     //    - Provide max_response_bytes (e.g., 2 MB)
+    let endpoint_url = HUGGING_FACE_ENDPOINT.to_string();
+
+    let inference_provider = CONFIGURATION.with(|config| {
+        let config_tree = config.borrow();
+
+        return config_tree.get(&HUGGING_FACE_INFERENCE_PROVIDER_CONFIG_KEY.to_string()); 
+    });
+
+    let mut url = format!("{}/{}", endpoint_url, llm_model);
+
+    if let Some(_provider) = inference_provider.clone() {
+        match _provider.as_str() {
+            "novita" => {
+                url = format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "novita/v3/openai/chat/completions");
+
+                let payload = OpenAIRequest {
+                    model: llm_model.to_lowercase(),
+                    messages: vec![
+                        OpenAIMessage {
+                            role: "user".to_string(),
+                            content: input_text
+                        }
+                    ],
+                    max_tokens: Some(1000),
+                };
+
+                json_payload =
+        serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
+            },
+            _ => (),
+        }
+    }
+    
+    ic_cdk::println!("Endpoint url: {}", url);
+    
     let request_arg = CanisterHttpRequestArgument {
-        url: format!("{}/{}", HUGGING_FACE_ENDPOINT.to_string(), llm_model),
+        url,
         method: HttpMethod::POST,
         headers,
         body: Some(json_payload),
@@ -125,15 +236,38 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     let json_val: serde_json::Value =
         serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
 
-    // 2) Now parse that `json_val` into a vector of your items
-    let hf_response: Vec<HuggingFaceResponseItem> =
-        serde_json::from_value(json_val).map_err(|e| e.to_string())?;
+    ic_cdk::println!("HF response: {}", &json_val);
 
-    // 3) Extract the text from the first item, or default
-    let text: String = hf_response
-        .get(0)
-        .and_then(|item| item.generated_text.clone())
-        .unwrap_or_else(|| "No generated_text".to_string());
+    let text: String;
+
+    match inference_provider {
+        Some(ref prov) if prov == "novita" => {
+            // assume it's Novita
+            
+            // 2) Now parse that `json_val` into a vector of your items
+            let hf_response: NovitaResponse =
+                serde_json::from_value(json_val).map_err(|e| e.to_string())?;
+
+            // 3) Extract the text from the first item, or default
+            text = hf_response
+                .choices.get(0)
+                .expect("it should have at least one choice")
+                .message
+                .content.clone();
+        },
+        _ => {
+            // 2) Now parse that `json_val` into a vector of your items
+            let hf_response: Vec<HuggingFaceResponseItem> =
+                serde_json::from_value(json_val).map_err(|e| e.to_string())?;
+
+            // 3) Extract the text from the first item, or default
+            text = hf_response
+                .get(0)
+                .and_then(|item| item.generated_text.clone())
+                .unwrap_or_else(|| "No generated_text".to_string());
+        }
+    };
+
 
     // 4) Return a `String` in `Ok(...)`
     Ok(text)

@@ -5,7 +5,7 @@ use crate::{
 use candid::Principal;
 use std::vec;
 use crate::types::get_classifier_model_data;
-use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory};
+use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory, ModelEvaluationResult, get_llm_model_data};
 
 #[ic_cdk::update]
 pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -179,15 +179,37 @@ pub fn get_model_metrics(model_id: u128) -> Metrics {
     })
 }
 
+/// Returns a model
+/// For limitations and data size, it won't return LLM data_points
+/// And it won't return LLM metrics history
 #[ic_cdk::query]
 pub fn get_model(model_id: u128) -> Model {
-    MODELS.with(|models| {
+    let mut model = MODELS.with(|models| {
         models
             .borrow()
             .get(&model_id)
             .expect("Model not found")
             .clone()
-    })
+    });
+
+    // Deleting data that could trigger a response size error
+    // Error code: IC0504
+    let mut model_data = get_llm_model_data(&model);
+
+    model_data.cat_metrics_history = vec![];
+    if let Some(mut cat) = model_data.cat_metrics {
+        cat.data_points = vec![];
+        model_data.cat_metrics = Some(cat);
+    }
+
+    model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
+        evaluation.data_points = None;
+        evaluation
+    }).collect();
+
+    model.model_type = ModelType::LLM(model_data);
+    
+    return model;
 }
 
 #[ic_cdk::update]

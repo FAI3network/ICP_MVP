@@ -267,6 +267,7 @@ async fn run_metrics_calculation(
     sensible_attribute_values: &[& str; 2],
     predict_attributes_values: &[& str; 2],
     binarized_sensible_attribute_column: Option<&str>,
+    max_errors: u32,
 ) -> Result<(usize, u32, u32), String> {
 
     // Create a CSV reader from the string input rather than a file path
@@ -494,6 +495,9 @@ async fn run_metrics_calculation(
             },
         }
         queries += 1;
+        if max_errors > 0 && call_errors > max_errors {
+            return Err(format!("Max errors count reached: {}. Run won't be saved.", max_errors));
+        }
         if max_queries > 0 && queries >= max_queries {
             break;
         }
@@ -564,7 +568,7 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
 /// - `Result<LLMMetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
 ///
 #[update]
-pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
@@ -614,6 +618,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                                           prompt_template.clone(), ds.sensible_attribute_values,
                                           ds.predict_attributes_values,
                                           ds.binarized_sensible_attribute_column,
+                                          max_errors,
             ).await;
 
             privileged_map.insert(ds.sensible_attribute.to_string(), 0);
@@ -827,7 +832,7 @@ pub async fn llm_fairness_datasets() -> Vec<String> {
 
 /// Calculates LLM metrics using all the datasets, and averages the results.
 #[update]
-pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
@@ -850,7 +855,7 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
 
     for dataset in &datasets {
         ic_cdk::println!("Calculating LLM metrics for model {} for dataset {}", llm_model_id, dataset.clone());
-        let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed).await;
+        let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed, max_errors).await;
         if result.is_err() {
             return result;  // If any error occurs return it immediately
         }
