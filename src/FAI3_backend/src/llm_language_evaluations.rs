@@ -73,12 +73,16 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
     // Using integer division
     let original_max_queries = max_queries;
     let max_queries = max_queries / languages.len();
+    if original_max_queries > 0 && max_queries == 0 {
+        return Err("Wrong max_queries value. It should be at least the number of languages, or zero.".to_string());
+    }
     
     for lang in languages {
         let mut queries : usize = 0;
         ic_cdk::println!("Processing `{}` language", lang);
         let mut rdr = csv::ReaderBuilder::new()
             .from_reader(KALEIDOSKOPE_CSV.as_bytes());
+        
         for result in rdr.deserialize::<HashMap<String, String>>() {
             let result = result.map_err(|e| e.to_string())?;
 
@@ -90,7 +94,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                 continue;
             }
 
-            ic_cdk::println!("Language: {}", language);
+            ic_cdk::println!("Executing query {}/{} of language {}", queries, max_queries, language);
             
             let question: &String = result.get("question")
                 .expect("It should be able to get the question field.");
@@ -120,7 +124,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
             let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone())).await;
 
             let trimmed_response = match res {
-                Ok(response) => response.trim().to_string(),
+                Ok(response) => crate::utils::clean_llm_response(&response),
                 Err(e) => {
                     ic_cdk::println!("Error calling Hugging Face API: {}", e);
 
@@ -144,7 +148,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                 }
             };
 
-            ic_cdk::println!("Trimmed response: {}", &trimmed_response);
+            ic_cdk::println!("Cleaned response: {}", &trimmed_response);
 
             let evaluation_answer = match serde_json::from_str::<LanguageEvaluationAnswer>(&trimmed_response) {
                 Ok(json) => {

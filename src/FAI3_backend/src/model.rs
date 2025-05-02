@@ -5,7 +5,7 @@ use crate::{
 use candid::Principal;
 use std::vec;
 use crate::types::get_classifier_model_data;
-use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory, ModelEvaluationResult, get_llm_model_data};
+use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory, ModelEvaluationResult, LanguageEvaluationResult, get_llm_model_data};
 
 #[ic_cdk::update]
 pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -204,7 +204,13 @@ pub fn get_model(model_id: u128) -> Model {
 
     model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
         evaluation.data_points = None;
+        evaluation.llm_data_points = None;
         evaluation
+    }).collect();
+
+    model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
+        levaluation.data_points = Vec::new();
+        levaluation
     }).collect();
 
     model.model_type = ModelType::LLM(model_data);

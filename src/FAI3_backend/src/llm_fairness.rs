@@ -1,4 +1,5 @@
 use ic_cdk_macros::*;
+use regex::Regex;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
 use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
@@ -364,8 +365,8 @@ async fn run_metrics_calculation(
         let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
         
         match res {
-            Ok(r) => {   
-                let trimmed_response = r.trim();
+            Ok(r) => {
+                let trimmed_response = crate::utils::clean_llm_response(&r);
                 let response: Result<bool, String> = {
                     ic_cdk::println!("Response: {}", trimmed_response.to_string());
 
@@ -385,7 +386,9 @@ async fn run_metrics_calculation(
 
                 let counter_factual: LLMDataPointCounterFactual = match res_cf {
                     Ok(val) => {
-                        let trimmed_response_cf = val.trim();
+                        // Note: is this OK? Should we trimmer the response?
+                        // Because we might be losing some differences
+                        let trimmed_response_cf = crate::utils::clean_llm_response(&val);
                         let response_cf: Result<bool, String> = {
                             ic_cdk::println!("Response CF: {}", trimmed_response_cf.to_string());
 
