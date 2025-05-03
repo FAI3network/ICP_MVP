@@ -318,6 +318,8 @@ async fn run_metrics_calculation(
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
 
+        ic_cdk::println!("Executing query {}/{}", queries, max_queries);
+
         let (personalized_prompt, personalized_prompt_cf) = build_prompts(
             &records, predict_attribute,
             sensible_attribute_values, predict_attributes_values,
@@ -346,6 +348,7 @@ async fn run_metrics_calculation(
             let res = result.get(predict_attribute).map(|s| s.trim());
             match res {
                 Some(r) => {
+                    ic_cdk::println!("Expected response: {}", &r);
                     if r == predict_attributes_values[1] {
                         true
                     } else {
@@ -872,6 +875,44 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
             .map(|_| metrics_result)
     } else {
         Err("No datasets processed, metrics could not be calculated.".to_string())
+    }
+}
+
+#[query]
+pub async fn get_llm_fairness_data_points(llm_model_id: u128, llm_evaluation_id: u128, limit: u32, offset: usize) -> Result<(Vec<LLMDataPoint>, usize), GenericError>  {
+    only_admin();
+    check_cycles_before_action();
+
+    let caller = ic_cdk::api::caller();
+
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
+
+    if let ModelType::LLM(model_data) = model.model_type {
+        let evaluation: ModelEvaluationResult = model_data.evaluations.into_iter()
+            .find(|evaluation| evaluation.model_evaluation_id == llm_evaluation_id)
+            .expect("Evaluation with passed id should exist");
+
+        let evaluation_data_points = evaluation
+            .llm_data_points.expect("The model should have data points");
+
+        let data_points_total_length = evaluation_data_points.len();
+
+        // Get a slice of data points based on offset and limit
+        let start = offset;
+        let end = (offset + limit as usize).min(evaluation_data_points.len());
+        
+        // Clone the selected range of data points
+        let data_points = evaluation_data_points[start..end].to_vec();
+        
+        return Ok((data_points, data_points_total_length));
+    } else {
+        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
     }
 }
 

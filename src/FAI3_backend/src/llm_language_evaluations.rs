@@ -276,6 +276,8 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
 
     if let ModelType::LLM(model_type_data) = model.model_type {
         let result = run_evaluate_languages(&model_type_data, &languages, seed, max_queries).await;
+
+        ic_cdk::println!("Language evaluation finished successfully");
         
         return match result {
             Ok(language_evaluation_result) => {
@@ -291,6 +293,8 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
                     models.insert(model_id, model);
                 });
 
+                ic_cdk::println!("Language evaluation saved successfully");
+
                 Ok(language_evaluation_result)
             },
             Err(err_message) => {
@@ -299,6 +303,44 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
         };
     } else {
         return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be a LLM"));
+    }
+}
+
+#[query]
+pub async fn get_language_evaluation_data_points(llm_model_id: u128, language_evaluation_id: u128, limit: u32, offset: usize) -> Result<(Vec<LanguageEvaluationDataPoint>, usize), GenericError>  {
+    only_admin();
+    check_cycles_before_action();
+
+    let caller = ic_cdk::api::caller();
+
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
+
+    if let ModelType::LLM(model_data) = model.model_type {
+        let language_evaluation = model_data.language_evaluations
+            .into_iter()
+            .find(|le: &LanguageEvaluationResult| le.language_model_evaluation_id == language_evaluation_id)
+            .expect("Context association test with passed index should exist.");
+
+        let data_points: &Vec<LanguageEvaluationDataPoint> = language_evaluation.data_points.as_ref();
+
+        let data_points_total_length = data_points.len();
+
+        // Get a slice of data points based on offset and limit
+        let start = offset;
+        let end = (offset + limit as usize).min(data_points.len());
+        
+        // Clone the selected range of data points
+        let data_points = data_points[start..end].to_vec();
+        
+        return Ok((data_points, data_points_total_length));
+    } else {
+        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
     }
 }
 

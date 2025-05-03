@@ -208,7 +208,9 @@ pub fn get_model(model_id: u128) -> Model {
         evaluation
     }).collect();
 
+    ic_cdk::println!("Language evaluations: {}", model_data.language_evaluations.len());
     model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
+        ic_cdk::println!("Data points length {} and timestamp {}/{:02}:{:02}", levaluation.data_points.len(), levaluation.timestamp / (24 * 3600), (levaluation.timestamp % (24 * 3600)) / 3600, (levaluation.timestamp % 3600) / 60);
         levaluation.data_points = Vec::new();
         levaluation
     }).collect();
