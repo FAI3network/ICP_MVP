@@ -195,7 +195,7 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
                             content: input_text
                         }
                     ],
-                    max_tokens: Some(1000),
+                    max_tokens: Some(5000),
                 };
 
                 json_payload =
