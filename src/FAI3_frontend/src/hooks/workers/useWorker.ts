@@ -27,11 +27,6 @@ export function useWorker() {
   const { workerProcesses, setWorkerProcesses } = useDataContext();
 
   const runTest = useCallback((data: WorkerDataTypes, workerType: keyof WorkerTypes) => {
-    if (!webapp) {
-      console.error("Webapp is not initialized.");
-      return;
-    }
-
     // Check if test for this model is already running
     if (workerProcesses.includes(workerType)) {
       toasts.errrorToast(`${workerType} is already running.`);
