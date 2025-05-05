@@ -69,24 +69,7 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
     }
     if (selectedTest.includes("Fairness")) {
       await fairnessForm.handleSubmit(async (data) => {
-        // console.log("Fairness Data", data);
-
-        // data.dataset.forEach(async (dataset) => {
-        //   console.log("Dataset", dataset);
-        //   const res = await webapp?.calculate_llm_metrics(BigInt(modelId!), dataset, data.max_queries, data.seed);
-
-        //   console.log("Fairness Result", res);
-        // });
-
-        // const res = await webapp?.average_llm_metrics(BigInt(modelId!), data.dataset);
-        // if (res && typeof res === "object" && res !== null && "Err" in res) {
-        //   console.error("Failed to run Fairness test:", res.Err);
-        //   const err = res.Err as GenericError;
-        //   toasts.genericErrorToast(err);
-        // } else {
-        //   console.log(res);
-        // }
-        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset}, "FAIRNESS");
+        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset.map((dataset: string) => dataset.split(" (")[0])}, "FAIRNESS");
       })();
     }
 

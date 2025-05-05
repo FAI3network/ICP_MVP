@@ -51,7 +51,7 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
               <FormControl>
                 <div className="flex flex-row items-center gap-2">
                   <Select
-                    options={datasets}
+                    options={datasets.map((dataset: string) => ( dataset + " (" + fairnessTestSensVars[dataset as keyof typeof fairnessTestSensVars] + ")" ))}
                     multiple
                     selection={form.getValues().dataset.join(", ")}
                     setSelection={(e: string) => field.onChange(e.split(", ").length === 1 && e.split(", ")[0] === "" ? [] : e.split(", "))}
@@ -62,10 +62,9 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
                       <p>
                         (
                         {field.value.map((dataset: string, index: number) => {
-                          const sensitivityVariable = fairnessTestSensVars[dataset as keyof typeof fairnessTestSensVars];
                           return (
                             <span key={dataset} className="text-sm text-muted-foreground">
-                              {sensitivityVariable + (index < field.value.length - 1 ? ", " : "")}
+                              {dataset}
                             </span>
                           );
                         })}
