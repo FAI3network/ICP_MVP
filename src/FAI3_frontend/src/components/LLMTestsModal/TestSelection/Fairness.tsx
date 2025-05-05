@@ -13,6 +13,11 @@ interface formSchemaType {
   dataset: string[];
 }
 
+const fairnessTestSensVars: {"pisa":string, "compas":string} = {
+  "pisa": "Gender",
+  "compas": "Race"
+}
+
 export default function Fairness({ form }: { form: UseFormReturn<formSchemaType, any, formSchemaType> }) {
   const { webapp } = useAuthClient();
   const [datasets, setDatasets] = useState<string[]>([]);
@@ -35,22 +40,45 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
         <FormField
           control={form.control}
           name="dataset"
-          render={({ field }) => (
+          render={({ field }) => {
+            useEffect(() => {
+              console.log("field", field);
+            }, [field]);
+            
+            return (
             <FormItem className="flex flex-col">
               <FormLabel>Max Queries</FormLabel>
               <FormControl>
-                <Select
-                  options={datasets}
-                  multiple
-                  selection={form.getValues().dataset.join(", ")}
-                  setSelection={(e: string) => field.onChange(e.split(", ").length === 1 && e.split(", ")[0] === "" ? [] : e.split(", "))}
-                  placeholder="Select a dataset..."
-                />
+                <div className="flex flex-row items-center gap-2">
+                  <Select
+                    options={datasets}
+                    multiple
+                    selection={form.getValues().dataset.join(", ")}
+                    setSelection={(e: string) => field.onChange(e.split(", ").length === 1 && e.split(", ")[0] === "" ? [] : e.split(", "))}
+                    placeholder="Select a dataset..."
+                  />
+                  {field.value.length > 0 && (
+                    <div className="flex flex-row items-center gap-2">
+                      <p>
+                        (
+                        {field.value.map((dataset: string, index: number) => {
+                          const sensitivityVariable = fairnessTestSensVars[dataset as keyof typeof fairnessTestSensVars];
+                          return (
+                            <span key={dataset} className="text-sm text-muted-foreground">
+                              {sensitivityVariable + (index < field.value.length - 1 ? ", " : "")}
+                            </span>
+                          );
+                        })}
+                        )    
+                      </p>
+                    </div>
+                  )}
+                </div>
               </FormControl>
               <FormDescription>Maximum number of queries to run.</FormDescription>
               <FormMessage />
             </FormItem>
-          )}
+          )}}
         />
       </div>
 
