@@ -17,7 +17,7 @@ export const Select = ({ options, selection, setSelection, multiple = false, pla
     } else {
       setSelection(value);
     }
-  }
+  };
 
   useEffect(() => {
     if (multiple) {
@@ -34,8 +34,8 @@ export const Select = ({ options, selection, setSelection, multiple = false, pla
 
   return (
     <RadixSelect.Root onValueChange={(value: string) => handleSelection(value)} value={multiple ? multipleSelection : selection}>
-      <RadixSelect.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Food">
-        <RadixSelect.Value placeholder={ selection.length == 0 ? placeholder : selection.length > 32 ? selection.slice(0, 24) + "..." : selection} >
+      <RadixSelect.Trigger className="w-fit inline-flex items-center justify-center rounded px-4 py-2 text-sm leading-none h-9 gap-1 bg-white shadow-md hover:bg-mauve-100 focus:outline-none focus:ring-2 focus:ring-black" aria-label="Select">
+        <RadixSelect.Value placeholder={selection.length == 0 ? placeholder : selection.length > 32 ? selection.slice(0, 24) + "..." : selection}>
           {selection.length > 32 ? selection.slice(0, 24) + "..." : selection}
           {selection.length == 0 && placeholder}
         </RadixSelect.Value>
@@ -50,15 +50,15 @@ export const Select = ({ options, selection, setSelection, multiple = false, pla
           </RadixSelect.ScrollUpButton>
           <RadixSelect.Viewport className="p-1">
             <RadixSelect.Group>
-              {
-                options.map((option: any) => {
-                  const isSelected = multiple ? multipleSelection.includes(option) : selection === option;
+              {options.map((option: any) => {
+                const isSelected = multiple ? multipleSelection.includes(option) : selection === option;
 
-                  return (
-                    <SelectItem key={option} value={option} selected={isSelected} >{option}</SelectItem>
-                  )
-                })
-              }
+                return (
+                  <SelectItem key={option} value={option} selected={isSelected}>
+                    {option}
+                  </SelectItem>
+                );
+              })}
             </RadixSelect.Group>
           </RadixSelect.Viewport>
           <RadixSelect.ScrollDownButton className="flex items-center justify-center h-6 bg-white cursor-default">
@@ -67,39 +67,32 @@ export const Select = ({ options, selection, setSelection, multiple = false, pla
         </RadixSelect.Content>
       </RadixSelect.Portal>
     </RadixSelect.Root>
-  )
-}
+  );
+};
 
-export const SelectItem = forwardRef(
-  ({ children, className, selected, ...props }: any, forwardedRef) => {
-
-    return (
-      <RadixSelect.Item
-        className={cn("text-sm leading-none rounded flex items-center h-6 px-6 py-1 relative select-none cursor-pointer hover:bg-slate-200", className)}
-        {...props}
-        ref={forwardedRef}
-      >
-        <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
-        {
-          selected && (
-            <div className="absolute left-0 w-6 flex items-center justify-center">
-              <Check />
-            </div>
-          ) 
-          // : (
-          //   <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
-          //     <Check />
-          //   </RadixSelect.ItemIndicator>
-          // )
-        }
-        {/* <div className="absolute left-0 w-6 flex items-center justify-center">
+export const SelectItem = forwardRef(({ children, className, selected, ...props }: any, forwardedRef) => {
+  return (
+    <RadixSelect.Item className={cn("text-sm leading-none rounded flex items-center h-6 px-6 py-1 relative select-none cursor-pointer hover:bg-slate-200", className)} {...props} ref={forwardedRef}>
+      <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
+      {
+        selected && (
+          <div className="absolute left-0 w-6 flex items-center justify-center">
+            <Check />
+          </div>
+        )
+        // : (
+        //   <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
+        //     <Check />
+        //   </RadixSelect.ItemIndicator>
+        // )
+      }
+      {/* <div className="absolute left-0 w-6 flex items-center justify-center">
           <Check />
         </div> */}
 
-        {/* <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
+      {/* <RadixSelect.ItemIndicator className="absolute left-0 w-6 flex items-center justify-center">
           <Check />
         </RadixSelect.ItemIndicator> */}
-      </RadixSelect.Item>
-    );
-  },
-);
+    </RadixSelect.Item>
+  );
+});
