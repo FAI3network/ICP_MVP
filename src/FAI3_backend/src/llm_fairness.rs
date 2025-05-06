@@ -1,4 +1,5 @@
 use ic_cdk_macros::*;
+use regex::Regex;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
 use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
@@ -267,6 +268,7 @@ async fn run_metrics_calculation(
     sensible_attribute_values: &[& str; 2],
     predict_attributes_values: &[& str; 2],
     binarized_sensible_attribute_column: Option<&str>,
+    max_errors: u32,
 ) -> Result<(usize, u32, u32), String> {
 
     // Create a CSV reader from the string input rather than a file path
@@ -316,6 +318,8 @@ async fn run_metrics_calculation(
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
 
+        ic_cdk::println!("Executing query {}/{}", queries, max_queries);
+
         let (personalized_prompt, personalized_prompt_cf) = build_prompts(
             &records, predict_attribute,
             sensible_attribute_values, predict_attributes_values,
@@ -344,6 +348,7 @@ async fn run_metrics_calculation(
             let res = result.get(predict_attribute).map(|s| s.trim());
             match res {
                 Some(r) => {
+                    ic_cdk::println!("Expected response: {}", &r);
                     if r == predict_attributes_values[1] {
                         true
                     } else {
@@ -363,8 +368,8 @@ async fn run_metrics_calculation(
         let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
         
         match res {
-            Ok(r) => {   
-                let trimmed_response = r.trim();
+            Ok(r) => {
+                let trimmed_response = crate::utils::clean_llm_response(&r);
                 let response: Result<bool, String> = {
                     ic_cdk::println!("Response: {}", trimmed_response.to_string());
 
@@ -384,7 +389,9 @@ async fn run_metrics_calculation(
 
                 let counter_factual: LLMDataPointCounterFactual = match res_cf {
                     Ok(val) => {
-                        let trimmed_response_cf = val.trim();
+                        // Note: is this OK? Should we trimmer the response?
+                        // Because we might be losing some differences
+                        let trimmed_response_cf = crate::utils::clean_llm_response(&val);
                         let response_cf: Result<bool, String> = {
                             ic_cdk::println!("Response CF: {}", trimmed_response_cf.to_string());
 
@@ -494,6 +501,9 @@ async fn run_metrics_calculation(
             },
         }
         queries += 1;
+        if max_errors > 0 && call_errors > max_errors {
+            return Err(format!("Max errors count reached: {}. Run won't be saved.", max_errors));
+        }
         if max_queries > 0 && queries >= max_queries {
             break;
         }
@@ -564,7 +574,7 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
 /// - `Result<LLMMetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
 ///
 #[update]
-pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
@@ -614,6 +624,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                                           prompt_template.clone(), ds.sensible_attribute_values,
                                           ds.predict_attributes_values,
                                           ds.binarized_sensible_attribute_column,
+                                          max_errors,
             ).await;
 
             privileged_map.insert(ds.sensible_attribute.to_string(), 0);
@@ -827,7 +838,7 @@ pub async fn llm_fairness_datasets() -> Vec<String> {
 
 /// Calculates LLM metrics using all the datasets, and averages the results.
 #[update]
-pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
@@ -850,7 +861,7 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
 
     for dataset in &datasets {
         ic_cdk::println!("Calculating LLM metrics for model {} for dataset {}", llm_model_id, dataset.clone());
-        let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed).await;
+        let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed, max_errors).await;
         if result.is_err() {
             return result;  // If any error occurs return it immediately
         }
@@ -864,6 +875,44 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
             .map(|_| metrics_result)
     } else {
         Err("No datasets processed, metrics could not be calculated.".to_string())
+    }
+}
+
+#[query]
+pub async fn get_llm_fairness_data_points(llm_model_id: u128, llm_evaluation_id: u128, limit: u32, offset: usize) -> Result<(Vec<LLMDataPoint>, usize), GenericError>  {
+    only_admin();
+    check_cycles_before_action();
+
+    let caller = ic_cdk::api::caller();
+
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
+
+    if let ModelType::LLM(model_data) = model.model_type {
+        let evaluation: ModelEvaluationResult = model_data.evaluations.into_iter()
+            .find(|evaluation| evaluation.model_evaluation_id == llm_evaluation_id)
+            .expect("Evaluation with passed id should exist");
+
+        let evaluation_data_points = evaluation
+            .llm_data_points.expect("The model should have data points");
+
+        let data_points_total_length = evaluation_data_points.len();
+
+        // Get a slice of data points based on offset and limit
+        let start = offset;
+        let end = (offset + limit as usize).min(evaluation_data_points.len());
+        
+        // Clone the selected range of data points
+        let data_points = evaluation_data_points[start..end].to_vec();
+        
+        return Ok((data_points, data_points_total_length));
+    } else {
+        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
     }
 }
 
