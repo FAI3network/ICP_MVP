@@ -141,6 +141,7 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
         return models
             .values()
             .filter(|model| {
+                ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
                     Some(ref mt) if mt == "classifier" => matches!(model.model_type, ModelType::Classifier(_)),
@@ -196,6 +197,22 @@ pub fn get_model(model_id: u128) -> Model {
     });
 
     model.prune()
+}
+
+/// Returns a model
+/// For limitations and data size, it won't return LLM data_points
+/// And it won't return LLM metrics history
+#[ic_cdk::query]
+pub fn get_model(model_id: u128) -> Model {
+    let model = MODELS.with(|models| {
+        models
+            .borrow()
+            .get(&model_id)
+            .expect("Model not found")
+            .clone()
+    });
+
+    return model.prune();
 }
 
 #[ic_cdk::update]
