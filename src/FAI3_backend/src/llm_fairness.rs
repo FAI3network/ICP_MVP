@@ -1,5 +1,4 @@
 use ic_cdk_macros::*;
-use regex::Regex;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
 use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
