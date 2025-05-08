@@ -110,31 +110,31 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }
 
   const fetchModels = async () => {
-    const models: Model[] = connected ?
-      await (webapp?.get_all_models() as Promise<Model[]>)
+    // This code will get the first 1000 models, with offset 0
+    // In the future, we should paginate the results
+    const classifierList: Model[] = connected ?
+      await (webapp?.get_all_models(1000n, 0n, ["classifier"]) as Promise<Model[]>)
       :
-      await FAI3_backend.get_all_models().catch((err) => {
+      await FAI3_backend.get_all_models(1000n, 0n, ["classifier"]).catch((err) => {
         console.error(err);
         return [];
       });
 
-    console.log(models);
+    const LLMlist: Model[] = connected ?
+      await (webapp?.get_all_models(1000n, 0n, ["llm"]) as Promise<Model[]>)
+      :
+      await FAI3_backend.get_all_models(1000n, 0n, ["llm"]).catch((err) => {
+        console.error(err);
+        return [];
+      });
 
-    let classifierList = [];
-    let LLMlist = [];
-
-    for (let i = 0; i < models.length; i++) {
-      if ('LLM' in models[i].model_type) {
-        LLMlist.push(models[i]);
-      } else if ('Classifier' in models[i].model_type) {
-        classifierList.push(models[i]);
-      }
-    }
+    console.log("classifiers:", classifierList);
+    console.log("llms:", LLMlist);
 
     setLLMModels(LLMlist);
     setClassifierModels(classifierList);
 
-    setModels(models);
+    setModels(classifierList.concat(LLMlist));
 
     // const llmmodels: LLMModel[] = connected ?
     //   await (webapp?.get_all_llm_models() as Promise<LLMModel[]>)
