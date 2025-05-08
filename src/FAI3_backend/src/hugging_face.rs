@@ -9,6 +9,8 @@ use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
 };
 
+use ic_cdk::api::management_canister::http_request::{TransformContext, TransformFunc, TransformArgs};
+
 use num_traits::cast::ToPrimitive;
 use crate::types::HuggingFaceResponseItem;
 
@@ -102,12 +104,105 @@ pub struct OpenAIRequest {
     model: String,
     messages: Vec<OpenAIMessage>,
     max_tokens: Option<u32>,
+    seed: Option<u32>,
+    do_sample: Option<bool>,
+    stream: bool,
+    temperature: Option<f32>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct OpenAIMessage {
     role: String,
     content: String,
+}
+
+// This struct is legacy code and is not really used in the code.
+#[derive(Serialize, Deserialize)]
+struct Context {
+    bucket_start_time_index: usize,
+    closing_price_index: usize,
+}
+
+// Necessary function to remove the non-determinism "id" and "created" values
+// It replaces them with ""
+fn transform_novita_response(res: HttpResponse) -> Result<HttpResponse, String> {
+    let mut transformed = res.clone();
+    if let Ok(mut json) = serde_json::from_slice::<serde_json::Value>(&res.body) {
+        if let Some(obj) = json.as_object_mut() {
+            if let Some(id) = obj.get_mut("id") {
+                *id = serde_json::Value::String("".to_string());
+            }
+            if let Some(created) = obj.get_mut("created") {
+                *created = serde_json::Value::Number(serde_json::Number::from(0));
+            }
+        }
+        transformed.body = serde_json::to_vec(&json).unwrap_or(res.body);
+    }
+    Ok(transformed)
+}
+
+#[ic_cdk::query]
+fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
+    // This might not be necessary, but we are overriding the headers
+    // Just in case they return anything variable
+    let headers = vec![
+        HttpHeader {
+            name: "Content-Security-Policy".to_string(),
+            value: "default-src 'self'".to_string(),
+        },
+        HttpHeader {
+            name: "Referrer-Policy".to_string(),
+            value: "strict-origin".to_string(),
+        },
+        HttpHeader {
+            name: "Permissions-Policy".to_string(),
+            value: "geolocation=(self)".to_string(),
+        },
+        HttpHeader {
+            name: "Strict-Transport-Security".to_string(),
+            value: "max-age=63072000".to_string(),
+        },
+        HttpHeader {
+            name: "X-Frame-Options".to_string(),
+            value: "DENY".to_string(),
+        },
+        HttpHeader {
+            name: "X-Content-Type-Options".to_string(),
+            value: "nosniff".to_string(),
+        },
+    ];
+
+    let body: Vec::<u8>;
+    let status = raw.response.status.clone();
+    if status != 200_u16 {
+        ic_cdk::api::print(format!("Transform function: received an error from Hugging Face: err = {:?}", raw));  
+        return raw.response;
+    }
+    
+    let res = raw.response;
+    if let Ok(mut json) = serde_json::from_slice::<serde_json::Value>(&res.body) {
+        // id and created field are variable, so this converts them to ""
+        if let Some(obj) = json.as_object_mut() {
+            if let Some(id) = obj.get_mut("id") {
+                *id = serde_json::Value::String("".to_string());
+            }
+            if let Some(created) = obj.get_mut("created") {
+                *created = serde_json::Value::Number(serde_json::Number::from(0));
+            }
+        }
+        body = serde_json::to_vec(&json).unwrap_or(res.body);
+    } else {
+        body = res.body;
+    }
+
+    let res = HttpResponse {
+        status,
+        body,
+        headers,
+        ..Default::default()
+    };
+
+    res
 }
 
 /// Calls Hugging Face, returning the HF response.
@@ -182,6 +277,8 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
 
     let mut url = format!("{}/{}", endpoint_url, llm_model);
 
+    let mut transform = None;
+    
     if let Some(_provider) = inference_provider.clone() {
         match _provider.as_str() {
             "novita" => {
@@ -192,20 +289,40 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
                     messages: vec![
                         OpenAIMessage {
                             role: "user".to_string(),
-                            content: input_text
+                            content: input_text,
                         }
                     ],
+                    stream: false,
                     max_tokens: Some(5000),
+                    seed: Some(seed),
+                    do_sample: Some(false),
+                    temperature: Some(0.0),
                 };
 
                 json_payload =
-        serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
+                    serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
+                
+                // From: https://github.com/dfinity/examples/blob/master/rust/send_http_post/src/send_http_post_backend/src/lib.rsL80
+                let context = Context {
+                    bucket_start_time_index: 0,
+                    closing_price_index: 4,
+                };
+
+                // TODO: continue from here: https://github.com/dfinity/examples/blob/master/rust/send_http_post/src/send_http_post_backend/src/lib.rs#L145
+                transform = Some(TransformContext {
+                    context: serde_json::to_vec(&context).unwrap(),
+                    function: TransformFunc(candid::Func {
+                        principal: ic_cdk::api::id(),
+                        method: "transform_hf_response".to_string(),
+                    }),         
+                });
             },
             _ => (),
         }
     }
     
     ic_cdk::println!("Endpoint url: {}", url);
+    ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
     
     let request_arg = CanisterHttpRequestArgument {
         url,
@@ -213,7 +330,7 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
         headers,
         body: Some(json_payload),
         max_response_bytes: Some(2_000_000),
-        transform: None,
+        transform,
     };
 
     // 4) Make the outcall. The second param is cycles to spend (0 if none).

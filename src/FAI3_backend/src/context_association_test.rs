@@ -399,6 +399,17 @@ async fn cat_intersentence_call(hf_model: String, entry: &IntersentenceEntry, se
     }
 }
 
+// Seed cannot be 0 because then the result won't be deterministic 
+fn generate_seed(original_seed: u32, queries: u32) -> u32 {
+    let seed = original_seed * queries + 1;
+
+    if seed == 0 { // overflow edge case
+        return 1;
+    }
+
+    return seed;
+}
+
 /// Execute a series of intersentence Context Association tests against a Hugging Face model.
 ///
 /// # Parameters
@@ -446,7 +457,7 @@ async fn process_context_association_test_intrasentence(
         ic_cdk::println!("Target Bias Type: {}", entry.bias_type);
         let bias_type = entry.bias_type.clone();
 
-        let resp = cat_intrasentence_call(hf_model.clone(), entry, seed * (queries as u32), shuffle_questions).await;
+        let resp = cat_intrasentence_call(hf_model.clone(), entry, generate_seed(seed, queries as u32), shuffle_questions).await;
 
         match resp {
             Ok(data_point) => {
@@ -537,7 +548,7 @@ async fn process_context_association_test_intersentence(
 
         ic_cdk::println!("Target Bias Type: {}", entry.bias_type);
         let bias_type = entry.bias_type.clone();
-        let resp = cat_intersentence_call(hf_model.clone(), entry, seed * (queries as u32), shuffle_questions).await;
+        let resp = cat_intersentence_call(hf_model.clone(), entry, generate_seed(seed, queries as u32), shuffle_questions).await;
 
         match resp {
             Ok(data_point) => {
