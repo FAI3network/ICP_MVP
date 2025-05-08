@@ -128,6 +128,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         console.error(err);
         return [];
       });
+<<<<<<< HEAD
+=======
+
+    console.log("classifiers:", classifierList);
+    console.log("llms:", LLMlist);
+>>>>>>> 0e8c622 (Leaderboard fix)
 
     setLLMModels(LLMlist);
     setClassifierModels(classifierList);
