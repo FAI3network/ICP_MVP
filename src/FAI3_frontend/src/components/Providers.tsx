@@ -120,6 +120,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         console.error(err);
         return [];
       });
+    // This code will get the first 1000 models, with offset 0
+    // In the future, we should paginate the results
+    const classifierList: Model[] = connected ?
+      await (webapp?.get_all_models(1000n, 0n, ["classifier"]) as Promise<Model[]>)
+      :
+      await FAI3_backend.get_all_models(1000n, 0n, ["classifier"]).catch((err) => {
+        console.error(err);
+        return [];
+      });
 
     const LLMlist: Model[] = connected ?
       await (webapp?.get_all_models(1000n, 0n, ["llm"]) as Promise<Model[]>)
@@ -135,6 +144,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     setLLMModels(LLMlist);
     setClassifierModels(classifierList);
 
+    setModels(classifierList.concat(LLMlist));
     setModels(classifierList.concat(LLMlist));
 
     // const llmmodels: LLMModel[] = connected ?

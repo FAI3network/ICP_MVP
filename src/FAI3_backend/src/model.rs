@@ -141,6 +141,7 @@ pub fn delete_model(model_id: u128) {
 
 #[ic_cdk::query]
 pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) -> Vec<Model> {
+pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) -> Vec<Model> {
     check_cycles_before_action();
 
     return MODELS.with(|models| {
@@ -149,22 +150,20 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
             .values()
             .filter(|model| {
                 ic_cdk::println!("Filtering");
+                ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
-                    Some(ref mt) if mt == "classifier" => {
-                        matches!(model.model_type, ModelType::Classifier(_))
-                    }
+                    Some(ref mt) if mt == "classifier" => matches!(model.model_type, ModelType::Classifier(_)),
                     // if model type is not "llm" or "classifier", it matches everything
-                    _ => true,
+                    _ => true, 
                 }
             })
             .take(limit)
             .map(|model| {
                 ic_cdk::println!("Mapping");
-                if matches!(model.model_type, ModelType::LLM(_)) {
-                    prune_llm_model(model)
-                } else {
-                    model
+                match &model_type {
+                    Some(ref mt) if mt == "llm" => prune_llm_model(model),
+                    _ => model
                 }
             })
             .collect();
@@ -196,6 +195,10 @@ pub fn get_model_metrics(model_id: u128) -> Metrics {
 // Useful because data_points contain a lot of data
 // And the protocol doesn't support to return so much data
 pub fn prune_llm_model(mut model: Model) -> Model {
+// Takes a model and returns another model with pruned data
+// Useful because data_points contain a lot of data
+// And the protocol doesn't support to return so much data
+pub fn prune_llm_model(mut model: Model) -> Model {
     // Deleting data that could trigger a response size error
     // Error code: IC0504
     let mut model_data = get_llm_model_data(&model);
@@ -206,24 +209,16 @@ pub fn prune_llm_model(mut model: Model) -> Model {
         model_data.cat_metrics = Some(cat);
     }
 
-    model_data.evaluations = model_data
-        .evaluations
-        .into_iter()
-        .map(|mut evaluation: ModelEvaluationResult| {
-            evaluation.data_points = None;
-            evaluation.llm_data_points = None;
-            evaluation
-        })
-        .collect();
+    model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
+        evaluation.data_points = None;
+        evaluation.llm_data_points = None;
+        evaluation
+    }).collect();
 
-    model_data.language_evaluations = model_data
-        .language_evaluations
-        .into_iter()
-        .map(|mut levaluation: LanguageEvaluationResult| {
-            levaluation.data_points = Vec::new();
-            levaluation
-        })
-        .collect();
+    model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
+        levaluation.data_points = Vec::new();
+        levaluation
+    }).collect();
 
     model.model_type = ModelType::LLM(model_data);
 
