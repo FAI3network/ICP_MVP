@@ -121,7 +121,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
 
             let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
             
-            let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone())).await;
+            let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone()), &model_data.inference_provider).await;
 
             let trimmed_response = match res {
                 Ok(response) => crate::utils::clean_llm_response(&response),
