@@ -1,5 +1,6 @@
 use ic_cdk_macros::*;
-use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
+use crate::hugging_face::call_hugging_face;
+use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::types::{LanguageEvaluationResult, LanguageEvaluationMetrics, ModelType, LLMModelData, LanguageEvaluationDataPoint, get_llm_model_data};
 use crate::{check_cycles_before_action, NEXT_LLM_LANGUAGE_EVALUATION_ID, get_model_from_memory, only_admin};
 use crate::utils::{is_owner, seeded_vector_shuffle};

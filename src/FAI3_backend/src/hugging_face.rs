@@ -2,6 +2,15 @@ use crate::CONFIGURATION;
 use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
 use serde::{Deserialize, Serialize};
 
+use super::inference_providers::{
+    InferenceProvider,
+    novita::NovitaProvider,
+    together::TogetherAIProvider,
+    nebius::NebiusProvider,
+    none::NoneProvider,
+    lib::HuggingFaceRequestParameters,
+};
+
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
 };
@@ -9,360 +18,12 @@ use ic_cdk::api::management_canister::http_request::{
 use ic_cdk::api::management_canister::http_request::{TransformContext, TransformFunc, TransformArgs};
 
 use num_traits::cast::ToPrimitive;
-use crate::types::HuggingFaceResponseItem;
-
-const HUGGING_FACE_ENDPOINT: &str = "https://api-inference.huggingface.co/models";
-const HUGGING_FACE_INFERENCE_PROVIDER_URL: &str = "https://router.huggingface.co";
-
-trait InferenceProvider {
-    fn name(&self) -> &str;
-    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String>;
-    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String>;
-    fn endpoint_url(&self, llm_model: String) -> String;
-}
-
-struct NovitaProvider {}
-
-// Structure when no provider is used.
-// It calls Hugging Face API
-struct NoneProvider {}
-
-struct TogetherAIProvider {}
-
-struct NebiusProvider {}
-
-impl InferenceProvider for NovitaProvider {
-    fn name(&self) -> &str {
-        return "novita";
-    }
-    
-    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
-        let payload = OpenAIRequest {
-            model: llm_model.to_lowercase(),
-            messages: vec![
-                OpenAIMessage {
-                    role: "user".to_string(),
-                    content: input_text,
-                }
-            ],
-            stream: false,
-            max_tokens: Some(5000),
-            seed: parameters.seed,
-            do_sample: Some(false),
-            temperature: Some(0.0),
-        };
-
-        return serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e));
-    }
-
-    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
-        // 1) Parse raw bytes into a `serde_json::Value`
-        let json_val: serde_json::Value =
-            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
-        
-        // 2) Now parse that `json_val` into a vector of your items
-        let hf_response: NovitaResponse =
-            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
-
-        // 3) Extract the text from the first item, or default
-        let choice = hf_response
-            .choices.get(0);
-
-        if let None = choice {
-            return Err("choices fields is empty".to_string());
-        }
-
-        Ok(choice
-           .unwrap()
-           .message
-           .content.clone())
-    }
-
-    fn endpoint_url(&self, _llm_model: String) -> String {
-        return format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "novita/v3/openai/chat/completions");
-    }
-}
-
-impl InferenceProvider for NoneProvider {
-    fn name(&self) -> &str {
-        return "none (Hugging Face API)";
-    }
-    
-    fn generate_payload(&self, _llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
-        let payload = HuggingFaceRequest {
-            inputs: input_text.clone(),
-            parameters: Some(parameters), 
-        };
-
-        let json_payload =
-            serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e))?;
-
-        return Ok(json_payload);
-    }
-
-    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
-        // 1) Parse raw bytes into a `serde_json::Value`
-        let json_val: serde_json::Value =
-            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
-        
-        // 2) Now parse that `json_val` into a vector of your items
-        let hf_response: Vec<HuggingFaceResponseItem> =
-            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
-
-        // 3) Extract the text from the first item, or default
-        let items = hf_response.get(0);
-
-        if let None = items {
-            return Err("No generated text".to_string());
-        }
-
-        return Ok(items
-                  .and_then(|item| item.generated_text.clone())
-                  .unwrap_or_else(|| "No generated_text".to_string()));
-    }
-
-    fn endpoint_url(&self, llm_model: String) -> String {
-        return format!("{}/{}", HUGGING_FACE_ENDPOINT, llm_model);
-    }
-}
-
-impl InferenceProvider for TogetherAIProvider {
-    fn name(&self) -> &str {
-        return "togetherai";
-    }
-    
-    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
-        let payload = OpenAIRequest {
-            model: llm_model.to_lowercase(),
-            messages: vec![
-                OpenAIMessage {
-                    role: "user".to_string(),
-                    content: input_text,
-                }
-            ],
-            stream: false,
-            max_tokens: Some(5000),
-            seed: parameters.seed,
-            do_sample: Some(false),
-            temperature: Some(0.0),
-        };
-
-        return serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e));
-    }
-
-    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
-        // Parse raw bytes into TogetherAI response format
-        let json_val: serde_json::Value =
-            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
-        
-        let together_response: TogetherAIResponse =
-            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
-
-        // Extract the text from the first choice
-        let choice = together_response
-            .choices.get(0);
-
-        if let None = choice {
-            return Err("choices field is empty".to_string());
-        }
-
-        Ok(choice
-           .unwrap()
-           .message
-           .content.clone())
-    }
-
-    fn endpoint_url(&self, _llm_model: String) -> String {
-        return format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "together/v1/chat/completions");
-    }
-}
-
-impl InferenceProvider for NebiusProvider {
-    fn name(&self) -> &str {
-        return "nebius";
-    }
-    
-    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
-        let payload = OpenAIRequest {
-            model: llm_model,
-            messages: vec![
-                OpenAIMessage {
-                    role: "user".to_string(),
-                    content: input_text,
-                }
-            ],
-            stream: false,
-            max_tokens: Some(5000),
-            seed: parameters.seed,
-            do_sample: Some(false),
-            temperature: Some(0.0),
-        };
-
-        return serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e));
-    }
-
-    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
-        // Since Nebius uses same format as TogetherAI, we can reuse the same response structure
-        let json_val: serde_json::Value =
-            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
-        let nebius_response: TogetherAIResponse = // Reusing TogetherAI response structure
-            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
-        let choice = nebius_response
-            .choices.get(0);
-        if let None = choice {
-            return Err("choices field is empty".to_string());
-        }
-        Ok(choice
-           .unwrap()
-           .message
-           .content.clone())
-    }
-
-    fn endpoint_url(&self, _llm_model: String) -> String {
-        return format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "nebius/v1/chat/completions");
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct HuggingFaceRequestParameters {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stop: Option<Vec<char>>,
-    pub max_new_tokens: Option<u32>,
-    pub temperature: Option<f32>,
-    pub return_full_text: Option<bool>,
-    pub decoder_input_details: Option<bool>,
-    pub details: Option<bool>,
-    pub seed: Option<u32>,
-    pub do_sample: Option<bool>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct HuggingFaceRequest {
-    inputs: String,
-    parameters: Option<HuggingFaceRequestParameters>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct HuggingFaceResponse {
-    generated_text: Option<String>,
-}
-
-// Novita JSON response
-#[derive(Serialize, Deserialize)]
-struct NovitaResponse {
-    choices: Vec<NovitaChoice>,
-    created: i64,
-    id: String,
-    model: String,
-    object: String,
-    system_fingerprint: String,
-    usage: NovitaUsage,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaChoice {
-    content_filter_results: NovitaContentFilterResults,
-    finish_reason: String,
-    index: i32,
-    message: NovitaMessage,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaContentFilterResults {
-    hate: NovitaFilterResult,
-    jailbreak: NovitaJailbreakResult,
-    profanity: NovitaFilterResult,
-    self_harm: NovitaFilterResult,
-    sexual: NovitaFilterResult,
-    violence: NovitaFilterResult,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaFilterResult {
-    filtered: bool,
-    #[serde(default)]
-    detected: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaJailbreakResult {
-    detected: bool,
-    filtered: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaMessage {
-    content: String,
-    role: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct NovitaUsage {
-    completion_tokens: i32,
-    completion_tokens_details: Option<serde_json::Value>,
-    prompt_tokens: i32,
-    prompt_tokens_details: Option<serde_json::Value>,
-    total_tokens: i32,
-}
-
-// OpenAI compatible API request, for inference providers
-#[derive(Serialize, Deserialize, Clone)]
-pub struct OpenAIRequest {
-    model: String,
-    messages: Vec<OpenAIMessage>,
-    max_tokens: Option<u32>,
-    seed: Option<u32>,
-    do_sample: Option<bool>,
-    stream: bool,
-    temperature: Option<f32>,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct OpenAIMessage {
-    role: String,
-    content: String,
-}
 
 // This struct is legacy code and is not really used in the code.
 #[derive(Serialize, Deserialize)]
 struct Context {
     bucket_start_time_index: usize,
     closing_price_index: usize,
-}
-
-// TogetherAI JSON response
-#[derive(Serialize, Deserialize)]
-struct TogetherAIResponse {
-    id: String,
-    object: String,
-    created: i64,
-    model: String,
-    prompt: Option<Vec<String>>,
-    choices: Vec<TogetherAIChoice>,
-    usage: TogetherAIUsage,
-}
-
-#[derive(Serialize, Deserialize)]
-struct TogetherAIChoice {
-    finish_reason: String,
-    seed: Option<u32>,
-    logprobs: Option<serde_json::Value>,
-    index: i32,
-    message: TogetherAIMessage,
-}
-
-#[derive(Serialize, Deserialize)]
-struct TogetherAIMessage {
-    role: String,
-    content: String,
-    tool_calls: Vec<serde_json::Value>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct TogetherAIUsage {
-    prompt_tokens: i32,
-    completion_tokens: i32,
-    total_tokens: i32,
 }
 
 // Necessary function to remove the non-determinism "id" and "created" values
@@ -405,15 +66,17 @@ fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
         return raw.response;
     }
 
-    // TODO: this only works for Novita?
     let res = raw.response;
     if let Ok(mut json) = serde_json::from_slice::<serde_json::Value>(&res.body) {
         // id and created field are variable, so this converts them to ""
         if let Some(obj) = json.as_object_mut() {
+            // Novita, Nebius, TogetherAI use this struture
+            // Cleaning "id" and "created" fields
             if let Some(id) = obj.get_mut("id") {
                 *id = serde_json::Value::String("".to_string());
             }
             if let Some(created) = obj.get_mut("created") {
+                ic_cdk::println!("Changing created");
                 *created = serde_json::Value::Number(serde_json::Number::from(0));
             }
         }
@@ -508,26 +171,19 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     //    - Provide max_response_bytes (e.g., 2 MB)
     let url = provider.endpoint_url(llm_model);
 
-    let mut transform = None;
+    // From: https://github.com/dfinity/examples/blob/master/rust/send_http_post/src/send_http_post_backend/src/lib.rsL80
+    let context = Context {
+        bucket_start_time_index: 0,
+        closing_price_index: 4,
+    };
+    let transform = Some(TransformContext {
+        context: serde_json::to_vec(&context).unwrap(),
+        function: TransformFunc(candid::Func {
+            principal: ic_cdk::api::id(),
+            method: "transform_hf_response".to_string(),
+        }),         
+    });
 
-    if let Some(_provider) = inference_provider.clone() {
-        ic_cdk::println!("using transform function");
-        // From: https://github.com/dfinity/examples/blob/master/rust/send_http_post/src/send_http_post_backend/src/lib.rsL80
-        let context = Context {
-            bucket_start_time_index: 0,
-            closing_price_index: 4,
-        };
-
-        // TODO: continue from here: https://github.com/dfinity/examples/blob/master/rust/send_http_post/src/send_http_post_backend/src/lib.rs#L145
-        transform = Some(TransformContext {
-            context: serde_json::to_vec(&context).unwrap(),
-            function: TransformFunc(candid::Func {
-                principal: ic_cdk::api::id(),
-                method: "transform_hf_response".to_string(),
-            }),         
-        });
-    }
-    
     ic_cdk::println!("Endpoint url: {}", url);
     ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
     
