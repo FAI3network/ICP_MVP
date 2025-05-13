@@ -1,7 +1,5 @@
 use crate::CONFIGURATION;
-use crate::config_management::{
-    HUGGING_FACE_API_KEY_CONFIG_KEY,
-};
+use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
 use serde::{Deserialize, Serialize};
 
 use ic_cdk::api::management_canister::http_request::{
@@ -28,6 +26,10 @@ struct NovitaProvider {}
 // Structure when no provider is used.
 // It calls Hugging Face API
 struct NoneProvider {}
+
+struct TogetherAIProvider {}
+
+struct NebiusProvider {}
 
 impl InferenceProvider for NovitaProvider {
     fn name(&self) -> &str {
@@ -124,6 +126,103 @@ impl InferenceProvider for NoneProvider {
     }
 }
 
+impl InferenceProvider for TogetherAIProvider {
+    fn name(&self) -> &str {
+        return "togetherai";
+    }
+    
+    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
+        let payload = OpenAIRequest {
+            model: llm_model.to_lowercase(),
+            messages: vec![
+                OpenAIMessage {
+                    role: "user".to_string(),
+                    content: input_text,
+                }
+            ],
+            stream: false,
+            max_tokens: Some(5000),
+            seed: parameters.seed,
+            do_sample: Some(false),
+            temperature: Some(0.0),
+        };
+
+        return serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e));
+    }
+
+    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
+        // Parse raw bytes into TogetherAI response format
+        let json_val: serde_json::Value =
+            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
+        
+        let together_response: TogetherAIResponse =
+            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
+
+        // Extract the text from the first choice
+        let choice = together_response
+            .choices.get(0);
+
+        if let None = choice {
+            return Err("choices field is empty".to_string());
+        }
+
+        Ok(choice
+           .unwrap()
+           .message
+           .content.clone())
+    }
+
+    fn endpoint_url(&self, _llm_model: String) -> String {
+        return format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "together/v1/chat/completions");
+    }
+}
+
+impl InferenceProvider for NebiusProvider {
+    fn name(&self) -> &str {
+        return "nebius";
+    }
+    
+    fn generate_payload(&self, llm_model: String, input_text: String, parameters: HuggingFaceRequestParameters) -> Result<Vec<u8>, String> {
+        let payload = OpenAIRequest {
+            model: llm_model,
+            messages: vec![
+                OpenAIMessage {
+                    role: "user".to_string(),
+                    content: input_text,
+                }
+            ],
+            stream: false,
+            max_tokens: Some(5000),
+            seed: parameters.seed,
+            do_sample: Some(false),
+            temperature: Some(0.0),
+        };
+
+        return serde_json::to_vec(&payload).map_err(|e| format!("Failed to serialize payload: {}", e));
+    }
+
+    fn get_response_text(&self, response_body: &Vec<u8>) -> Result<String, String> {
+        // Since Nebius uses same format as TogetherAI, we can reuse the same response structure
+        let json_val: serde_json::Value =
+            serde_json::from_slice(&response_body).map_err(|e| e.to_string())?;
+        let nebius_response: TogetherAIResponse = // Reusing TogetherAI response structure
+            serde_json::from_value(json_val).map_err(|e| e.to_string())?;
+        let choice = nebius_response
+            .choices.get(0);
+        if let None = choice {
+            return Err("choices field is empty".to_string());
+        }
+        Ok(choice
+           .unwrap()
+           .message
+           .content.clone())
+    }
+
+    fn endpoint_url(&self, _llm_model: String) -> String {
+        return format!("{}/{}", &HUGGING_FACE_INFERENCE_PROVIDER_URL.to_string(), "nebius/v1/chat/completions");
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HuggingFaceRequestParameters {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -148,6 +247,7 @@ pub struct HuggingFaceResponse {
     generated_text: Option<String>,
 }
 
+// Novita JSON response
 #[derive(Serialize, Deserialize)]
 struct NovitaResponse {
     choices: Vec<NovitaChoice>,
@@ -228,6 +328,41 @@ pub struct OpenAIMessage {
 struct Context {
     bucket_start_time_index: usize,
     closing_price_index: usize,
+}
+
+// TogetherAI JSON response
+#[derive(Serialize, Deserialize)]
+struct TogetherAIResponse {
+    id: String,
+    object: String,
+    created: i64,
+    model: String,
+    prompt: Option<Vec<String>>,
+    choices: Vec<TogetherAIChoice>,
+    usage: TogetherAIUsage,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TogetherAIChoice {
+    finish_reason: String,
+    seed: Option<u32>,
+    logprobs: Option<serde_json::Value>,
+    index: i32,
+    message: TogetherAIMessage,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TogetherAIMessage {
+    role: String,
+    content: String,
+    tool_calls: Vec<serde_json::Value>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TogetherAIUsage {
+    prompt_tokens: i32,
+    completion_tokens: i32,
+    total_tokens: i32,
 }
 
 // Necessary function to remove the non-determinism "id" and "created" values
@@ -337,6 +472,8 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
         ic_cdk::println!("configured provider: {}", _provider);
         match _provider.as_str() {
             "novita" => Box::new(NovitaProvider{}),
+            "togetherai" => Box::new(TogetherAIProvider{}),
+            "nebius" => Box::new(NebiusProvider{}),
             p => {
                 ic_cdk::println!("No known provider {}, using NoneProvider", p);
                 Box::new(NoneProvider{})
