@@ -141,7 +141,6 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
         return models
             .values()
             .filter(|model| {
-                ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
                     Some(ref mt) if mt == "classifier" => matches!(model.model_type, ModelType::Classifier(_)),
