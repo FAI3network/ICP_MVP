@@ -5,7 +5,7 @@ use crate::{
 use candid::Principal;
 use std::vec;
 use crate::types::get_classifier_model_data;
-use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory, ModelEvaluationResult, LanguageEvaluationResult, get_llm_model_data};
+use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory};
 
 #[ic_cdk::update]
 pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -141,7 +141,6 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
         return models
             .values()
             .filter(|model| {
-                ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
                     Some(ref mt) if mt == "classifier" => matches!(model.model_type, ModelType::Classifier(_)),
@@ -151,11 +150,7 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
             })
             .take(limit)
             .map(|model| {
-                ic_cdk::println!("Mapping");
-                match &model_type {
-                    Some(ref mt) if mt == "llm" => prune_llm_model(model),
-                    _ => model
-                }
+                model.prune()
             })
             .collect();
     });
@@ -187,36 +182,6 @@ pub fn get_model_metrics(model_id: u128) -> Metrics {
     })
 }
 
-// Takes a model and returns another model with pruned data
-// Useful because data_points contain a lot of data
-// And the protocol doesn't support to return so much data
-pub fn prune_llm_model(mut model: Model) -> Model {
-    // Deleting data that could trigger a response size error
-    // Error code: IC0504
-    let mut model_data = get_llm_model_data(&model);
-
-    model_data.cat_metrics_history = vec![];
-    if let Some(mut cat) = model_data.cat_metrics {
-        cat.data_points = vec![];
-        model_data.cat_metrics = Some(cat);
-    }
-
-    model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
-        evaluation.data_points = None;
-        evaluation.llm_data_points = None;
-        evaluation
-    }).collect();
-
-    model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
-        levaluation.data_points = Vec::new();
-        levaluation
-    }).collect();
-
-    model.model_type = ModelType::LLM(model_data);
-    
-    return model;
-}
-
 /// Returns a model
 /// For limitations and data size, it won't return LLM data_points
 /// And it won't return LLM metrics history
@@ -230,7 +195,7 @@ pub fn get_model(model_id: u128) -> Model {
             .clone()
     });
 
-    return prune_llm_model(model);
+    model.prune()
 }
 
 #[ic_cdk::update]
