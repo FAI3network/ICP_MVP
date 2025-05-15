@@ -5,6 +5,13 @@ type Job = record {
   timestamp: nat64;
 };
 
+type Job = record {
+  id: nat;
+  model_id: nat;
+  status: text;
+  timestamp: nat64;
+};
+
 type DataPoint = record {
   data_point_id: nat;
   target: bool;

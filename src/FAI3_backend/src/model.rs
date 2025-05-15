@@ -9,8 +9,6 @@ use crate::{
 };
 use candid::Principal;
 use std::vec;
-use crate::types::get_classifier_model_data;
-use crate::types::{ModelType, ClassifierModelData, LLMModelData, ModelDetailsHistory};
 
 #[ic_cdk::update]
 pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> u128 {
@@ -155,15 +153,15 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
                 ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
-                    Some(ref mt) if mt == "classifier" => matches!(model.model_type, ModelType::Classifier(_)),
+                    Some(ref mt) if mt == "classifier" => {
+                        matches!(model.model_type, ModelType::Classifier(_))
+                    }
                     // if model type is not "llm" or "classifier", it matches everything
-                    _ => true, 
+                    _ => true,
                 }
             })
             .take(limit)
-            .map(|model| {
-                model.prune()
-            })
+            .map(|model| model.prune())
             .collect();
     });
 }
@@ -184,12 +182,8 @@ pub fn get_model_metrics(model_id: u128) -> Metrics {
     check_cycles_before_action();
 
     MODELS.with(|models| {
-        let model = models
-            .borrow()
-            .get(&model_id)
-            .expect("Model not found");
-        return get_classifier_model_data(&model)
-            .metrics;
+        let model = models.borrow().get(&model_id).expect("Model not found");
+        return get_classifier_model_data(&model).metrics;
     })
 }
 
