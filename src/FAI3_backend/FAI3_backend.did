@@ -1,3 +1,10 @@
+type Job = record {
+  id: nat;
+  model_id: nat;
+  status: text;
+  timestamp: nat64;
+};
+
 type DataPoint = record {
   data_point_id: nat;
   target: bool;
@@ -268,6 +275,17 @@ type LanguageEvaluationResult = record {
 };
 
 service : () -> {
+    //Job management
+    "create_job": () -> (nat);
+    "get_job": (nat) -> (Job);
+    "get_jobs": () -> (vec Job);
+    "update_job_status": (nat, text, nat) -> ();
+    "job_fail": (nat, nat) -> ();
+    "job_complete": (nat, nat) -> ();
+    "job_in_progress": (nat, nat) -> ();
+    "get_job_status": (nat) -> (opt text);
+    "delete_job": (nat) -> ();
+
     // User management
     "whoami": () -> (principal);
     "is_admin": () -> (bool);

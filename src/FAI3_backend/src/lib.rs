@@ -5,6 +5,7 @@ pub(crate) mod cycles_management;
 mod data_management;
 pub mod errors;
 mod hugging_face;
+mod job_management;
 pub mod llm_fairness;
 pub mod llm_language_evaluations;
 mod metrics_calculation;
