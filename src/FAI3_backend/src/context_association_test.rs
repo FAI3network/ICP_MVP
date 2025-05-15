@@ -1,6 +1,5 @@
 use crate::admin_management::only_admin;
 use crate::errors::GenericError;
-use crate::get_model_from_memory;
 use crate::hugging_face::call_hugging_face;
 use crate::job_management::{
     check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
