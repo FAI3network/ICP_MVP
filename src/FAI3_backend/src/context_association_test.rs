@@ -1,8 +1,9 @@
 use crate::admin_management::only_admin;
 use crate::errors::GenericError;
-use crate::get_model_from_memory;
 use crate::hugging_face::call_hugging_face;
-use crate::job_management::{create_job, job_complete, job_fail, job_in_progress};
+use crate::job_management::{
+    check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
+};
 use crate::types::{
     get_llm_model_data, ContextAssociationTestAPIResult, ContextAssociationTestDataPoint,
     ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult,
@@ -10,6 +11,7 @@ use crate::types::{
 };
 use crate::utils::{is_owner, seeded_vector_shuffle};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
+use crate::{get_model_from_memory, JOBS};
 use ic_cdk_macros::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -494,6 +496,7 @@ async fn process_context_association_test_intrasentence(
     seed: u32,
     shuffle_questions: bool,
     max_errors: u32,
+    job_id: u128,
 ) -> Result<(u32, u32), String> {
     let mut queries = 0;
     let mut error_count = 0;
@@ -504,6 +507,13 @@ async fn process_context_association_test_intrasentence(
     }
 
     for entry in intra_data {
+        let should_stop = check_job_stopped(job_id);
+
+        if should_stop {
+            ic_cdk::println!("Job stopped by user");
+            return Err("Job stopped by user".to_string());
+        }
+
         ic_cdk::println!("Executing query {}", queries);
         ic_cdk::println!("Context: {}", entry.context);
 
@@ -596,6 +606,7 @@ async fn process_context_association_test_intersentence(
     seed: u32,
     shuffle_questions: bool,
     max_errors: u32,
+    job_id: u128,
 ) -> Result<(u32, u32), String> {
     // Intersentence
     let mut queries = 0;
@@ -607,6 +618,13 @@ async fn process_context_association_test_intersentence(
     }
 
     for entry in inter_data {
+        let should_stop = check_job_stopped(job_id);
+
+        if should_stop {
+            ic_cdk::println!("Job stopped by user");
+            return Err("Job stopped by user".to_string());
+        }
+
         ic_cdk::println!("Executing query {}", queries);
         ic_cdk::println!("Context: {}", entry.context);
 
@@ -802,6 +820,7 @@ pub async fn context_association_test(
             seed,
             shuffle_questions,
             max_errors,
+            job_id,
         )
         .await;
         match res {
@@ -833,6 +852,7 @@ pub async fn context_association_test(
             seed,
             shuffle_questions,
             max_errors - error_count,
+            job_id,
         )
         .await;
         match res {

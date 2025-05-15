@@ -285,6 +285,8 @@ service : () -> {
     "job_in_progress": (nat, nat) -> ();
     "get_job_status": (nat) -> (opt text);
     "delete_job": (nat) -> ();
+    "check_job_stopped": (nat) -> (bool);
+    "stop_job": (nat) -> ();
 
     // User management
     "whoami": () -> (principal);

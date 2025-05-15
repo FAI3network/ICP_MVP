@@ -90,3 +90,27 @@ pub fn delete_job(job_id: u128) {
         jobs.remove(&job_id);
     });
 }
+
+#[ic_cdk::query]
+pub fn check_job_stopped(job_id: u128) -> bool {
+    JOBS.with(|jobs| {
+        let jobs = jobs.borrow();
+        if let Some(job) = jobs.get(&job_id) {
+            job.status == "Stopped"
+        } else {
+            false
+        }
+    })
+}
+
+#[ic_cdk::update]
+pub fn stop_job(job_id: u128) {
+    JOBS.with(|jobs| {
+        let mut jobs = jobs.borrow_mut();
+        if let Some(job) = jobs.get(&job_id) {
+            let mut updated_job = job.clone();
+            updated_job.status = "Stopped".to_string();
+            jobs.insert(job_id, updated_job);
+        }
+    });
+}
