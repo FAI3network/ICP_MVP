@@ -1,4 +1,5 @@
 use crate::Model;
+use regex::Regex;
 use candid::Principal;
 
 pub fn is_owner(model: &Model, caller: Principal) {
@@ -40,4 +41,13 @@ pub fn seeded_vector_shuffle<T: Clone>(mut elements: Vec<T>, seed: u32) -> Vec<T
     }
     
     elements
+}
+
+pub fn clean_llm_response(text: &String) -> String {
+    let re = Regex::new(r"(?s)<think>.*?</think>").unwrap();
+    re.replace_all(text, "")
+        .replace("\n", " ")
+        .replace("\r", " ")
+        .trim()
+        .to_string()
 }

@@ -5,6 +5,7 @@ use crate::errors::GenericError;
 use crate::admin_management::only_admin;
 
 pub const HUGGING_FACE_API_KEY_CONFIG_KEY: &str = "hugging_face_api_key";
+pub const HUGGING_FACE_INFERENCE_PROVIDER_CONFIG_KEY: &str = "hugging_face_inference_provider";
 
 #[ic_cdk::update]
 pub fn set_config(config_key: String, config_value: String) {

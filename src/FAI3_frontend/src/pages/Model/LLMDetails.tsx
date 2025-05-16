@@ -28,7 +28,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
 
   const runCAT = async () => {
     setLoading(true);
-    const res = await webapp?.context_association_test(BigInt(modelId!), 5, 1, false);
+    const res = await webapp?.context_association_test(BigInt(modelId!), 5, 1, false, 0);
 
     if (res && typeof res === "object" && res !== null && "Err" in res) {
       console.error("Failed to run context association test:", res.Err);

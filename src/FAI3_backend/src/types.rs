@@ -334,6 +334,48 @@ impl Storable for Model {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+impl Model {
+    /// Returns a light-weight version of the model, without the heavy data
+    /// Like data points, multiple models, etc.
+    /// Currently it only prunes LLM models.
+    pub fn prune(self) -> Model {
+        match self.model_type {   
+            ModelType::LLM(_) => {
+                self.prune_llm_model()
+            },
+            _ => self,
+        }
+    }
+
+    /// Takes a LLM model and returns another model with pruned data
+    /// Useful because data_points contain a lot of data
+    /// And the protocol doesn't support to return so much data
+    pub fn prune_llm_model(mut self) -> Model {
+        // Deleting data that could trigger a response size error
+        // Error code: IC0504
+        let mut model_data = get_llm_model_data(&self);
+
+        model_data.cat_metrics_history = vec![];
+        if let Some(mut cat) = model_data.cat_metrics {
+            cat.data_points = vec![];
+            model_data.cat_metrics = Some(cat);
+        }
+
+        model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
+            evaluation.data_points = None;
+            evaluation.llm_data_points = None;
+            evaluation
+        }).collect();
+
+        model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
+            levaluation.data_points = Vec::new();
+            levaluation
+        }).collect();
+
+        self.model_type = ModelType::LLM(model_data);
+        self
+    }
+}
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {
