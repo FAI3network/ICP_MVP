@@ -70,7 +70,7 @@ pub fn add_classifier_model(model_name: String, model_details: ModelDetails) -> 
 }
 
 #[ic_cdk::update]
-pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details: ModelDetails) -> u128 {
+pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details: ModelDetails, inference_provider: Option<String>) -> u128 {
     only_admin();
     check_cycles_before_action();
 
@@ -104,11 +104,13 @@ pub fn add_llm_model(model_name: String, hugging_face_url: String, model_details
                         evaluations: Vec::new(),
                         average_fairness_metrics: None,
                         language_evaluations: Vec::new(),
+                        inference_provider,
                     }),
                     cached_thresholds: None,
                     cached_selections: None,
                     version: 0,
                 },
+                
             );
 
             id.borrow_mut().set(current_id + 1).unwrap();
@@ -196,6 +198,22 @@ pub fn get_model(model_id: u128) -> Model {
     });
 
     model.prune()
+}
+
+/// Returns a model
+/// For limitations and data size, it won't return LLM data_points
+/// And it won't return LLM metrics history
+#[ic_cdk::query]
+pub fn get_model(model_id: u128) -> Model {
+    let model = MODELS.with(|models| {
+        models
+            .borrow()
+            .get(&model_id)
+            .expect("Model not found")
+            .clone()
+    });
+
+    return model.prune();
 }
 
 #[ic_cdk::update]

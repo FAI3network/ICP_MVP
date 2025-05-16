@@ -1,5 +1,6 @@
 use ic_cdk_macros::*;
-use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
+use crate::inference_providers::lib::HuggingFaceRequestParameters;
+use crate::hugging_face::call_hugging_face;
 use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
 use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
@@ -243,7 +244,7 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
 /// Asynchronously runs metrics calculation based on provided parameters.
 ///
 /// # Arguments
-/// * `hf_model` - A string representing the model for Hugging face.
+/// * `model_data` - LLM Model data.
 /// * `seed` - An unsigned 32-bit integer used as the seed for both Hugging Face and examples shuffling.
 /// * `max_queries` - The maximum number of queries. Set to 0 for infinite.
 /// * `train_csv` - Full CSV with train data.
@@ -260,7 +261,7 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
 ///   and two `u32` values representing wrong responses and call errors.
 /// * On failure: A string indicating the error.
 async fn run_metrics_calculation(
-    hf_model: String, seed: u32, max_queries: usize,
+    model_data: &LLMModelData, seed: u32, max_queries: usize,
     train_csv: &str, test_csv: &str, _cf_test_csv: &str,
     sensible_attribute: &str, predict_attribute: &str, data_points: &mut Vec<LLMDataPoint>,
     prompt_template: String,
@@ -364,7 +365,7 @@ async fn run_metrics_calculation(
 
         let timestamp: u64 = ic_cdk::api::time();
         
-        let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
+        let res = call_hugging_face(personalized_prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone()), &model_data.inference_provider).await;
         
         match res {
             Ok(r) => {
@@ -384,7 +385,7 @@ async fn run_metrics_calculation(
                 };
 
                 let timestamp_cf: u64 = ic_cdk::api::time();
-                let res_cf = call_hugging_face(personalized_prompt_cf.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
+                let res_cf = call_hugging_face(personalized_prompt_cf.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone()), &model_data.inference_provider).await;
 
                 let counter_factual: LLMDataPointCounterFactual = match res_cf {
                     Ok(val) => {
@@ -591,8 +592,8 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
     let model = model.unwrap();
     is_owner(&model, caller);
 
-    let hf_model = if let ModelType::LLM(model_data) = model.model_type {
-        model_data.hugging_face_url
+    let model_data = if let ModelType::LLM(model_data) = model.model_type {
+        model_data
     } else {
         return Err("Model should be a LLM".to_string());
     };
@@ -618,7 +619,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
             sensible_attribute = String::from(ds.sensible_attribute);
             prompt_template = String::from(ds.prompt_template);
 
-            res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv,
+            res = run_metrics_calculation(&model_data, seed, max_queries, train_csv, test_csv, cf_test_csv,
                                           ds.sensible_attribute, ds.predict_attribute, &mut data_points,
                                           prompt_template.clone(), ds.sensible_attribute_values,
                                           ds.predict_attributes_values,

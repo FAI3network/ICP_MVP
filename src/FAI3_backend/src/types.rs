@@ -250,6 +250,7 @@ pub struct LLMModelData {
     pub evaluations: Vec<ModelEvaluationResult>,
     pub average_fairness_metrics: Option<AverageLLMFairnessMetrics>,
     pub language_evaluations: Vec<LanguageEvaluationResult>,
+    pub inference_provider: Option<String>,
 }
 
 impl Default for LLMModelData {
@@ -261,6 +262,7 @@ impl Default for LLMModelData {
             evaluations: Vec::new(),
             average_fairness_metrics: None,
             language_evaluations: Vec::new(),
+            inference_provider: None,
         }
     }
 }
