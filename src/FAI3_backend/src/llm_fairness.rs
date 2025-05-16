@@ -823,16 +823,25 @@ pub async fn average_llm_metrics(llm_model_id: u128, datasets: Vec<String>) -> R
     }
 }
 
-/// Returns a list of strings for all the available datasets to use for testing
+/// Returns a list of available datasets with their row counts
+/// Each tuple contains (dataset_name, test_rows)
 #[query]
-pub async fn llm_fairness_datasets() -> Vec<String> {
+pub async fn llm_fairness_datasets() -> Vec<(String, usize)> {
     check_cycles_before_action();
 
-    return LLMFAIRNESS_DATASETS
+    LLMFAIRNESS_DATASETS
         .iter()
-        .filter( |ds| ds.name != "pisa_test")
-        .map( |ds| ds.name.to_string() )
-        .collect();
+        .filter(|ds| ds.name != "pisa_test")
+        .map(|ds| {
+            let mut test_reader = csv::ReaderBuilder::new()
+                .from_reader(ds.test_csv.as_bytes());
+            
+            // Subtract 1 from each count to exclude header row
+            let test_rows = test_reader.records().count().saturating_sub(1);
+            
+            (ds.name.to_string(), test_rows)
+        })
+        .collect()
 }
 
 /// Calculates LLM metrics using all the datasets, and averages the results.
@@ -855,10 +864,11 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
         return Err("Model should be a LLM".to_string());
     }
 
-    let datasets = llm_fairness_datasets().await;
+    let dataset_names: Vec<String> = llm_fairness_datasets().await
+        .into_iter().map(|ds| ds.0).collect();
     let mut last_result: Option<LLMMetricsAPIResult> = None;
 
-    for dataset in &datasets {
+    for dataset in &dataset_names {
         ic_cdk::println!("Calculating LLM metrics for model {} for dataset {}", llm_model_id, dataset.clone());
         let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed, max_errors).await;
         if result.is_err() {
@@ -868,7 +878,7 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
     }
 
     if let Some(metrics_result) = last_result {
-        average_llm_metrics(llm_model_id, datasets)
+        average_llm_metrics(llm_model_id, dataset_names)
             .await
             .map_err(|err| format!("Error calculating average metrics: {}", err))
             .map(|_| metrics_result)

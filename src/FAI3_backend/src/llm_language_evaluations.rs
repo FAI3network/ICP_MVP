@@ -8,6 +8,7 @@ use crate::MODELS;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::collections::HashSet;
+use candid::CandidType;
 
 const KALEIDOSKOPE_CSV: &str = include_str!("data/kaleidoscope.csv");
 
@@ -341,6 +342,38 @@ pub async fn get_language_evaluation_data_points(llm_model_id: u128, language_ev
         return Ok((data_points, data_points_total_length));
     } else {
         return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, CandidType)]
+pub struct LanguageEvaluationCounts {
+    pub total_count: usize,
+    pub per_language: HashMap<String, usize>
+}
+
+/// Returns the number of elements in Language Evaluations, total and per language
+/// # Returns
+/// * `LanguageEvaluationCounts` - Total count and counts per language
+#[query]
+pub fn get_language_evaluation_counts() -> LanguageEvaluationCounts {
+    let mut rdr = csv::ReaderBuilder::new()
+        .from_reader(KALEIDOSKOPE_CSV.as_bytes());
+    
+    let mut per_language = HashMap::new();
+    let mut total_count = 0;
+
+    for result in rdr.deserialize::<HashMap<String, String>>() {
+        if let Ok(record) = result {
+            if let Some(language) = record.get("language") {
+                *per_language.entry(language.clone()).or_insert(0) += 1;
+                total_count += 1;
+            }
+        }
+    }
+
+    LanguageEvaluationCounts {
+        total_count,
+        per_language
     }
 }
 
