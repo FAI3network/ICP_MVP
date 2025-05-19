@@ -148,6 +148,7 @@ type LLMModelData = record {
      evaluations: vec ModelEvaluationResult;
      language_evaluations: vec LanguageEvaluationResult;
      average_fairness_metrics: opt AverageLLMFairnessMetrics;
+     inference_provider: opt text;
 };
 
 type ModelType = variant {
@@ -287,7 +288,7 @@ service : () -> {
 
     // Model management
     "add_classifier_model": (text, ModelDetails) -> (nat);
-    "add_llm_model": (text, text, ModelDetails) -> (nat);
+    "add_llm_model": (text, text, ModelDetails, opt text) -> (nat);
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
     "get_owners": (nat) -> (vec principal);

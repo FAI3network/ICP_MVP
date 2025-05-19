@@ -11,6 +11,7 @@ pub mod llm_language_evaluations;
 mod utils;
 pub mod errors;
 mod config_management;
+pub mod inference_providers;
 
 use errors::GenericError;
 use candid::Principal;
