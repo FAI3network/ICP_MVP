@@ -91,6 +91,12 @@ pub struct ModelEvaluationResult {
     pub privileged_map: Vec<KeyValuePair>,
     // data_points is to be used in the future,
     // To replace the metrics and metrics_history
+    pub queries: usize,
+    pub max_queries: usize,
+    pub max_errors: u32,
+    pub invalid_responses: u32,
+    pub errors: u32,
+    pub seed: u32,
     pub data_points: Option<Vec<DataPoint>>,
     pub llm_data_points: Option<Vec<LLMDataPoint>>,
     pub prompt_template: Option<String>,
@@ -250,6 +256,7 @@ pub struct LLMModelData {
     pub evaluations: Vec<ModelEvaluationResult>,
     pub average_fairness_metrics: Option<AverageLLMFairnessMetrics>,
     pub language_evaluations: Vec<LanguageEvaluationResult>,
+    pub inference_provider: Option<String>,
 }
 
 impl Default for LLMModelData {
@@ -261,6 +268,7 @@ impl Default for LLMModelData {
             evaluations: Vec::new(),
             average_fairness_metrics: None,
             language_evaluations: Vec::new(),
+            inference_provider: None,
         }
     }
 }
@@ -334,6 +342,48 @@ impl Storable for Model {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+impl Model {
+    /// Returns a light-weight version of the model, without the heavy data
+    /// Like data points, multiple models, etc.
+    /// Currently it only prunes LLM models.
+    pub fn prune(self) -> Model {
+        match self.model_type {   
+            ModelType::LLM(_) => {
+                self.prune_llm_model()
+            },
+            _ => self,
+        }
+    }
+
+    /// Takes a LLM model and returns another model with pruned data
+    /// Useful because data_points contain a lot of data
+    /// And the protocol doesn't support to return so much data
+    pub fn prune_llm_model(mut self) -> Model {
+        // Deleting data that could trigger a response size error
+        // Error code: IC0504
+        let mut model_data = get_llm_model_data(&self);
+
+        model_data.cat_metrics_history = vec![];
+        if let Some(mut cat) = model_data.cat_metrics {
+            cat.data_points = vec![];
+            model_data.cat_metrics = Some(cat);
+        }
+
+        model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
+            evaluation.data_points = None;
+            evaluation.llm_data_points = None;
+            evaluation
+        }).collect();
+
+        model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
+            levaluation.data_points = Vec::new();
+            levaluation
+        }).collect();
+
+        self.model_type = ModelType::LLM(model_data);
+        self
+    }
+}
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct ModelDetails {

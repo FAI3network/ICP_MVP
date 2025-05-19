@@ -1,5 +1,6 @@
 use ic_cdk_macros::*;
-use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
+use crate::hugging_face::call_hugging_face;
+use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::types::{LanguageEvaluationResult, LanguageEvaluationMetrics, ModelType, LLMModelData, LanguageEvaluationDataPoint, get_llm_model_data};
 use crate::{check_cycles_before_action, NEXT_LLM_LANGUAGE_EVALUATION_ID, get_model_from_memory, only_admin};
 use crate::utils::{is_owner, seeded_vector_shuffle};
@@ -8,6 +9,7 @@ use crate::MODELS;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::collections::HashSet;
+use candid::CandidType;
 
 const KALEIDOSKOPE_CSV: &str = include_str!("data/kaleidoscope.csv");
 
@@ -73,12 +75,16 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
     // Using integer division
     let original_max_queries = max_queries;
     let max_queries = max_queries / languages.len();
+    if original_max_queries > 0 && max_queries == 0 {
+        return Err("Wrong max_queries value. It should be at least the number of languages, or zero.".to_string());
+    }
     
     for lang in languages {
         let mut queries : usize = 0;
         ic_cdk::println!("Processing `{}` language", lang);
         let mut rdr = csv::ReaderBuilder::new()
             .from_reader(KALEIDOSKOPE_CSV.as_bytes());
+        
         for result in rdr.deserialize::<HashMap<String, String>>() {
             let result = result.map_err(|e| e.to_string())?;
 
@@ -90,7 +96,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                 continue;
             }
 
-            ic_cdk::println!("Language: {}", language);
+            ic_cdk::println!("Executing query {}/{} of language {}", queries, max_queries, language);
             
             let question: &String = result.get("question")
                 .expect("It should be able to get the question field.");
@@ -117,10 +123,10 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
 
             let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
             
-            let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone())).await;
+            let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone()), &model_data.inference_provider).await;
 
             let trimmed_response = match res {
-                Ok(response) => response.trim().to_string(),
+                Ok(response) => crate::utils::clean_llm_response(&response),
                 Err(e) => {
                     ic_cdk::println!("Error calling Hugging Face API: {}", e);
 
@@ -144,7 +150,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                 }
             };
 
-            ic_cdk::println!("Trimmed response: {}", &trimmed_response);
+            ic_cdk::println!("Cleaned response: {}", &trimmed_response);
 
             let evaluation_answer = match serde_json::from_str::<LanguageEvaluationAnswer>(&trimmed_response) {
                 Ok(json) => {
@@ -272,6 +278,8 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
 
     if let ModelType::LLM(model_type_data) = model.model_type {
         let result = run_evaluate_languages(&model_type_data, &languages, seed, max_queries).await;
+
+        ic_cdk::println!("Language evaluation finished successfully");
         
         return match result {
             Ok(language_evaluation_result) => {
@@ -287,6 +295,8 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
                     models.insert(model_id, model);
                 });
 
+                ic_cdk::println!("Language evaluation saved successfully");
+
                 Ok(language_evaluation_result)
             },
             Err(err_message) => {
@@ -295,6 +305,76 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
         };
     } else {
         return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be a LLM"));
+    }
+}
+
+#[query]
+pub async fn get_language_evaluation_data_points(llm_model_id: u128, language_evaluation_id: u128, limit: u32, offset: usize) -> Result<(Vec<LanguageEvaluationDataPoint>, usize), GenericError>  {
+    only_admin();
+    check_cycles_before_action();
+
+    let caller = ic_cdk::api::caller();
+
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
+
+    if let ModelType::LLM(model_data) = model.model_type {
+        let language_evaluation = model_data.language_evaluations
+            .into_iter()
+            .find(|le: &LanguageEvaluationResult| le.language_model_evaluation_id == language_evaluation_id)
+            .expect("Context association test with passed index should exist.");
+
+        let data_points: &Vec<LanguageEvaluationDataPoint> = language_evaluation.data_points.as_ref();
+
+        let data_points_total_length = data_points.len();
+
+        // Get a slice of data points based on offset and limit
+        let start = offset;
+        let end = (offset + limit as usize).min(data_points.len());
+        
+        // Clone the selected range of data points
+        let data_points = data_points[start..end].to_vec();
+        
+        return Ok((data_points, data_points_total_length));
+    } else {
+        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, CandidType)]
+pub struct LanguageEvaluationCounts {
+    pub total_count: usize,
+    pub per_language: HashMap<String, usize>
+}
+
+/// Returns the number of elements in Language Evaluations, total and per language
+/// # Returns
+/// * `LanguageEvaluationCounts` - Total count and counts per language
+#[query]
+pub fn get_language_evaluation_counts() -> LanguageEvaluationCounts {
+    let mut rdr = csv::ReaderBuilder::new()
+        .from_reader(KALEIDOSKOPE_CSV.as_bytes());
+    
+    let mut per_language = HashMap::new();
+    let mut total_count = 0;
+
+    for result in rdr.deserialize::<HashMap<String, String>>() {
+        if let Ok(record) = result {
+            if let Some(language) = record.get("language") {
+                *per_language.entry(language.clone()).or_insert(0) += 1;
+                total_count += 1;
+            }
+        }
+    }
+
+    LanguageEvaluationCounts {
+        total_count,
+        per_language
     }
 }
 
