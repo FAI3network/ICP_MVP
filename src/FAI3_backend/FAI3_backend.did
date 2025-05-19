@@ -136,6 +136,12 @@ type ModelEvaluationResult = record {
     metrics: Metrics;
     privileged_map: HashMap;
     data_points: opt vec DataPoint;
+    queries: nat64;
+    errors: nat32;
+    max_queries: nat32;
+    max_errors: nat64;
+    invalid_responses: nat32;
+    seed: nat32;
     llm_data_points: opt vec LLMDataPoint;
     prompt_template: opt text;
     counter_factual: opt CounterFactualModelEvaluationResult;

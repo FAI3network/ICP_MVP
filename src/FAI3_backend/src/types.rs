@@ -91,6 +91,12 @@ pub struct ModelEvaluationResult {
     pub privileged_map: Vec<KeyValuePair>,
     // data_points is to be used in the future,
     // To replace the metrics and metrics_history
+    pub queries: usize,
+    pub max_queries: usize,
+    pub max_errors: u32,
+    pub invalid_responses: u32,
+    pub errors: u32,
+    pub seed: u32,
     pub data_points: Option<Vec<DataPoint>>,
     pub llm_data_points: Option<Vec<LLMDataPoint>>,
     pub prompt_template: Option<String>,

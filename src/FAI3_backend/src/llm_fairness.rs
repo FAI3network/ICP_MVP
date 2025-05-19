@@ -78,6 +78,7 @@ struct LLMFairnessDataset<'a> {
     // First element in the array corresponds to "false", second one corresponds to "true"
     predict_attributes_values: &'a[&'a str; 2],
     binarized_sensible_attribute_column: Option<&'a str>,
+    dataset_subject_label: &'a str,
 }
 
 const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
@@ -91,6 +92,7 @@ const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["0", "1"],
     predict_attributes_values: &["L", "H"],
     binarized_sensible_attribute_column: None,
+    dataset_subject_label: "Student",
 };
 
 // Reduced version for testing purposes
@@ -105,6 +107,7 @@ const PISA_TEST_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["0", "1"],
     predict_attributes_values: &["L", "H"],
     binarized_sensible_attribute_column: None,
+    dataset_subject_label: "Student",
 };
 
 const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
@@ -119,13 +122,14 @@ const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["Black", "White"], // Black=0, White=1
     predict_attributes_values: &["0", "1"],
     binarized_sensible_attribute_column: Some("binarized_race"),
+    dataset_subject_label: "Subject",
 };
 
 const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET, PISA_TEST_DATASET, COMPAS_DATASET];
 
 /// Formats a single example for llm fairness call
-pub fn format_example(example: &HashMap<String, String>, sensible_attribute: &str, predict_attribute: &str, ignore_columns: &Vec<&str>) -> String {
-    let mut sample = "<Student Attributes>: ".to_string();
+pub fn format_example(dataset_subject_label: &str, example: &HashMap<String, String>, sensible_attribute: &str, predict_attribute: &str, ignore_columns: &Vec<&str>) -> String {
+    let mut sample = format!("<{} Attributes>: ", dataset_subject_label);
     let mut answer_str = "<Answer>: ".to_string();
 
     // Sorting keys to avoid inconsistent order in the produced text
@@ -150,9 +154,8 @@ pub fn format_example(example: &HashMap<String, String>, sensible_attribute: &st
 }
 
 /// Takes a vector of records and returns 4 examples according to the seed passed
-fn get_example_strings(records: &Vec<HashMap<String, String>>,
-                           sensible_attribute_values: &[& str; 2], predict_attributes_values: &[& str; 2],
-                           sensible_attribute: &str, predict_attribute: &str, seed: u32, query_number: usize, ignore_columns: &Vec<&str>)
+fn get_example_strings(records: &Vec<HashMap<String, String>>, sensible_attribute_values: &[& str; 2], predict_attributes_values: &[& str; 2],
+                       sensible_attribute: &str, predict_attribute: &str, seed: u32, query_number: usize, ignore_columns: &Vec<&str>, dataset_subject_label: &str)
                        -> Result<[String; 4], String> {
     // 1. Pick 4 random examples based on the dynamic sensible attribute and predict attribute
     let attribute_high = select_random_element(records.iter()
@@ -178,7 +181,7 @@ fn get_example_strings(records: &Vec<HashMap<String, String>>,
     // 2. Create the prompts and send the requests
     let attributes: [String; 4] = seeded_vector_shuffle(vec![attribute_high, attribute_low, non_attribute_high, non_attribute_low], (seed + (query_number as u32)) * 5)
         .iter()
-        .map( |x| format_example(&x, &sensible_attribute, &predict_attribute, &ignore_columns) )
+        .map( |x| format_example(dataset_subject_label, &x, &sensible_attribute, &predict_attribute, &ignore_columns) )
         .collect::<Vec<_>>()
         .try_into()
         .unwrap_or_else(|v: Vec<String>| panic!("Expected a Vec of length 4 but it was {}", v.len()));
@@ -187,15 +190,13 @@ fn get_example_strings(records: &Vec<HashMap<String, String>>,
 }
 
 /// Builds the fairness prompt and the counter factual fairness prompt
-pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: &str,
-                           sensible_attribute_values: &[& str; 2], predict_attributes_values: &[& str; 2],
-                     sensible_attribute: &str,
-                     ignore_columns: &Vec<&str>,
-                     seed: u32, query_number: usize,
-                     prompt_template: String, result: &HashMap<String, String>) -> Result<(String, String), String> {
-    let attributes = get_example_strings(&records,
-                                         sensible_attribute_values, predict_attributes_values,
-                                         sensible_attribute, predict_attribute, seed, query_number, ignore_columns)?;
+pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: &str, sensible_attribute_values: &[& str; 2],
+                     predict_attributes_values: &[& str; 2], sensible_attribute: &str, ignore_columns: &Vec<&str>,
+                     seed: u32, query_number: usize, prompt_template: String, result: &HashMap<String, String>,
+                     dataset_subject_label: &str,
+) -> Result<(String, String), String> {
+    let attributes = get_example_strings(&records, sensible_attribute_values, predict_attributes_values, sensible_attribute,
+                                         predict_attribute, seed, query_number, ignore_columns, dataset_subject_label)?;
 
     let prompt = prompt_template
         .replace("<EXAMPLE_0>", &attributes[0])
@@ -213,6 +214,11 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
 
     for key in keys {
         if (*ignore_columns).contains(&key.as_str()) {
+            continue;
+        }
+
+        if key.trim() == "" {
+            // Removing fields without a name (which usually includes ids)
             continue;
         }
         
@@ -269,6 +275,7 @@ async fn run_metrics_calculation(
     predict_attributes_values: &[& str; 2],
     binarized_sensible_attribute_column: Option<&str>,
     max_errors: u32,
+    dataset_subject_label: &str,
 ) -> Result<(usize, u32, u32), String> {
 
     // Create a CSV reader from the string input rather than a file path
@@ -326,7 +333,7 @@ async fn run_metrics_calculation(
             sensible_attribute, 
             &ignore_columns,
             seed, queries,
-            prompt_template.clone(), &result)?; 
+            prompt_template.clone(), &result, dataset_subject_label)?; 
 
         // Parsing column to f64
         let sensible_attr_value: f64 = match binarized_sensible_attribute_column {
@@ -625,6 +632,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                                           ds.predict_attributes_values,
                                           ds.binarized_sensible_attribute_column,
                                           max_errors,
+                                          ds.dataset_subject_label,
             ).await;
 
             privileged_map.insert(ds.sensible_attribute.to_string(), 0);
@@ -717,6 +725,8 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 sensible_attribute,
             };
 
+            let (queries, invalid_responses, call_errors) = ret;
+            
             // Saving metrics
             MODELS.with(|models| {
                 let mut models = models.borrow_mut();
@@ -735,6 +745,12 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                         // Left here in case we want to use data_points for normal models
                         data_points: None, 
                         metrics: metrics.clone(),
+                        queries,
+                        max_queries,
+                        max_errors,
+                        invalid_responses,
+                        errors: call_errors,
+                        seed,
                         llm_data_points: Some(data_points),
                         privileged_map: privileged_map.into_iter().map( |(key, value)| KeyValuePair { key, value } ).collect(),
                         prompt_template: Some(prompt_template.clone()),
@@ -749,7 +765,6 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 models.insert(llm_model_id, model);
             });
 
-            let (queries, invalid_responses, call_errors) = ret;
             Ok(LLMMetricsAPIResult {
                 metrics,
                 queries,
