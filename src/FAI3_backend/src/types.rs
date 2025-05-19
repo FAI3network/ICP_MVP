@@ -12,6 +12,7 @@ pub type PrivilegedMap = HashMap<String, u128>;
 pub struct Job {
     pub id: u128,
     pub model_id: u128,
+    pub owner: Principal,
     pub status: String,
     pub timestamp: u64,
 }
@@ -22,7 +23,21 @@ impl Storable for Job {
     }
 
     fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
-        candid::decode_one(&bytes).unwrap()
+        match candid::decode_one(&bytes) {
+            Ok(job) => job,
+            Err(e) => {
+                ic_cdk::println!("Error decoding Job: {}", e);
+                // Provide a fallback or try alternative decoding approach
+                // For now, create a minimal valid job to prevent crashes
+                Job {
+                    id: 0,
+                    model_id: 0,
+                    owner: Principal::anonymous(),
+                    status: "error_decoding".to_string(),
+                    timestamp: 0,
+                }
+            }
+        }
     }
 
     const BOUND: Bound = Bound::Unbounded;

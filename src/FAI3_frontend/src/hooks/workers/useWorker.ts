@@ -36,7 +36,7 @@ export function useWorker() {
     setLoading(true);
     setError(null);
 
-    setWorkerProcesses([...workerProcesses, workerType]);
+    // setWorkerProcesses([...workerProcesses, workerType]);
 
     // Create a new worker
     const worker = new Worker(new URL("./metricTestWorker.ts", import.meta.url), { type: "module" });
@@ -50,11 +50,25 @@ export function useWorker() {
           let result;
           switch (payload.method) {
             case "context_association_test":
+              const newJobId = await webapp?.create_job(BigInt(payload.modelId));
+
+              if (!newJobId) {
+                throw new Error("Failed to create job.");
+              }
+
+              console.log("New job ID:", newJobId);
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: newJobId,
+              }]);
+
               result = await webapp?.context_association_test(
                 BigInt(payload.modelId), 
                 payload.max_queries, 
                 payload.seed, 
-                payload.shuffle
+                payload.shuffle,
+                100,
+                newJobId
               );
               break;
             case "fairness_test":
@@ -64,7 +78,8 @@ export function useWorker() {
                   BigInt(modelId),
                   item,
                   max_queries,
-                  seed
+                  seed,
+                  100
                 );
               };
               result = await webapp?.average_llm_metrics(
@@ -101,9 +116,8 @@ export function useWorker() {
           toasts.errrorToast(`Error in ${workerType}: ${payload.error}`);
         }
         worker.terminate();
-        setWorkerProcesses((prev: Array<keyof WorkerTypes>) => 
-          prev.filter((type) => type !== workerType)
-        );
+        // Remove the completed worker process from the list
+        setWorkerProcesses((prev: any[]) => prev.filter((item: any) => item.type !== workerType));
       }
     };
   

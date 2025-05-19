@@ -12,7 +12,7 @@ import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend
 import UpdateModel from "./UpdateModel";
 import ImageUploader from "./ImageUploader";
 
-export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, cachedSelections, onClose = () => { }, modelInfo }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, onClose: () => void, modelInfo: { id: number, name: string, details: ModelDetails } }) {
+export default function DataUploadModal({ fetchModel, latestVars, cachedThresholds, cachedSelections, onClose = () => { }, modelInfo, isOpen }: { fetchModel: () => Promise<any>, latestVars: any, cachedThresholds: any, cachedSelections: any, onClose: () => void, modelInfo: { id: number, name: string, details: ModelDetails }, isOpen?: boolean; }) {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);

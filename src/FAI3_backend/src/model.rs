@@ -1,8 +1,5 @@
 use crate::types::get_classifier_model_data;
-use crate::types::{
-    get_llm_model_data, ClassifierModelData, LLMModelData, LanguageEvaluationResult,
-    ModelDetailsHistory, ModelEvaluationResult, ModelType,
-};
+use crate::types::{ClassifierModelData, LLMModelData, ModelDetailsHistory, ModelType};
 use crate::{
     check_cycles_before_action, is_owner, only_admin, AverageMetrics, DataPoint, Metrics, Model,
     ModelDetails, MODELS, NEXT_MODEL_ID,
@@ -141,7 +138,6 @@ pub fn delete_model(model_id: u128) {
 
 #[ic_cdk::query]
 pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) -> Vec<Model> {
-pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) -> Vec<Model> {
     check_cycles_before_action();
 
     return MODELS.with(|models| {
@@ -149,8 +145,6 @@ pub fn get_all_models(limit: usize, _offset: usize, model_type: Option<String>) 
         return models
             .values()
             .filter(|model| {
-                ic_cdk::println!("Filtering");
-                ic_cdk::println!("Filtering");
                 match &model_type {
                     Some(ref mt) if mt == "llm" => matches!(model.model_type, ModelType::LLM(_)),
                     Some(ref mt) if mt == "classifier" => {

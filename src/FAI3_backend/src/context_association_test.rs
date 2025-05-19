@@ -1,5 +1,6 @@
 use crate::admin_management::only_admin;
 use crate::errors::GenericError;
+use crate::get_model_from_memory;
 use crate::hugging_face::call_hugging_face;
 use crate::job_management::{
     check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
@@ -10,6 +11,7 @@ use crate::types::{
     ContextAssociationTestType, ModelType,
 };
 use crate::utils::{is_owner, seeded_vector_shuffle};
+use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
 use candid::CandidType;
 use ic_cdk_macros::*;
 use regex::Regex;
@@ -746,6 +748,7 @@ pub async fn context_association_test(
     seed: u32,
     shuffle_questions: bool,
     max_errors: u32,
+    job_id: u128,
 ) -> Result<ContextAssociationTestAPIResult, GenericError> {
     only_admin();
     check_cycles_before_action();
@@ -772,8 +775,6 @@ pub async fn context_association_test(
             "Model not found",
         ));
     }
-
-    let job_id = create_job(llm_model_id);
 
     let cat_json = include_str!("context_association_test_processed.json");
     let parsed_data: Result<CatJson, _> = serde_json::from_str(cat_json).map_err(|e| e.to_string());

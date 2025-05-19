@@ -1,3 +1,5 @@
+use candid::Principal;
+
 use crate::types::Job;
 use crate::{JOBS, NEXT_JOB_ID};
 
@@ -10,9 +12,13 @@ pub fn create_job(model_id: u128) -> u128 {
 
         current_id
     });
+
+    let owner_id = ic_cdk::caller();
+
     let job = Job {
         id: id,
         model_id,
+        owner: owner_id,
         status: "Pending".to_string(),
         timestamp: ic_cdk::api::time(),
     };
@@ -113,4 +119,45 @@ pub fn stop_job(job_id: u128) {
             jobs.insert(job_id, updated_job);
         }
     });
+}
+
+#[ic_cdk::query]
+pub fn get_latest_job() -> Option<Job> {
+    JOBS.with(|jobs| {
+        let jobs = jobs.borrow();
+        let mut latest_job: Option<Job> = None;
+        for job in jobs.values() {
+            if latest_job.is_none() || job.timestamp > latest_job.as_ref().unwrap().timestamp {
+                latest_job = Some(job.clone());
+            }
+        }
+        latest_job
+    })
+}
+
+#[ic_cdk::query]
+pub fn get_job_by_model_id(model_id: u128) -> Option<Job> {
+    JOBS.with(|jobs| {
+        let jobs = jobs.borrow();
+        for job in jobs.values() {
+            if job.model_id == model_id {
+                return Some(job.clone());
+            }
+        }
+        None
+    })
+}
+
+#[ic_cdk::query]
+pub fn get_job_by_owner(owner_id: Principal) -> Vec<Job> {
+    JOBS.with(|jobs| {
+        let jobs = jobs.borrow();
+        let mut result = Vec::new();
+        for job in jobs.values() {
+            if job.owner == owner_id {
+                result.push(job.clone());
+            }
+        }
+        result
+    })
 }

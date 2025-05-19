@@ -1,13 +1,7 @@
 type Job = record {
   id: nat;
   model_id: nat;
-  status: text;
-  timestamp: nat64;
-};
-
-type Job = record {
-  id: nat;
-  model_id: nat;
+  owner: principal;
   status: text;
   timestamp: nat64;
 };
@@ -294,7 +288,7 @@ type CatElementCounts = record {
 
 service : () -> {
     //Job management
-    "create_job": () -> (nat);
+    "create_job": (nat) -> (nat);
     "get_job": (nat) -> (Job);
     "get_jobs": () -> (vec Job);
     "update_job_status": (nat, text, nat) -> ();
@@ -305,6 +299,9 @@ service : () -> {
     "delete_job": (nat) -> ();
     "check_job_stopped": (nat) -> (bool);
     "stop_job": (nat) -> ();
+    "get_latest_job": () -> (opt Job);
+    "get_job_by_model_id": (nat) -> (opt Job);
+    "get_job_by_owner": (principal) -> (vec Job);
 
     // User management
     "whoami": () -> (principal);
@@ -356,7 +353,7 @@ service : () -> {
     "get_llm_model_data": (Model) -> (LLMModelData) query;
     "get_llm_model_data_id": (nat) -> (LLMModelData) query;
 
-    "context_association_test": (nat, nat64, nat32, bool, nat32) -> (variant { Ok: ContextAssociationTestAPIResult; Err: GenericError });
+    "context_association_test": (nat, nat64, nat32, bool, nat32, nat) -> (variant { Ok: ContextAssociationTestAPIResult; Err: GenericError });
     get_cat_element_counts : () -> (CatElementCounts) query;
 
     "set_config": (text, text) -> ();

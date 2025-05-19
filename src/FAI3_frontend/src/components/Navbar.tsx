@@ -25,6 +25,41 @@ export default function Navbar() {
     }
   }
 
+  const queryJobStatus = async () => {
+    if (!webapp) return;
+
+    let timeoutId: number;
+
+    const checkJobs = async () => {
+      if (workerProcesses.length === 0) return;
+
+      for (let i = 0; i < workerProcesses.length; i++) {
+        const process = workerProcesses[i];
+        try {
+          const job: any = await webapp.get_job(process.jobId);
+          console.log("Job:", job);
+          if (job.status === "Completed" || job.status === "Failed") {
+            // Stop timeout
+            clearTimeout(timeoutId);
+          }
+        } catch (error) {
+          console.error("Error checking job status:", error);
+        }
+      }
+
+      // Schedule the next check after 1 second
+      timeoutId = setTimeout(checkJobs, 1000) as unknown as number;
+    };
+
+    // Start the periodic checking
+    checkJobs();
+  }
+
+  useEffect(() => {
+    console.log("Worker processes:", workerProcesses);
+    queryJobStatus();
+  }, [workerProcesses]);
+
   return (
     <nav className="flex justify-between mx-10 mb-12 mt-[1.5rem] items-center">
       <h1 className="text-2xl">
@@ -52,19 +87,19 @@ export default function Navbar() {
                         workerProcesses.length > 0 && (
                           <Popover>
                             <PopoverTrigger className="flex flex-row items-center justify-center p-2 text-sm gap-1">
-                            <div className="relative group">
-                              <div className="flex flex-row items-center justify-center p-2 text-sm gap-1">
-                                {workerProcesses.length} <CircularProgress className="size-4" />
+                              <div className="relative group">
+                                <div className="flex flex-row items-center justify-center p-2 text-sm gap-1">
+                                  {workerProcesses.length} <CircularProgress className="size-4" />
+                                </div>
                               </div>
-                            </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-min">
                               <div className="flex flex-col whitespace-nowrap">
                                 <h3 className="text-base font-semibold">Running Tests</h3>
                                 <ul className="flex flex-col gap-2 text-sm">
-                                  {workerProcesses.map((process: string, index: number) => (
+                                  {workerProcesses.map((process: any, index: number) => (
                                     <li key={index} className="flex flex-row items-center justify-between">
-                                      <p>{process}</p>
+                                      <p>{process.type}</p>
                                     </li>
                                   ))}
                                 </ul>
