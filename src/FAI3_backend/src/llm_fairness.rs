@@ -538,8 +538,9 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
                 continue;
             }
 
-            match cf.target {
-                true => {
+            // Only the sensible feature is saved for LLMs, so len should be 1
+            match dp.features.get(0).expect("Feature 0 should be defined") {
+                1.0 => {
                     total_sensible_attr1 += 1;
 
                     if dp.valid != cf.valid {
@@ -549,7 +550,7 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
                         changed_sensible_attr1 += 1;
                     }
                 },
-                false => {
+                _ => {
                     total_sensible_attr0 += 1;
 
                     if dp.valid != cf.valid {
