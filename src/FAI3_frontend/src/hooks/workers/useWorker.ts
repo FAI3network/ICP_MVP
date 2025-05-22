@@ -15,7 +15,7 @@ type BaseWorkerData = {
 };
 
 type WorkerDataTypes = BaseWorkerData & (
-  { shuffle: boolean } | 
+  { shuffle: boolean } |
   { dataset: string[] }
 );
 
@@ -43,7 +43,7 @@ export function useWorker() {
 
     worker.onmessage = async (event) => {
       const { type, payload, requestId } = event.data;
-      
+
       if (type === "API_REQUEST") {
         try {
           // Execute the requested API call using webapp
@@ -63,9 +63,9 @@ export function useWorker() {
               }]);
 
               result = await webapp?.context_association_test(
-                BigInt(payload.modelId), 
-                payload.max_queries, 
-                payload.seed, 
+                BigInt(payload.modelId),
+                payload.max_queries,
+                payload.seed,
                 payload.shuffle,
                 100,
                 newJobId
@@ -73,22 +73,80 @@ export function useWorker() {
               break;
             case "fairness_test":
               const { modelId, max_queries, seed, dataset } = payload;
-              for (const item of dataset.values()) {
-                result = await webapp?.calculate_llm_metrics(
-                  BigInt(modelId),
-                  item,
-                  max_queries,
-                  seed,
-                  100
-                );
+
+              console.log("Dataset:", dataset);
+
+              for (const item of dataset) {
+                const newJobId = await webapp?.create_job(BigInt(payload.modelId));
+
+                if (!newJobId) {
+                  throw new Error("Failed to create job.");
+                }
+
+                console.log("New job ID:", newJobId);
+                setWorkerProcesses([...workerProcesses, {
+                  type: workerType,
+                  jobId: newJobId,
+                }]);
+
+                // result = await webapp?.calculate_llm_metrics(
+                //   BigInt(modelId),
+                //   item,
+                //   max_queries,
+                //   seed,
+                //   100,
+                //   newJobId
+                // );
+
+                try {
+                  result = await webapp?.calculate_llm_metrics(
+                    BigInt(modelId),
+                    item,
+                    max_queries,
+                    seed,
+                    100,
+                    newJobId
+                  );
+                }
+                catch (error) {
+                  console.error("Error in calculate_llm_metrics:", error);
+                  throw new Error("Failed to calculate LLM metrics.");
+                }
               };
-              result = await webapp?.average_llm_metrics(
-                BigInt(modelId),
-                dataset
-              );
+
+              const averageJobId = await webapp?.create_job(BigInt(payload.modelId));
+
+              if (!averageJobId) {
+                throw new Error("Failed to create job.");
+              }
+
+              console.log("New job ID:", averageJobId);
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: averageJobId,
+              }]);
+
+              // result = await webapp?.average_llm_metrics(
+              //   BigInt(modelId),
+              //   dataset,
+              //   newJobId
+              // );
+
+              try {
+                result = await webapp?.average_llm_metrics(
+                  BigInt(modelId),
+                  dataset,
+                  averageJobId
+                );
+              }
+              catch (error) {
+                console.error("Error in average_llm_metrics:", error);
+                throw new Error("Failed to calculate average LLM metrics.");
+              }
+
               break;
           }
-          
+
           // Send result back to worker
           worker.postMessage({
             type: "API_RESPONSE",
@@ -120,7 +178,7 @@ export function useWorker() {
         setWorkerProcesses((prev: any[]) => prev.filter((item: any) => item.type !== workerType));
       }
     };
-  
+
     // Send initial data to worker
     worker.postMessage({
       type: 'INIT',

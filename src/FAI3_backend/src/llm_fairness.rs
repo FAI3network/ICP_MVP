@@ -1,13 +1,26 @@
-use ic_cdk_macros::*;
-use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
-use crate::types::{DataPoint, LLMDataPoint, ModelType, LLMMetricsAPIResult, Metrics, AverageMetrics, get_llm_model_data, ModelEvaluationResult, PrivilegedMap, KeyValuePair, LLMDataPointCounterFactual, CounterFactualModelEvaluationResult, AverageLLMFairnessMetrics, LLMModelData};
-use crate::{check_cycles_before_action, MODELS, NEXT_LLM_MODEL_EVALUATION_ID, get_model_from_memory};
-use crate::utils::{is_owner, select_random_element, seeded_vector_shuffle};
 use crate::admin_management::only_admin;
-use crate::errors::GenericError;
-use std::collections::HashMap;
-use crate::metrics_calculation::{all_metrics, calculate_group_counts, accuracy, precision, recall, can_calculate_precision, can_calculate_recall, calculate_overall_confusion_matrix};
 use crate::config_management::{get_config, HUGGING_FACE_API_KEY_CONFIG_KEY};
+use crate::errors::GenericError;
+use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
+use crate::job_management::{
+    check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
+};
+use crate::metrics_calculation::{
+    accuracy, all_metrics, calculate_group_counts, calculate_overall_confusion_matrix,
+    can_calculate_precision, can_calculate_recall, precision, recall,
+};
+use crate::types::{
+    get_llm_model_data, AverageLLMFairnessMetrics, AverageMetrics,
+    CounterFactualModelEvaluationResult, DataPoint, KeyValuePair, LLMDataPoint,
+    LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
+    ModelType, PrivilegedMap,
+};
+use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
+use crate::{
+    check_cycles_before_action, get_model_from_memory, MODELS, NEXT_LLM_MODEL_EVALUATION_ID,
+};
+use ic_cdk_macros::*;
+use std::collections::HashMap;
 
 pub const PISA_PROMPT: &str = "Your task is to determine if the reading score of a student is L(low) or H (high) with the input attributes.\n\
 Perform the following actions:\n\
@@ -73,9 +86,9 @@ struct LLMFairnessDataset<'a> {
     name: &'a str,
     sensible_attribute: &'a str,
     predict_attribute: &'a str,
-    sensible_attribute_values: &'a[&'a str; 2],
+    sensible_attribute_values: &'a [&'a str; 2],
     // First element in the array corresponds to "false", second one corresponds to "true"
-    predict_attributes_values: &'a[&'a str; 2],
+    predict_attributes_values: &'a [&'a str; 2],
     binarized_sensible_attribute_column: Option<&'a str>,
 }
 
@@ -120,23 +133,30 @@ const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     binarized_sensible_attribute_column: Some("binarized_race"),
 };
 
-const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] = &[PISA_DATASET, PISA_TEST_DATASET, COMPAS_DATASET];
+const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] =
+    &[PISA_DATASET, PISA_TEST_DATASET, COMPAS_DATASET];
 
 /// Formats a single example for llm fairness call
-pub fn format_example(example: &HashMap<String, String>, sensible_attribute: &str, predict_attribute: &str, ignore_columns: &Vec<&str>) -> String {
+pub fn format_example(
+    example: &HashMap<String, String>,
+    sensible_attribute: &str,
+    predict_attribute: &str,
+    ignore_columns: &Vec<&str>,
+) -> String {
     let mut sample = "<Student Attributes>: ".to_string();
     let mut answer_str = "<Answer>: ".to_string();
 
     // Sorting keys to avoid inconsistent order in the produced text
     let mut keys: Vec<&String> = example.keys().collect();
     keys.sort();
-    
+
     for key in keys {
         if (*ignore_columns).contains(&key.as_str()) {
             continue;
         }
         let value = &example[key];
-        if key != sensible_attribute {  // assuming `sensible_attribute` is like `task_id` to skip
+        if key != sensible_attribute {
+            // assuming `sensible_attribute` is like `task_id` to skip
             if key == predict_attribute {
                 answer_str += &format!("{}: {}", key, value);
             } else {
@@ -144,57 +164,121 @@ pub fn format_example(example: &HashMap<String, String>, sensible_attribute: &st
             }
         }
     }
-    sample.pop(); sample.pop(); // Removes the last ", "
+    sample.pop();
+    sample.pop(); // Removes the last ", "
     sample + "\n" + &answer_str
 }
 
 /// Takes a vector of records and returns 4 examples according to the seed passed
-fn get_example_strings(records: &Vec<HashMap<String, String>>,
-                           sensible_attribute_values: &[& str; 2], predict_attributes_values: &[& str; 2],
-                           sensible_attribute: &str, predict_attribute: &str, seed: u32, query_number: usize, ignore_columns: &Vec<&str>)
-                       -> Result<[String; 4], String> {
+fn get_example_strings(
+    records: &Vec<HashMap<String, String>>,
+    sensible_attribute_values: &[&str; 2],
+    predict_attributes_values: &[&str; 2],
+    sensible_attribute: &str,
+    predict_attribute: &str,
+    seed: u32,
+    query_number: usize,
+    ignore_columns: &Vec<&str>,
+) -> Result<[String; 4], String> {
     // 1. Pick 4 random examples based on the dynamic sensible attribute and predict attribute
-    let attribute_high = select_random_element(records.iter()
-                                               .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
-                                                       r.get(predict_attribute) == Some(&predict_attributes_values[1].to_string())), seed + (query_number as u32))
-        .ok_or_else(|| format!("{} with value 1 and high score not found", sensible_attribute))?;
+    let attribute_high = select_random_element(
+        records.iter().filter(|r| {
+            r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string())
+                && r.get(predict_attribute) == Some(&predict_attributes_values[1].to_string())
+        }),
+        seed + (query_number as u32),
+    )
+    .ok_or_else(|| {
+        format!(
+            "{} with value 1 and high score not found",
+            sensible_attribute
+        )
+    })?;
 
-    let attribute_low = select_random_element(records.iter()
-                                              .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string()) &&
-                                                      r.get(predict_attribute) == Some(&predict_attributes_values[0].to_string())), 2 * (seed + (query_number as u32)))
-        .ok_or_else(|| format!("{} with value 1 and low score not found", sensible_attribute))?;
+    let attribute_low = select_random_element(
+        records.iter().filter(|r| {
+            r.get(sensible_attribute) == Some(&sensible_attribute_values[1].to_string())
+                && r.get(predict_attribute) == Some(&predict_attributes_values[0].to_string())
+        }),
+        2 * (seed + (query_number as u32)),
+    )
+    .ok_or_else(|| {
+        format!(
+            "{} with value 1 and low score not found",
+            sensible_attribute
+        )
+    })?;
 
-    let non_attribute_high = select_random_element(records.iter()
-                                                   .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
-                                                           r.get(predict_attribute) == Some(&predict_attributes_values[1].to_string())), 3 * (seed + (query_number as u32)))
-        .ok_or_else(|| format!("{} with value 0 and high score not found", sensible_attribute))?;
+    let non_attribute_high = select_random_element(
+        records.iter().filter(|r| {
+            r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string())
+                && r.get(predict_attribute) == Some(&predict_attributes_values[1].to_string())
+        }),
+        3 * (seed + (query_number as u32)),
+    )
+    .ok_or_else(|| {
+        format!(
+            "{} with value 0 and high score not found",
+            sensible_attribute
+        )
+    })?;
 
-    let non_attribute_low = select_random_element(records.iter()
-                                                  .filter(|r| r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string()) &&
-                                                          r.get(predict_attribute) == Some(&predict_attributes_values[0].to_string())), 4 * (seed + (query_number as u32)))
-        .ok_or_else(|| format!("{} with value 0 and low score not found", sensible_attribute))?;
+    let non_attribute_low = select_random_element(
+        records.iter().filter(|r| {
+            r.get(sensible_attribute) == Some(&sensible_attribute_values[0].to_string())
+                && r.get(predict_attribute) == Some(&predict_attributes_values[0].to_string())
+        }),
+        4 * (seed + (query_number as u32)),
+    )
+    .ok_or_else(|| {
+        format!(
+            "{} with value 0 and low score not found",
+            sensible_attribute
+        )
+    })?;
 
     // 2. Create the prompts and send the requests
-    let attributes: [String; 4] = seeded_vector_shuffle(vec![attribute_high, attribute_low, non_attribute_high, non_attribute_low], (seed + (query_number as u32)) * 5)
-        .iter()
-        .map( |x| format_example(&x, &sensible_attribute, &predict_attribute, &ignore_columns) )
-        .collect::<Vec<_>>()
-        .try_into()
-        .unwrap_or_else(|v: Vec<String>| panic!("Expected a Vec of length 4 but it was {}", v.len()));
+    let attributes: [String; 4] = seeded_vector_shuffle(
+        vec![
+            attribute_high,
+            attribute_low,
+            non_attribute_high,
+            non_attribute_low,
+        ],
+        (seed + (query_number as u32)) * 5,
+    )
+    .iter()
+    .map(|x| format_example(&x, &sensible_attribute, &predict_attribute, &ignore_columns))
+    .collect::<Vec<_>>()
+    .try_into()
+    .unwrap_or_else(|v: Vec<String>| panic!("Expected a Vec of length 4 but it was {}", v.len()));
 
     Ok(attributes)
 }
 
 /// Builds the fairness prompt and the counter factual fairness prompt
-pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: &str,
-                           sensible_attribute_values: &[& str; 2], predict_attributes_values: &[& str; 2],
-                     sensible_attribute: &str,
-                     ignore_columns: &Vec<&str>,
-                     seed: u32, query_number: usize,
-                     prompt_template: String, result: &HashMap<String, String>) -> Result<(String, String), String> {
-    let attributes = get_example_strings(&records,
-                                         sensible_attribute_values, predict_attributes_values,
-                                         sensible_attribute, predict_attribute, seed, query_number, ignore_columns)?;
+pub fn build_prompts(
+    records: &Vec<HashMap<String, String>>,
+    predict_attribute: &str,
+    sensible_attribute_values: &[&str; 2],
+    predict_attributes_values: &[&str; 2],
+    sensible_attribute: &str,
+    ignore_columns: &Vec<&str>,
+    seed: u32,
+    query_number: usize,
+    prompt_template: String,
+    result: &HashMap<String, String>,
+) -> Result<(String, String), String> {
+    let attributes = get_example_strings(
+        &records,
+        sensible_attribute_values,
+        predict_attributes_values,
+        sensible_attribute,
+        predict_attribute,
+        seed,
+        query_number,
+        ignore_columns,
+    )?;
 
     let prompt = prompt_template
         .replace("<EXAMPLE_0>", &attributes[0])
@@ -208,13 +292,13 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
 
     // Generating test-specific attributes string
     let mut result_attributes: String = String::from("");
-    let mut result_attributes_cf: String = String::from("");  // for counter factual fairness
+    let mut result_attributes_cf: String = String::from(""); // for counter factual fairness
 
     for key in keys {
         if (*ignore_columns).contains(&key.as_str()) {
             continue;
         }
-        
+
         let value = &result[key];
         if key != predict_attribute {
             if key == sensible_attribute {
@@ -226,7 +310,7 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
             result_attributes += &format!("{}: {}, ", key, value);
         }
     }
-    
+
     // clean up string formatting (last two characters)
     result_attributes.pop();
     result_attributes.pop();
@@ -260,36 +344,53 @@ pub fn build_prompts(records: &Vec<HashMap<String, String>>, predict_attribute: 
 ///   and two `u32` values representing wrong responses and call errors.
 /// * On failure: A string indicating the error.
 async fn run_metrics_calculation(
-    hf_model: String, seed: u32, max_queries: usize,
-    train_csv: &str, test_csv: &str, _cf_test_csv: &str,
-    sensible_attribute: &str, predict_attribute: &str, data_points: &mut Vec<LLMDataPoint>,
+    hf_model: String,
+    seed: u32,
+    max_queries: usize,
+    train_csv: &str,
+    test_csv: &str,
+    _cf_test_csv: &str,
+    sensible_attribute: &str,
+    predict_attribute: &str,
+    data_points: &mut Vec<LLMDataPoint>,
     prompt_template: String,
-    sensible_attribute_values: &[& str; 2],
-    predict_attributes_values: &[& str; 2],
+    sensible_attribute_values: &[&str; 2],
+    predict_attributes_values: &[&str; 2],
     binarized_sensible_attribute_column: Option<&str>,
     max_errors: u32,
+    job_id: u128,
 ) -> Result<(usize, u32, u32), String> {
-
     // Create a CSV reader from the string input rather than a file path
-    let mut rdr = csv::ReaderBuilder::new()
-        .from_reader(train_csv.as_bytes());
+    let mut rdr = csv::ReaderBuilder::new().from_reader(train_csv.as_bytes());
 
-      // Collect as HashMap to allow dynamic column access
-    let records: Vec<HashMap<String, String>> = rdr.deserialize()
+    // Collect as HashMap to allow dynamic column access
+    let records: Vec<HashMap<String, String>> = rdr
+        .deserialize()
         .collect::<Result<Vec<HashMap<String, String>>, _>>()
         .map_err(|e| e.to_string())?;
 
     // Verify the sensible_attribute exists in the data
-    if records.first().map_or(true, |r| !r.contains_key(sensible_attribute)) {
-        return Err(format!("Sensible attribute '{}' not found in CSV", sensible_attribute));
-    }
-    
-    if records.first().map_or(true, |r| !r.contains_key(predict_attribute)) {
-        return Err(format!("Required column '{}' not found in CSV", predict_attribute));
+    if records
+        .first()
+        .map_or(true, |r| !r.contains_key(sensible_attribute))
+    {
+        return Err(format!(
+            "Sensible attribute '{}' not found in CSV",
+            sensible_attribute
+        ));
     }
 
-    let mut test_rdr = csv::ReaderBuilder::new()
-        .from_reader(test_csv.as_bytes());
+    if records
+        .first()
+        .map_or(true, |r| !r.contains_key(predict_attribute))
+    {
+        return Err(format!(
+            "Required column '{}' not found in CSV",
+            predict_attribute
+        ));
+    }
+
+    let mut test_rdr = csv::ReaderBuilder::new().from_reader(test_csv.as_bytes());
 
     let hf_parameters = HuggingFaceRequestParameters {
         max_new_tokens: Some(2),
@@ -313,35 +414,56 @@ async fn run_metrics_calculation(
     if let Some(binarized_attr) = binarized_sensible_attribute_column {
         ignore_columns.push(binarized_attr);
     }
-    
+
     for result in test_rdr.deserialize::<HashMap<String, String>>() {
+        let should_stop = check_job_stopped(job_id);
+
+        if should_stop {
+            ic_cdk::println!("Job stopped by user");
+            return Err("Job stopped by user".to_string());
+        }
+
         let result = result.map_err(|e| e.to_string())?;
 
         ic_cdk::println!("Executing query {}/{}", queries, max_queries);
 
         let (personalized_prompt, personalized_prompt_cf) = build_prompts(
-            &records, predict_attribute,
-            sensible_attribute_values, predict_attributes_values,
-            sensible_attribute, 
+            &records,
+            predict_attribute,
+            sensible_attribute_values,
+            predict_attributes_values,
+            sensible_attribute,
             &ignore_columns,
-            seed, queries,
-            prompt_template.clone(), &result)?; 
+            seed,
+            queries,
+            prompt_template.clone(),
+            &result,
+        )?;
 
         // Parsing column to f64
         let sensible_attr_value: f64 = match binarized_sensible_attribute_column {
-            Some(column_name) => {
-                result.get(column_name).map(|x| x.parse().ok())
-                    .flatten()
-                    .unwrap_or_else(|| { ic_cdk::println!("Missing or invalid value for attribute '{}'", column_name); 0.0 })
-            },
-            None => {
-                result.get(sensible_attribute).map(|x| x.parse().ok())
-                    .flatten()
-                    .unwrap_or_else(|| { ic_cdk::println!("Missing or invalid value for attribute '{}'", sensible_attribute); 0.0 })
-            }
+            Some(column_name) => result
+                .get(column_name)
+                .map(|x| x.parse().ok())
+                .flatten()
+                .unwrap_or_else(|| {
+                    ic_cdk::println!("Missing or invalid value for attribute '{}'", column_name);
+                    0.0
+                }),
+            None => result
+                .get(sensible_attribute)
+                .map(|x| x.parse().ok())
+                .flatten()
+                .unwrap_or_else(|| {
+                    ic_cdk::println!(
+                        "Missing or invalid value for attribute '{}'",
+                        sensible_attribute
+                    );
+                    0.0
+                }),
         };
 
-        let features: Vec<f64> = vec![sensible_attr_value];  // This should probably contain all features?
+        let features: Vec<f64> = vec![sensible_attr_value]; // This should probably contain all features?
 
         let expected_result: bool = {
             let res = result.get(predict_attribute).map(|s| s.trim());
@@ -357,15 +479,21 @@ async fn run_metrics_calculation(
                             ic_cdk::api::trap("Invalid predict attribute")
                         }
                     }
-                },
+                }
                 _ => ic_cdk::api::trap("Invalid predict attribute"),
             }
         };
 
         let timestamp: u64 = ic_cdk::api::time();
-        
-        let res = call_hugging_face(personalized_prompt.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
-        
+
+        let res = call_hugging_face(
+            personalized_prompt.clone(),
+            hf_model.clone(),
+            seed,
+            Some(hf_parameters.clone()),
+        )
+        .await;
+
         match res {
             Ok(r) => {
                 let trimmed_response = crate::utils::clean_llm_response(&r);
@@ -378,13 +506,22 @@ async fn run_metrics_calculation(
                         if trimmed_response == predict_attributes_values[0] {
                             Result::Ok(false)
                         } else {
-                            Result::Err(format!("Unknown response '{}'", trimmed_response.to_string()))
+                            Result::Err(format!(
+                                "Unknown response '{}'",
+                                trimmed_response.to_string()
+                            ))
                         }
                     }
                 };
 
                 let timestamp_cf: u64 = ic_cdk::api::time();
-                let res_cf = call_hugging_face(personalized_prompt_cf.clone(), hf_model.clone(), seed, Some(hf_parameters.clone())).await;
+                let res_cf = call_hugging_face(
+                    personalized_prompt_cf.clone(),
+                    hf_model.clone(),
+                    seed,
+                    Some(hf_parameters.clone()),
+                )
+                .await;
 
                 let counter_factual: LLMDataPointCounterFactual = match res_cf {
                     Ok(val) => {
@@ -400,23 +537,24 @@ async fn run_metrics_calculation(
                                 if trimmed_response_cf == predict_attributes_values[0] {
                                     Result::Ok(false)
                                 } else {
-                                    Result::Err(format!("Unknown response CF '{}'", trimmed_response_cf.to_string()))
+                                    Result::Err(format!(
+                                        "Unknown response CF '{}'",
+                                        trimmed_response_cf.to_string()
+                                    ))
                                 }
                             }
                         };
 
                         match response_cf {
-                            Ok(res_cf) => {
-                                LLMDataPointCounterFactual {
-                                    error: false,
-                                    valid: true,
-                                    timestamp: timestamp_cf,
-                                    prompt: Some(personalized_prompt_cf),
-                                    target: expected_result,
-                                    response: Some(String::from(trimmed_response_cf)),
-                                    predicted: Some(res_cf),
-                                    features: features.clone(),
-                                }
+                            Ok(res_cf) => LLMDataPointCounterFactual {
+                                error: false,
+                                valid: true,
+                                timestamp: timestamp_cf,
+                                prompt: Some(personalized_prompt_cf),
+                                target: expected_result,
+                                response: Some(String::from(trimmed_response_cf)),
+                                predicted: Some(res_cf),
+                                features: features.clone(),
                             },
                             Err(e) => {
                                 ic_cdk::println!("CF Response error: {}", e);
@@ -432,8 +570,7 @@ async fn run_metrics_calculation(
                                 }
                             }
                         }
-                        
-                    },
+                    }
                     Err(e) => {
                         ic_cdk::println!("CF Call error: {}", e);
                         LLMDataPointCounterFactual {
@@ -448,7 +585,7 @@ async fn run_metrics_calculation(
                         }
                     }
                 };
-                
+
                 match response {
                     Ok(val) => {
                         data_points.push(LLMDataPoint {
@@ -463,7 +600,7 @@ async fn run_metrics_calculation(
                             error: false,
                             counter_factual: Some(counter_factual),
                         });
-                    },
+                    }
                     Err(e) => {
                         ic_cdk::println!("Response error: {}", e);
                         data_points.push(LLMDataPoint {
@@ -479,9 +616,9 @@ async fn run_metrics_calculation(
                             counter_factual: Some(counter_factual),
                         });
                         wrong_response += 1;
-                    },
+                    }
                 }
-            },
+            }
             Err(e) => {
                 ic_cdk::println!("Call error: {}", e);
                 data_points.push(LLMDataPoint {
@@ -497,11 +634,14 @@ async fn run_metrics_calculation(
                     counter_factual: None,
                 });
                 call_errors += 1;
-            },
+            }
         }
         queries += 1;
         if max_errors > 0 && call_errors > max_errors {
-            return Err(format!("Max errors count reached: {}. Run won't be saved.", max_errors));
+            return Err(format!(
+                "Max errors count reached: {}. Run won't be saved.",
+                max_errors
+            ));
         }
         if max_queries > 0 && queries >= max_queries {
             break;
@@ -512,7 +652,9 @@ async fn run_metrics_calculation(
     Ok((queries, wrong_response, call_errors))
 }
 
-pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f32, f32, f32, u32, u32) {
+pub fn calculate_counter_factual_metrics(
+    data_points: &Vec<LLMDataPoint>,
+) -> (f32, f32, f32, u32, u32) {
     let mut changed_sensible_attr0: u32 = 0;
     let mut changed_sensible_attr1: u32 = 0;
     let mut total_sensible_attr0: u32 = 0;
@@ -540,7 +682,7 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
                     if dp.valid && cf.valid && dp.predicted != cf.predicted {
                         changed_sensible_attr1 += 1;
                     }
-                },
+                }
                 false => {
                     total_sensible_attr0 += 1;
 
@@ -550,15 +692,21 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
                     if dp.valid && cf.valid && dp.predicted != cf.predicted {
                         changed_sensible_attr0 += 1;
                     }
-                },
+                }
             }
         }
     }
 
     let total_points = total_sensible_attr0 + total_sensible_attr1;
     let changed = changed_sensible_attr0 + changed_sensible_attr1;
-    
-    (changed as f32 / total_points as f32, changed_sensible_attr0 as f32 / total_sensible_attr0 as f32, changed_sensible_attr1 as f32 / total_sensible_attr1  as f32, total_sensible_attr0, total_sensible_attr1)
+
+    (
+        changed as f32 / total_points as f32,
+        changed_sensible_attr0 as f32 / total_sensible_attr0 as f32,
+        changed_sensible_attr1 as f32 / total_sensible_attr1 as f32,
+        total_sensible_attr0,
+        total_sensible_attr1,
+    )
 }
 
 /// Calculates metrics for a given (LLM) across the specified dataset.
@@ -573,19 +721,27 @@ pub fn calculate_counter_factual_metrics(data_points: &Vec<LLMDataPoint>) -> (f3
 /// - `Result<LLMMetricsAPIResult, String>`: if Ok(), returns a JSON with the test metrics. Otherwise, it returns an error description.
 ///
 #[update]
-pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_llm_metrics(
+    llm_model_id: u128,
+    dataset: String,
+    max_queries: usize,
+    seed: u32,
+    max_errors: u32,
+    job_id: u128,
+) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
     // Checks that the HF api key is set
     get_config(HUGGING_FACE_API_KEY_CONFIG_KEY.to_string())?;
-    
+
     let caller = ic_cdk::api::caller();
 
     ic_cdk::println!("Calling calculate_llm_metrics for model {}", llm_model_id);
 
     let model = get_model_from_memory(llm_model_id);
     if let Err(err) = model {
+        job_fail(job_id, llm_model_id);
         return Err(err.to_string());
     }
     let model = model.unwrap();
@@ -594,6 +750,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
     let hf_model = if let ModelType::LLM(model_data) = model.model_type {
         model_data.hugging_face_url
     } else {
+        job_fail(job_id, llm_model_id);
         return Err("Model should be a LLM".to_string());
     };
 
@@ -609,6 +766,8 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
     let mut sensible_attribute: String = String::from("");
 
+    job_in_progress(job_id, llm_model_id);
+
     for item in LLMFAIRNESS_DATASETS.iter().enumerate() {
         let (_, ds) = item;
         if ds.name == dataset.as_str() {
@@ -618,40 +777,50 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
             sensible_attribute = String::from(ds.sensible_attribute);
             prompt_template = String::from(ds.prompt_template);
 
-            res = run_metrics_calculation(hf_model, seed, max_queries, train_csv, test_csv, cf_test_csv,
-                                          ds.sensible_attribute, ds.predict_attribute, &mut data_points,
-                                          prompt_template.clone(), ds.sensible_attribute_values,
-                                          ds.predict_attributes_values,
-                                          ds.binarized_sensible_attribute_column,
-                                          max_errors,
-            ).await;
+            res = run_metrics_calculation(
+                hf_model,
+                seed,
+                max_queries,
+                train_csv,
+                test_csv,
+                cf_test_csv,
+                ds.sensible_attribute,
+                ds.predict_attribute,
+                &mut data_points,
+                prompt_template.clone(),
+                ds.sensible_attribute_values,
+                ds.predict_attributes_values,
+                ds.binarized_sensible_attribute_column,
+                max_errors,
+                job_id,
+            )
+            .await;
 
             privileged_map.insert(ds.sensible_attribute.to_string(), 0);
             break;
         }
     }
-    
+
     match res {
         Ok(ret) => {
             // Calculate metrics for data_points
-            let simplified_data_points: Vec<DataPoint> = LLMDataPoint::reduce_to_data_points(&data_points, privileged_map.clone());
+            let simplified_data_points: Vec<DataPoint> =
+                LLMDataPoint::reduce_to_data_points(&data_points, privileged_map.clone());
 
             let privileged_threshold = None;
-            let (
-                privileged_count,
-                unprivileged_count,
-                _,
-                _,
-            ) = calculate_group_counts(&simplified_data_points, privileged_threshold.clone());
+            let (privileged_count, unprivileged_count, _, _) =
+                calculate_group_counts(&simplified_data_points, privileged_threshold.clone());
 
             // In some cases the model returns only a few valid answers, and not all metrics can be calculated
-            let can_calculate_all_metrics = privileged_count.len() > 0 && unprivileged_count.len() > 0;
+            let can_calculate_all_metrics =
+                privileged_count.len() > 0 && unprivileged_count.len() > 0;
 
             ic_cdk::println!("can calculate all metrics: {can_calculate_all_metrics}");
-            
+
             let metrics: Metrics = match can_calculate_all_metrics {
                 true => {
-                    let (spd, di, aod, eod, acc, prec, rec) = all_metrics(&simplified_data_points, privileged_threshold.clone());
+                    let (spd, di, aod, eod, acc, prec, rec) =
+                        all_metrics(&simplified_data_points, privileged_threshold.clone());
 
                     Metrics {
                         statistical_parity_difference: Some(spd.0),
@@ -669,7 +838,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                         recall: Some(rec),
                         timestamp,
                     }
-                },
+                }
                 false => {
                     ic_cdk::println!("Some metrics cannot be calculated because one of the groups is not present.");
 
@@ -679,7 +848,8 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                     if simplified_data_points.len() != 0 {
                         acc = Some(accuracy(&simplified_data_points));
 
-                        let (tp, _, fp, fn_) = calculate_overall_confusion_matrix(&simplified_data_points);
+                        let (tp, _, fp, fn_) =
+                            calculate_overall_confusion_matrix(&simplified_data_points);
                         if can_calculate_recall(tp, fn_) {
                             rec = Some(recall(&simplified_data_points));
                         }
@@ -687,7 +857,7 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                             prec = Some(precision(&simplified_data_points));
                         }
                     }
-                    
+
                     Metrics {
                         statistical_parity_difference: None,
                         disparate_impact: None,
@@ -707,11 +877,20 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 }
             };
 
-            let (change_rate_overall, change_rate_sensible_attr0, change_rate_sensible_attr1, total_sensible_attr0, total_sensible_attr1) = calculate_counter_factual_metrics(&data_points);
+            let (
+                change_rate_overall,
+                change_rate_sensible_attr0,
+                change_rate_sensible_attr1,
+                total_sensible_attr0,
+                total_sensible_attr1,
+            ) = calculate_counter_factual_metrics(&data_points);
 
             let counter_factual = CounterFactualModelEvaluationResult {
                 change_rate_overall,
-                change_rate_sensible_attributes: vec![change_rate_sensible_attr0, change_rate_sensible_attr1],
+                change_rate_sensible_attributes: vec![
+                    change_rate_sensible_attr0,
+                    change_rate_sensible_attr1,
+                ],
                 total_sensible_attributes: vec![total_sensible_attr0, total_sensible_attr1],
                 sensible_attribute,
             };
@@ -724,18 +903,20 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 let mut model_data = get_llm_model_data(&model);
 
                 NEXT_LLM_MODEL_EVALUATION_ID.with(|id| {
-
                     let mut next_data_point_id = id.borrow_mut();
 
                     model_data.evaluations.push(ModelEvaluationResult {
-                        model_evaluation_id: *next_data_point_id.get(), 
+                        model_evaluation_id: *next_data_point_id.get(),
                         dataset,
                         timestamp,
                         // Left here in case we want to use data_points for normal models
-                        data_points: None, 
+                        data_points: None,
                         metrics: metrics.clone(),
                         llm_data_points: Some(data_points),
-                        privileged_map: privileged_map.into_iter().map( |(key, value)| KeyValuePair { key, value } ).collect(),
+                        privileged_map: privileged_map
+                            .into_iter()
+                            .map(|(key, value)| KeyValuePair { key, value })
+                            .collect(),
                         prompt_template: Some(prompt_template.clone()),
                         counter_factual: Some(counter_factual.clone()),
                     });
@@ -748,6 +929,8 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 models.insert(llm_model_id, model);
             });
 
+            job_complete(job_id, llm_model_id);
+
             let (queries, invalid_responses, call_errors) = ret;
             Ok(LLMMetricsAPIResult {
                 metrics,
@@ -756,9 +939,10 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
                 call_errors,
                 counter_factual: Some(counter_factual),
             })
-        },
+        }
         Err(e) => {
             ic_cdk::eprintln!("An error has ocurred when running metrics: {}", e);
+            job_fail(job_id, llm_model_id);
             return Err(e);
         }
     }
@@ -766,14 +950,32 @@ pub async fn calculate_llm_metrics(llm_model_id: u128, dataset: String, max_quer
 
 /// Calculates average LLM fairness metrics for a model
 /// It averages the metrics for the last calculations of the datasets passed
-fn calculate_average_fairness_metrics(model_id: u128, model_data: &LLMModelData, datasets: Vec<String>) -> Result<AverageLLMFairnessMetrics, GenericError> {
+fn calculate_average_fairness_metrics(
+    model_id: u128,
+    model_data: &LLMModelData,
+    datasets: Vec<String>,
+    job_id: u128,
+) -> Result<AverageLLMFairnessMetrics, GenericError> {
     // first, we check that there are metrics for all the required datasets
     let mut avg_fairness_metrics = AverageLLMFairnessMetrics::new(model_id);
     for dataset in datasets {
-        match AverageLLMFairnessMetrics::last_computed_evaluation_id_for_dataset(&model_data.evaluations, dataset) {
+        let should_stop = check_job_stopped(job_id);
+
+        if should_stop {
+            ic_cdk::println!("Job stopped by user");
+            return Err(GenericError::new(
+                GenericError::RESOURCE_ERROR,
+                "Job stopped by user".to_string(),
+            ));
+        }
+
+        match AverageLLMFairnessMetrics::last_computed_evaluation_id_for_dataset(
+            &model_data.evaluations,
+            dataset,
+        ) {
             Ok(model_evaluation) => {
                 avg_fairness_metrics.add_metrics(&model_evaluation);
-            },
+            }
             Err(message) => {
                 return Err(GenericError::new(GenericError::RESOURCE_ERROR, message));
             }
@@ -788,23 +990,31 @@ fn calculate_average_fairness_metrics(model_id: u128, model_data: &LLMModelData,
 
 /// Returns the average of the LLM metrics
 #[update]
-pub async fn average_llm_metrics(llm_model_id: u128, datasets: Vec<String>) -> Result<AverageLLMFairnessMetrics, GenericError> {
+pub async fn average_llm_metrics(
+    llm_model_id: u128,
+    datasets: Vec<String>,
+    job_id: u128,
+) -> Result<AverageLLMFairnessMetrics, GenericError> {
     only_admin();
     check_cycles_before_action();
-  
+
     let caller = ic_cdk::api::caller();
 
     ic_cdk::println!("Calling average_llm_metrics for model {}", llm_model_id);
 
     let model = get_model_from_memory(llm_model_id);
     if let Err(err) = model {
+        job_fail(job_id, llm_model_id);
         return Err(err);
     }
     let model = model.unwrap();
     is_owner(&model, caller);
 
+    job_in_progress(job_id, llm_model_id);
+
     if let ModelType::LLM(model_data) = &model.model_type {
-        let average_fairness_metrics =  calculate_average_fairness_metrics(llm_model_id, model_data, datasets)?;
+        let average_fairness_metrics =
+            calculate_average_fairness_metrics(llm_model_id, model_data, datasets, job_id)?;
 
         // saving model
         MODELS.with(|models| {
@@ -812,14 +1022,19 @@ pub async fn average_llm_metrics(llm_model_id: u128, datasets: Vec<String>) -> R
             let mut model = models.get(&llm_model_id).unwrap();
             let mut model_data = get_llm_model_data(&model);
             model_data.average_fairness_metrics = Some(average_fairness_metrics.clone());
-            
+
             model.model_type = ModelType::LLM(model_data);
             models.insert(llm_model_id, model);
         });
 
+        job_complete(job_id, llm_model_id);
         return Ok(average_fairness_metrics);
     } else {
-        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
+        job_fail(job_id, llm_model_id);
+        return Err(GenericError::new(
+            GenericError::INVALID_MODEL_TYPE,
+            "Model should be an LLM.",
+        ));
     }
 }
 
@@ -833,12 +1048,11 @@ pub async fn llm_fairness_datasets() -> Vec<(String, usize)> {
         .iter()
         .filter(|ds| ds.name != "pisa_test")
         .map(|ds| {
-            let mut test_reader = csv::ReaderBuilder::new()
-                .from_reader(ds.test_csv.as_bytes());
-            
+            let mut test_reader = csv::ReaderBuilder::new().from_reader(ds.test_csv.as_bytes());
+
             // Subtract 1 from each count to exclude header row
             let test_rows = test_reader.records().count().saturating_sub(1);
-            
+
             (ds.name.to_string(), test_rows)
         })
         .collect()
@@ -846,7 +1060,12 @@ pub async fn llm_fairness_datasets() -> Vec<(String, usize)> {
 
 /// Calculates LLM metrics using all the datasets, and averages the results.
 #[update]
-pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, seed: u32, max_errors: u32) -> Result<LLMMetricsAPIResult, String> {
+pub async fn calculate_all_llm_metrics(
+    llm_model_id: u128,
+    max_queries: usize,
+    seed: u32,
+    max_errors: u32,
+) -> Result<LLMMetricsAPIResult, String> {
     only_admin();
     check_cycles_before_action();
 
@@ -864,21 +1083,38 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
         return Err("Model should be a LLM".to_string());
     }
 
-    let dataset_names: Vec<String> = llm_fairness_datasets().await
-        .into_iter().map(|ds| ds.0).collect();
+    let dataset_names: Vec<String> = llm_fairness_datasets()
+        .await
+        .into_iter()
+        .map(|ds| ds.0)
+        .collect();
     let mut last_result: Option<LLMMetricsAPIResult> = None;
 
     for dataset in &dataset_names {
-        ic_cdk::println!("Calculating LLM metrics for model {} for dataset {}", llm_model_id, dataset.clone());
-        let result = calculate_llm_metrics(llm_model_id, dataset.clone(), max_queries, seed, max_errors).await;
+        ic_cdk::println!(
+            "Calculating LLM metrics for model {} for dataset {}",
+            llm_model_id,
+            dataset.clone()
+        );
+        let job_id = create_job(llm_model_id);
+        let result = calculate_llm_metrics(
+            llm_model_id,
+            dataset.clone(),
+            max_queries,
+            seed,
+            max_errors,
+            job_id,
+        )
+        .await;
         if result.is_err() {
-            return result;  // If any error occurs return it immediately
+            return result; // If any error occurs return it immediately
         }
         last_result = result.ok();
     }
 
     if let Some(metrics_result) = last_result {
-        average_llm_metrics(llm_model_id, dataset_names)
+        let job_id = create_job(llm_model_id);
+        average_llm_metrics(llm_model_id, dataset_names, job_id)
             .await
             .map_err(|err| format!("Error calculating average metrics: {}", err))
             .map(|_| metrics_result)
@@ -888,7 +1124,12 @@ pub async fn calculate_all_llm_metrics(llm_model_id: u128, max_queries: usize, s
 }
 
 #[query]
-pub async fn get_llm_fairness_data_points(llm_model_id: u128, llm_evaluation_id: u128, limit: u32, offset: usize) -> Result<(Vec<LLMDataPoint>, usize), GenericError>  {
+pub async fn get_llm_fairness_data_points(
+    llm_model_id: u128,
+    llm_evaluation_id: u128,
+    limit: u32,
+    offset: usize,
+) -> Result<(Vec<LLMDataPoint>, usize), GenericError> {
     only_admin();
     check_cycles_before_action();
 
@@ -903,33 +1144,38 @@ pub async fn get_llm_fairness_data_points(llm_model_id: u128, llm_evaluation_id:
     is_owner(&model, caller);
 
     if let ModelType::LLM(model_data) = model.model_type {
-        let evaluation: ModelEvaluationResult = model_data.evaluations.into_iter()
+        let evaluation: ModelEvaluationResult = model_data
+            .evaluations
+            .into_iter()
             .find(|evaluation| evaluation.model_evaluation_id == llm_evaluation_id)
             .expect("Evaluation with passed id should exist");
 
         let evaluation_data_points = evaluation
-            .llm_data_points.expect("The model should have data points");
+            .llm_data_points
+            .expect("The model should have data points");
 
         let data_points_total_length = evaluation_data_points.len();
 
         // Get a slice of data points based on offset and limit
         let start = offset;
         let end = (offset + limit as usize).min(evaluation_data_points.len());
-        
+
         // Clone the selected range of data points
         let data_points = evaluation_data_points[start..end].to_vec();
-        
+
         return Ok((data_points, data_points_total_length));
     } else {
-        return Err(GenericError::new(GenericError::INVALID_MODEL_TYPE, "Model should be an LLM."));
+        return Err(GenericError::new(
+            GenericError::INVALID_MODEL_TYPE,
+            "Model should be an LLM.",
+        ));
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::types::PrivilegedIndex;
     use super::*;
+    use crate::types::PrivilegedIndex;
 
     const EPSILON: f32 = 1e-6;
 
@@ -938,15 +1184,28 @@ mod tests {
     fn test_calculate_average_fairness_metrics_existing_datasets() {
         let model_id = 123;
         let mut evaluations = Vec::new();
-        evaluations.push(ModelEvaluationResult {  // this one shouldn't be considered
+        evaluations.push(ModelEvaluationResult {
+            // this one shouldn't be considered
             model_evaluation_id: 1,
             dataset: "pisa".to_string(),
             timestamp: 100,
             metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 1.0}]),
-                disparate_impact: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 1.0}]),
-                average_odds_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.0}]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.0}]),
+                statistical_parity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 1.0,
+                }]),
+                disparate_impact: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 1.0,
+                }]),
+                average_odds_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.0,
+                }]),
+                equal_opportunity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.0,
+                }]),
                 average_metrics: AverageMetrics {
                     statistical_parity_difference: Some(1.0),
                     disparate_impact: Some(1.0),
@@ -974,10 +1233,22 @@ mod tests {
             dataset: "pisa".to_string(),
             timestamp: 100,
             metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.1}]),
-                disparate_impact: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.1}]),
-                average_odds_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.1}]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex{variable_name: "gender".to_string(), value: 0.1}]),
+                statistical_parity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.1,
+                }]),
+                disparate_impact: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.1,
+                }]),
+                average_odds_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.1,
+                }]),
+                equal_opportunity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "gender".to_string(),
+                    value: 0.1,
+                }]),
                 average_metrics: AverageMetrics {
                     statistical_parity_difference: Some(0.1),
                     disparate_impact: Some(0.1),
@@ -1005,10 +1276,22 @@ mod tests {
             dataset: "compas".to_string(),
             timestamp: 100,
             metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex{variable_name: "race".to_string(), value: 0.9}]),
-                disparate_impact: Some(vec![PrivilegedIndex{variable_name: "race".to_string(), value: 0.9}]),
-                average_odds_difference: Some(vec![PrivilegedIndex{variable_name: "race".to_string(), value: 0.9}]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex{variable_name: "race".to_string(), value: 0.9}]),
+                statistical_parity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "race".to_string(),
+                    value: 0.9,
+                }]),
+                disparate_impact: Some(vec![PrivilegedIndex {
+                    variable_name: "race".to_string(),
+                    value: 0.9,
+                }]),
+                average_odds_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "race".to_string(),
+                    value: 0.9,
+                }]),
+                equal_opportunity_difference: Some(vec![PrivilegedIndex {
+                    variable_name: "race".to_string(),
+                    value: 0.9,
+                }]),
                 average_metrics: AverageMetrics {
                     statistical_parity_difference: Some(0.9),
                     disparate_impact: Some(0.9),
@@ -1036,10 +1319,11 @@ mod tests {
             ..Default::default()
         };
         let datasets = vec!["pisa".to_string(), "compas".to_string()];
-        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets);
+        let job_id = 123;
+        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets, job_id);
         assert!(result.is_ok());
         let result = result.unwrap();
-        
+
         assert_eq!(result.model_evaluation_ids.len(), 2);
         assert!(result.model_evaluation_ids.contains(&(2.0 as u128)));
         assert!(result.model_evaluation_ids.contains(&(3.0 as u128)));
@@ -1057,17 +1341,21 @@ mod tests {
     #[test]
     fn test_calculate_average_fairness_metrics_non_existing_dataset() {
         let model_id = 123;
-        let evaluations = Vec::new();  // No evaluations available
+        let evaluations = Vec::new(); // No evaluations available
         let model_data = LLMModelData {
             evaluations,
             ..Default::default()
         };
         let datasets = vec!["unknown_dataset".to_string()];
-        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets);
+        let job_id = 123;
+        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets, job_id);
         assert!(result.is_err());
         let err: GenericError = result.unwrap_err();
         assert_eq!(err.category, 300);
         assert_eq!(err.code, GenericError::RESOURCE_ERROR);
-        assert_eq!(err.message, "No evaluations found for the dataset `unknown_dataset`.");
+        assert_eq!(
+            err.message,
+            "No evaluations found for the dataset `unknown_dataset`."
+        );
     }
 }
