@@ -289,7 +289,7 @@ type CatElementCounts = record {
 service : () -> {
     //Job management
     "create_job": (nat) -> (nat);
-    "get_job": (nat) -> (Job);
+    "get_job": (nat) -> (opt Job);
     "get_jobs": () -> (vec Job);
     "update_job_status": (nat, text, nat) -> ();
     "job_fail": (nat, nat) -> ();
