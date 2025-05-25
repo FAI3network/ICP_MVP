@@ -10,7 +10,7 @@ use crate::types::{
     ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult,
     ContextAssociationTestType, ModelType,
 };
-use crate::utils::{is_owner, seeded_vector_shuffle};
+use crate::utils::{clean_llm_response, is_owner, seeded_vector_shuffle};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
 use candid::CandidType;
 use ic_cdk_macros::*;
@@ -276,16 +276,6 @@ pub fn generate_intersentence_prompt(
     );
 
     (full_prompt, option_indices_definition)
-}
-
-/// Cleans a string returned by a LLM
-fn clean_llm_response(text: &String) -> String {
-    let re = Regex::new(r"(?s)<think>.*?</think>").unwrap();
-    re.replace_all(text, "")
-        .replace("\n", " ")
-        .replace("\r", " ")
-        .trim()
-        .to_string()
 }
 
 /// Does a generic context association test against a Hugging Face model.
