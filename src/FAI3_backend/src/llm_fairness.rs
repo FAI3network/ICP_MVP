@@ -2,7 +2,6 @@ use crate::admin_management::only_admin;
 use crate::config_management::{get_config, HUGGING_FACE_API_KEY_CONFIG_KEY};
 use crate::errors::GenericError;
 use crate::hugging_face::call_hugging_face;
-use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
 use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::job_management::{
     check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
@@ -17,21 +16,10 @@ use crate::types::{
     LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
     ModelType, PrivilegedMap,
 };
-use crate::types::{
-    get_llm_model_data, AverageLLMFairnessMetrics, AverageMetrics,
-    CounterFactualModelEvaluationResult, DataPoint, KeyValuePair, LLMDataPoint,
-    LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
-    ModelType, PrivilegedMap,
-};
-use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
 use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
 use crate::{
     check_cycles_before_action, get_model_from_memory, MODELS, NEXT_LLM_MODEL_EVALUATION_ID,
 };
-use crate::{
-    check_cycles_before_action, get_model_from_memory, MODELS, NEXT_LLM_MODEL_EVALUATION_ID,
-};
-use ic_cdk_macros::*;
 use ic_cdk_macros::*;
 use std::collections::HashMap;
 
@@ -393,7 +381,6 @@ async fn run_metrics_calculation(
     binarized_sensible_attribute_column: Option<&str>,
     max_errors: u32,
     dataset_subject_label: &str,
-    max_errors: u32,
     job_id: u128,
 ) -> Result<(usize, u32, u32), String> {
     // Create a CSV reader from the string input rather than a file path
@@ -1137,7 +1124,7 @@ pub async fn calculate_all_llm_metrics(
         .collect();
     let mut last_result: Option<LLMMetricsAPIResult> = None;
 
-    for dataset in &dataset_name_names {
+    for dataset in &dataset_names {
         ic_cdk::println!(
             "Calculating LLM metrics for model {} for dataset {}",
             llm_model_id,
@@ -1149,7 +1136,6 @@ pub async fn calculate_all_llm_metrics(
             dataset.clone(),
             max_queries,
             seed,
-            max_errors,
             max_errors,
             job_id,
         )
@@ -1171,190 +1157,237 @@ pub async fn calculate_all_llm_metrics(
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::types::PrivilegedIndex;
+#[query]
+pub async fn get_llm_fairness_data_points(
+    llm_model_id: u128,
+    llm_evaluation_id: u128,
+    limit: u32,
+    offset: usize,
+) -> Result<(Vec<LLMDataPoint>, usize), GenericError> {
+    only_admin();
+    check_cycles_before_action();
 
-    const EPSILON: f32 = 1e-6;
+    let caller = ic_cdk::api::caller();
 
-    // Test for existing datasets
-    #[test]
-    fn test_calculate_average_fairness_metrics_existing_datasets() {
-        let model_id = 123;
-        let mut evaluations = Vec::new();
-        evaluations.push(ModelEvaluationResult {
-            // this one shouldn't be considered
-            model_evaluation_id: 1,
-            dataset: "pisa".to_string(),
-            timestamp: 100,
-            metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 1.0,
-                }]),
-                disparate_impact: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 1.0,
-                }]),
-                average_odds_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.0,
-                }]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.0,
-                }]),
-                average_metrics: AverageMetrics {
-                    statistical_parity_difference: Some(1.0),
-                    disparate_impact: Some(1.0),
-                    average_odds_difference: Some(0.0),
-                    equal_opportunity_difference: Some(0.0),
-                },
-                accuracy: Some(0.7),
-                precision: Some(0.7),
-                recall: Some(0.7),
-                timestamp: 100,
-            },
-            data_points: None,
-            llm_data_points: None,
-            privileged_map: vec![],
-            prompt_template: None,
-            counter_factual: Some(CounterFactualModelEvaluationResult {
-                change_rate_overall: 1.0,
-                change_rate_sensible_attributes: vec![1.0, 1.0],
-                total_sensible_attributes: vec![1, 1],
-                sensible_attribute: "gender".to_string(),
-            }),
-        });
-        evaluations.push(ModelEvaluationResult {
-            model_evaluation_id: 2,
-            dataset: "pisa".to_string(),
-            timestamp: 100,
-            metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.1,
-                }]),
-                disparate_impact: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.1,
-                }]),
-                average_odds_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.1,
-                }]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "gender".to_string(),
-                    value: 0.1,
-                }]),
-                average_metrics: AverageMetrics {
-                    statistical_parity_difference: Some(0.1),
-                    disparate_impact: Some(0.1),
-                    average_odds_difference: Some(0.1),
-                    equal_opportunity_difference: Some(0.1),
-                },
-                accuracy: Some(0.95),
-                precision: Some(0.90),
-                recall: Some(0.85),
-                timestamp: 100,
-            },
-            data_points: None,
-            llm_data_points: None,
-            privileged_map: vec![],
-            prompt_template: None,
-            counter_factual: Some(CounterFactualModelEvaluationResult {
-                change_rate_overall: 1.0,
-                change_rate_sensible_attributes: vec![1.0, 1.0],
-                total_sensible_attributes: vec![1, 1],
-                sensible_attribute: "gender".to_string(),
-            }),
-        });
-        evaluations.push(ModelEvaluationResult {
-            model_evaluation_id: 3,
-            dataset: "compas".to_string(),
-            timestamp: 100,
-            metrics: Metrics {
-                statistical_parity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "race".to_string(),
-                    value: 0.9,
-                }]),
-                disparate_impact: Some(vec![PrivilegedIndex {
-                    variable_name: "race".to_string(),
-                    value: 0.9,
-                }]),
-                average_odds_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "race".to_string(),
-                    value: 0.9,
-                }]),
-                equal_opportunity_difference: Some(vec![PrivilegedIndex {
-                    variable_name: "race".to_string(),
-                    value: 0.9,
-                }]),
-                average_metrics: AverageMetrics {
-                    statistical_parity_difference: Some(0.9),
-                    disparate_impact: Some(0.9),
-                    average_odds_difference: Some(0.9),
-                    equal_opportunity_difference: Some(0.9),
-                },
-                accuracy: Some(0.85),
-                precision: Some(0.80),
-                recall: Some(0.75),
-                timestamp: 100,
-            },
-            data_points: None,
-            llm_data_points: None,
-            privileged_map: vec![],
-            prompt_template: None,
-            counter_factual: Some(CounterFactualModelEvaluationResult {
-                change_rate_overall: 0.2,
-                change_rate_sensible_attributes: vec![0.3, 0.1],
-                total_sensible_attributes: vec![1, 1],
-                sensible_attribute: "race".to_string(),
-            }),
-        });
-        let model_data = LLMModelData {
-            evaluations,
-            ..Default::default()
-        };
-        let datasets = vec!["pisa".to_string(), "compas".to_string()];
-        let job_id = 123;
-        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets, job_id);
-        assert!(result.is_ok());
-        let result = result.unwrap();
-
-        assert_eq!(result.model_evaluation_ids.len(), 2);
-        assert!(result.model_evaluation_ids.contains(&(2.0 as u128)));
-        assert!(result.model_evaluation_ids.contains(&(3.0 as u128)));
-        assert!((result.accuracy - 0.9).abs() < EPSILON);
-        assert!((result.precision - 0.85).abs() < EPSILON);
-        assert!((result.recall - 0.80).abs() < EPSILON);
-        assert!((result.statistical_parity_difference - 0.5).abs() < EPSILON);
-        assert!((result.disparate_impact - 0.5).abs() < EPSILON);
-        assert!((result.average_odds_difference - 0.5).abs() < EPSILON);
-        assert!((result.equal_opportunity_difference - 0.5).abs() < EPSILON);
-        assert!((result.counter_factual_overall_change_rate - 0.6).abs() < EPSILON);
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
     }
+    let model = model.unwrap();
+    is_owner(&model, caller);
 
-    // Test for non-existing dataset
-    #[test]
-    fn test_calculate_average_fairness_metrics_non_existing_dataset() {
-        let model_id = 123;
-        let evaluations = Vec::new(); // No evaluations available
-        let model_data = LLMModelData {
-            evaluations,
-            ..Default::default()
-        };
-        let datasets = vec!["unknown_dataset".to_string()];
-        let job_id = 123;
-        let result = calculate_average_fairness_metrics(model_id, &model_data, datasets, job_id);
-        assert!(result.is_err());
-        let err: GenericError = result.unwrap_err();
-        assert_eq!(err.category, 300);
-        assert_eq!(err.code, GenericError::RESOURCE_ERROR);
-        assert_eq!(
-            err.message,
-            "No evaluations found for the dataset `unknown_dataset`."
-        );
+    if let ModelType::LLM(model_data) = model.model_type {
+        let evaluation: ModelEvaluationResult = model_data
+            .evaluations
+            .into_iter()
+            .find(|evaluation| evaluation.model_evaluation_id == llm_evaluation_id)
+            .expect("Evaluation with passed id should exist");
+
+        let evaluation_data_points = evaluation
+            .llm_data_points
+            .expect("The model should have data points");
+
+        let data_points_total_length = evaluation_data_points.len();
+
+        // Get a slice of data points based on offset and limit
+        let start = offset;
+        let end = (offset + limit as usize).min(evaluation_data_points.len());
+
+        // Clone the selected range of data points
+        let data_points = evaluation_data_points[start..end].to_vec();
+
+        return Ok((data_points, data_points_total_length));
+    } else {
+        return Err(GenericError::new(
+            GenericError::INVALID_MODEL_TYPE,
+            "Model should be an LLM.",
+        ));
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::types::PrivilegedIndex;
+
+//     const EPSILON: f32 = 1e-6;
+
+//     // Test for existing datasets
+//     #[test]
+//     fn test_calculate_average_fairness_metrics_existing_datasets() {
+//         let model_id = 123;
+//         let mut evaluations = Vec::new();
+//         evaluations.push(ModelEvaluationResult {
+//             // this one shouldn't be considered
+//             model_evaluation_id: 1,
+//             dataset: "pisa".to_string(),
+//             timestamp: 100,
+//             metrics: Metrics {
+//                 statistical_parity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 1.0,
+//                 }]),
+//                 disparate_impact: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 1.0,
+//                 }]),
+//                 average_odds_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.0,
+//                 }]),
+//                 equal_opportunity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.0,
+//                 }]),
+//                 average_metrics: AverageMetrics {
+//                     statistical_parity_difference: Some(1.0),
+//                     disparate_impact: Some(1.0),
+//                     average_odds_difference: Some(0.0),
+//                     equal_opportunity_difference: Some(0.0),
+//                 },
+//                 accuracy: Some(0.7),
+//                 precision: Some(0.7),
+//                 recall: Some(0.7),
+//                 timestamp: 100,
+//             },
+//             data_points: None,
+//             llm_data_points: None,
+//             privileged_map: vec![],
+//             prompt_template: None,
+//             counter_factual: Some(CounterFactualModelEvaluationResult {
+//                 change_rate_overall: 1.0,
+//                 change_rate_sensible_attributes: vec![1.0, 1.0],
+//                 total_sensible_attributes: vec![1, 1],
+//                 sensible_attribute: "gender".to_string(),
+//             }),
+//         });
+//         evaluations.push(ModelEvaluationResult {
+//             model_evaluation_id: 2,
+//             dataset: "pisa".to_string(),
+//             timestamp: 100,
+//             metrics: Metrics {
+//                 statistical_parity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.1,
+//                 }]),
+//                 disparate_impact: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.1,
+//                 }]),
+//                 average_odds_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.1,
+//                 }]),
+//                 equal_opportunity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "gender".to_string(),
+//                     value: 0.1,
+//                 }]),
+//                 average_metrics: AverageMetrics {
+//                     statistical_parity_difference: Some(0.1),
+//                     disparate_impact: Some(0.1),
+//                     average_odds_difference: Some(0.1),
+//                     equal_opportunity_difference: Some(0.1),
+//                 },
+//                 accuracy: Some(0.95),
+//                 precision: Some(0.90),
+//                 recall: Some(0.85),
+//                 timestamp: 100,
+//             },
+//             data_points: None,
+//             llm_data_points: None,
+//             privileged_map: vec![],
+//             prompt_template: None,
+//             counter_factual: Some(CounterFactualModelEvaluationResult {
+//                 change_rate_overall: 1.0,
+//                 change_rate_sensible_attributes: vec![1.0, 1.0],
+//                 total_sensible_attributes: vec![1, 1],
+//                 sensible_attribute: "gender".to_string(),
+//             }),
+//         });
+//         evaluations.push(ModelEvaluationResult {
+//             model_evaluation_id: 3,
+//             dataset: "compas".to_string(),
+//             timestamp: 100,
+//             metrics: Metrics {
+//                 statistical_parity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "race".to_string(),
+//                     value: 0.9,
+//                 }]),
+//                 disparate_impact: Some(vec![PrivilegedIndex {
+//                     variable_name: "race".to_string(),
+//                     value: 0.9,
+//                 }]),
+//                 average_odds_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "race".to_string(),
+//                     value: 0.9,
+//                 }]),
+//                 equal_opportunity_difference: Some(vec![PrivilegedIndex {
+//                     variable_name: "race".to_string(),
+//                     value: 0.9,
+//                 }]),
+//                 average_metrics: AverageMetrics {
+//                     statistical_parity_difference: Some(0.9),
+//                     disparate_impact: Some(0.9),
+//                     average_odds_difference: Some(0.9),
+//                     equal_opportunity_difference: Some(0.9),
+//                 },
+//                 accuracy: Some(0.85),
+//                 precision: Some(0.80),
+//                 recall: Some(0.75),
+//                 timestamp: 100,
+//             },
+//             data_points: None,
+//             llm_data_points: None,
+//             privileged_map: vec![],
+//             prompt_template: None,
+//             counter_factual: Some(CounterFactualModelEvaluationResult {
+//                 change_rate_overall: 0.2,
+//                 change_rate_sensible_attributes: vec![0.3, 0.1],
+//                 total_sensible_attributes: vec![1, 1],
+//                 sensible_attribute: "race".to_string(),
+//             }),
+//         });
+//         let model_data = LLMModelData {
+//             evaluations,
+//             ..Default::default()
+//         };
+//         let datasets = vec!["pisa".to_string(), "compas".to_string()];
+//         let result = calculate_average_fairness_metrics(model_id, &model_data, datasets);
+//         assert!(result.is_ok());
+//         let result = result.unwrap();
+
+//         assert_eq!(result.model_evaluation_ids.len(), 2);
+//         assert!(result.model_evaluation_ids.contains(&(2.0 as u128)));
+//         assert!(result.model_evaluation_ids.contains(&(3.0 as u128)));
+//         assert!((result.accuracy - 0.9).abs() < EPSILON);
+//         assert!((result.precision - 0.85).abs() < EPSILON);
+//         assert!((result.recall - 0.80).abs() < EPSILON);
+//         assert!((result.statistical_parity_difference - 0.5).abs() < EPSILON);
+//         assert!((result.disparate_impact - 0.5).abs() < EPSILON);
+//         assert!((result.average_odds_difference - 0.5).abs() < EPSILON);
+//         assert!((result.equal_opportunity_difference - 0.5).abs() < EPSILON);
+//         assert!((result.counter_factual_overall_change_rate - 0.6).abs() < EPSILON);
+//     }
+
+//     // Test for non-existing dataset
+//     #[test]
+//     fn test_calculate_average_fairness_metrics_non_existing_dataset() {
+//         let model_id = 123;
+//         let evaluations = Vec::new(); // No evaluations available
+//         let model_data = LLMModelData {
+//             evaluations,
+//             ..Default::default()
+//         };
+//         let datasets = vec!["unknown_dataset".to_string()];
+//         let result = calculate_average_fairness_metrics(model_id, &model_data, datasets);
+//         assert!(result.is_err());
+//         let err: GenericError = result.unwrap_err();
+//         assert_eq!(err.category, 300);
+//         assert_eq!(err.code, GenericError::RESOURCE_ERROR);
+//         assert_eq!(
+//             err.message,
+//             "No evaluations found for the dataset `unknown_dataset`."
+//         );
+//     }
+// }

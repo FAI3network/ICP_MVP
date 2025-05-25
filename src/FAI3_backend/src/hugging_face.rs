@@ -1,6 +1,4 @@
-use crate::config_management::{
-    HUGGING_FACE_API_KEY_CONFIG_KEY, HUGGING_FACE_INFERENCE_PROVIDER_CONFIG_KEY,
-};
+use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
 use crate::CONFIGURATION;
 use serde::{Deserialize, Serialize};
 

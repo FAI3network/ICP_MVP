@@ -10,7 +10,7 @@ use crate::types::{
     ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult,
     ContextAssociationTestType, LLMModelData, ModelType,
 };
-use crate::utils::{is_owner, seeded_vector_shuffle};
+use crate::utils::{clean_llm_response, is_owner, seeded_vector_shuffle};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
 use candid::CandidType;
 use ic_cdk_macros::*;
@@ -506,7 +506,6 @@ async fn process_context_association_test_intrasentence(
     seed: u32,
     shuffle_questions: bool,
     max_errors: u32,
-    max_errors: u32,
     job_id: u128,
 ) -> Result<(u32, u32), String> {
     let mut queries = 0;
@@ -806,7 +805,7 @@ pub async fn context_association_test(
 
         let mut intra_data = inner.data.intrasentence;
         let res = process_context_association_test_intrasentence(
-            hf_model.clone(),
+            &model_data,
             &mut intra_data,
             &mut general_metrics,
             &mut intra_metrics,
@@ -838,7 +837,7 @@ pub async fn context_association_test(
 
         let mut inter_data = inner.data.intersentence;
         let res = process_context_association_test_intersentence(
-            hf_model,
+            &model_data,
             &mut inter_data,
             &mut general_metrics,
             &mut inter_metrics,

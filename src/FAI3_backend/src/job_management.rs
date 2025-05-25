@@ -89,14 +89,6 @@ pub fn get_job_status(job_id: u128) -> Option<String> {
     })
 }
 
-#[ic_cdk::update]
-pub fn delete_job(job_id: u128) {
-    JOBS.with(|jobs| {
-        let mut jobs = jobs.borrow_mut();
-        jobs.remove(&job_id);
-    });
-}
-
 #[ic_cdk::query]
 pub fn check_job_stopped(job_id: u128) -> bool {
     JOBS.with(|jobs| {
