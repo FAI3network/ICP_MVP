@@ -144,6 +144,12 @@ type ModelEvaluationResult = record {
     metrics: Metrics;
     privileged_map: HashMap;
     data_points: opt vec DataPoint;
+    queries: nat64;
+    errors: nat32;
+    max_queries: nat32;
+    max_errors: nat64;
+    invalid_responses: nat32;
+    seed: nat32;
     llm_data_points: opt vec LLMDataPoint;
     prompt_template: opt text;
     counter_factual: opt CounterFactualModelEvaluationResult;
@@ -156,6 +162,7 @@ type LLMModelData = record {
      evaluations: vec ModelEvaluationResult;
      language_evaluations: vec LanguageEvaluationResult;
      average_fairness_metrics: opt AverageLLMFairnessMetrics;
+     inference_provider: opt text;
 };
 
 type ModelType = variant {
@@ -311,7 +318,7 @@ service : () -> {
 
     // Model management
     "add_classifier_model": (text, ModelDetails) -> (nat);
-    "add_llm_model": (text, text, ModelDetails) -> (nat);
+    "add_llm_model": (text, text, ModelDetails, opt text) -> (nat);
     "delete_model": (nat) -> ();
     "add_owner": (nat, principal) -> ();
     "get_owners": (nat) -> (vec principal);

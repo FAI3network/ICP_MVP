@@ -8,9 +8,9 @@ use crate::job_management::{
 use crate::types::{
     get_llm_model_data, ContextAssociationTestAPIResult, ContextAssociationTestDataPoint,
     ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult,
-    ContextAssociationTestType, ModelType,
+    ContextAssociationTestType, LLMModelData, ModelType,
 };
-use crate::utils::{clean_llm_response, is_owner, seeded_vector_shuffle};
+use crate::utils::{is_owner, seeded_vector_shuffle};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
 use candid::CandidType;
 use ic_cdk_macros::*;
@@ -283,8 +283,8 @@ pub fn generate_intersentence_prompt(
 /// # Parameters
 /// - `prompt: String`: The full prompt to send to Hugging Face.
 /// - `option_indices_definition: Vec<ContextAssociationTestResult>`: vector with option definitions in the order they appear in the prompt.
-/// - `hf_model: String`: string for the HF model
-/// - `seed: u32`: seedt for HF
+/// - `model_data: &LLMModelData`
+/// - `seed: u32`: seed for HF
 ///
 /// # Returns
 /// - `Result<(ContextAssociationTestResult, String), String>`: if Ok(), it returns the result and the full text response (that might be cut because of the stop token options). Otherwise it returns the error message. If the model returns something unexpected but the call didn't fail, it's considered an Ok() response of the ContextAssociationTestResult::Other type.
@@ -292,12 +292,19 @@ pub fn generate_intersentence_prompt(
 async fn cat_generic_call(
     prompt: String,
     option_indices_definition: Vec<ContextAssociationTestResult>,
-    hf_model: String,
+    model_data: &LLMModelData,
     seed: u32,
 ) -> Result<(ContextAssociationTestResult, String), String> {
     ic_cdk::println!("Prompt: {}", prompt);
 
-    let response = call_hugging_face(prompt, hf_model, seed, None).await;
+    let response = call_hugging_face(
+        prompt,
+        model_data.hugging_face_url.clone(),
+        seed,
+        None,
+        &model_data.inference_provider,
+    )
+    .await;
 
     match response {
         Ok(ret) => {
@@ -337,7 +344,7 @@ async fn cat_generic_call(
 /// Does a intrasentence context association test against a Hugging Face model.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `model_data: &LLMModelData`
 /// - `entry: IntersentenceEntry`: intrasentence context association test data.
 /// - `seed: u32`: seed for Hugging Face API.
 /// - `shuffle_questions: bool`: whether to shuffle the options given the LLM to avoid order bias or not.
@@ -346,7 +353,7 @@ async fn cat_generic_call(
 /// - `Result<ContextAssociationTestDataPoint, String>`: it returns a datapoint if the call was successful, otherwise it returns the error string.
 ///
 async fn cat_intrasentence_call(
-    hf_model: String,
+    model_data: &LLMModelData,
     entry: &IntrasentenceEntry,
     seed: u32,
     shuffle_questions: bool,
@@ -357,7 +364,7 @@ async fn cat_intrasentence_call(
     let ret = cat_generic_call(
         full_prompt.clone(),
         option_indices_definition,
-        hf_model,
+        model_data,
         seed,
     )
     .await;
@@ -397,7 +404,7 @@ async fn cat_intrasentence_call(
 /// Does a intersentence context association test against a Hugging Face model.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `model_data: &LLMModelData`
 /// - `entry: IntersentenceEntry`: intersentence context association test data.
 /// - `seed: u32`: seed for Hugging Face API.
 /// - `shuffle_questions: bool`: whether to shuffle the options given the LLM to avoid order bias or not.
@@ -406,7 +413,7 @@ async fn cat_intrasentence_call(
 /// - `Result<ContextAssociationTestDataPoint, String>`: it returns a datapoint if the call was successful, otherwise it returns the error string.
 ///
 async fn cat_intersentence_call(
-    hf_model: String,
+    model_data: &LLMModelData,
     entry: &IntersentenceEntry,
     seed: u32,
     shuffle_questions: bool,
@@ -417,7 +424,7 @@ async fn cat_intersentence_call(
     let ret = cat_generic_call(
         full_prompt.clone(),
         option_indices_definition,
-        hf_model,
+        model_data,
         seed,
     )
     .await;
@@ -454,10 +461,22 @@ async fn cat_intersentence_call(
     }
 }
 
+// Seed cannot be 0 because then the result won't be deterministic
+fn generate_seed(original_seed: u32, queries: u32) -> u32 {
+    let seed = original_seed * queries + 1;
+
+    if seed == 0 {
+        // overflow edge case
+        return 1;
+    }
+
+    return seed;
+}
+
 /// Execute a series of intersentence Context Association tests against a Hugging Face model.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `model_data: &LLMModelData`
 /// - `intra_data: &mut Vec<IntrasentenceEntry>`: vector of intersentence entries.
 /// - `general_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `inter_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
@@ -474,7 +493,7 @@ async fn cat_intersentence_call(
 /// - `Result<(u32, u32), String>`: if Ok(), returns a uint with the number of queries and the number of errors. Otherwise, it returns an error description.
 ///
 async fn process_context_association_test_intrasentence(
-    hf_model: String,
+    model_data: &LLMModelData,
     intra_data: &mut Vec<IntrasentenceEntry>,
     general_metrics: &mut ContextAssociationTestMetrics,
     intra_metrics: &mut ContextAssociationTestMetrics,
@@ -486,6 +505,7 @@ async fn process_context_association_test_intrasentence(
     max_queries: usize,
     seed: u32,
     shuffle_questions: bool,
+    max_errors: u32,
     max_errors: u32,
     job_id: u128,
 ) -> Result<(u32, u32), String> {
@@ -512,9 +532,9 @@ async fn process_context_association_test_intrasentence(
         let bias_type = entry.bias_type.clone();
 
         let resp = cat_intrasentence_call(
-            hf_model.clone(),
-            entry,
-            seed * (queries as u32),
+            &model_data,
+            &entry,
+            generate_seed(seed, queries as u32),
             shuffle_questions,
         )
         .await;
@@ -567,7 +587,7 @@ async fn process_context_association_test_intrasentence(
 /// Execute a series of intersentence Context Association tests against a Hugging Face model.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `model_data: &LLMModelData`
 /// - `inter_data: &mut Vec<IntersentenceEntry>`: vector of intersentence entries.
 /// - `general_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
 /// - `inter_metrics: &mut ContextAssociationTestMetrics`: metrics in which to store the results of the test.
@@ -584,7 +604,7 @@ async fn process_context_association_test_intrasentence(
 /// - `Result<(u32, u32), String>`: if Ok(), returns a uint with the number of queries and the number of errors. Otherwise, it returns an error description.
 ///
 async fn process_context_association_test_intersentence(
-    hf_model: String,
+    model_data: &LLMModelData,
     inter_data: &mut Vec<IntersentenceEntry>,
     general_metrics: &mut ContextAssociationTestMetrics,
     inter_metrics: &mut ContextAssociationTestMetrics,
@@ -622,9 +642,9 @@ async fn process_context_association_test_intersentence(
         ic_cdk::println!("Target Bias Type: {}", entry.bias_type);
         let bias_type = entry.bias_type.clone();
         let resp = cat_intersentence_call(
-            hf_model.clone(),
+            &model_data,
             entry,
-            seed * (queries as u32),
+            generate_seed(seed, queries as u32),
             shuffle_questions,
         )
         .await;
@@ -723,7 +743,7 @@ pub async fn get_cat_data_points(
 /// Execute a series of Context Association tests against a Hugging Face model.
 ///
 /// # Parameters
-/// - `hf_model: String`: Hugging Face model to test.
+/// - `model_data: &LLMModelData`
 /// - `max_queries: usize`: Max queries to execute. If it's 0, it will execute all the queries.
 /// - `seed: u32`: Seed for Hugging face API.
 /// - `shuffle_questions: bool`: whether to shuffle the questions and the options given the LLM.
@@ -744,27 +764,16 @@ pub async fn context_association_test(
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
-    let mut hf_model: String = String::new();
-    let mut model_found = false;
-
     // Needs to be done this way because Rust doesn't support async closures yet
-    MODELS.with(|models| {
-        let models = models.borrow_mut();
-        let model_result = models.get(&llm_model_id);
-        if let Some(model) = model_result {
-            is_owner(&model, caller);
-            let model_data = get_llm_model_data(&model);
-            hf_model = model_data.hugging_face_url;
-            model_found = true;
-        }
-    });
-
-    if !model_found {
-        return Err(GenericError::new(
-            GenericError::NOT_FOUND,
-            "Model not found",
-        ));
-    }
+    let model_data = MODELS
+        .with(|models| {
+            let models = models.borrow_mut();
+            models.get(&llm_model_id).map(|model| {
+                is_owner(&model, caller);
+                get_llm_model_data(&model)
+            })
+        })
+        .ok_or_else(|| GenericError::new(GenericError::NOT_FOUND, "Model not found"))?;
 
     let cat_json = include_str!("context_association_test_processed.json");
     let parsed_data: Result<CatJson, _> = serde_json::from_str(cat_json).map_err(|e| e.to_string());

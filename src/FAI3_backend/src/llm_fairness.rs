@@ -1,7 +1,9 @@
 use crate::admin_management::only_admin;
 use crate::config_management::{get_config, HUGGING_FACE_API_KEY_CONFIG_KEY};
 use crate::errors::GenericError;
+use crate::hugging_face::call_hugging_face;
 use crate::hugging_face::{call_hugging_face, HuggingFaceRequestParameters};
+use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::job_management::{
     check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
 };
@@ -15,10 +17,21 @@ use crate::types::{
     LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
     ModelType, PrivilegedMap,
 };
+use crate::types::{
+    get_llm_model_data, AverageLLMFairnessMetrics, AverageMetrics,
+    CounterFactualModelEvaluationResult, DataPoint, KeyValuePair, LLMDataPoint,
+    LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
+    ModelType, PrivilegedMap,
+};
+use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
 use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
 use crate::{
     check_cycles_before_action, get_model_from_memory, MODELS, NEXT_LLM_MODEL_EVALUATION_ID,
 };
+use crate::{
+    check_cycles_before_action, get_model_from_memory, MODELS, NEXT_LLM_MODEL_EVALUATION_ID,
+};
+use ic_cdk_macros::*;
 use ic_cdk_macros::*;
 use std::collections::HashMap;
 
@@ -90,6 +103,7 @@ struct LLMFairnessDataset<'a> {
     // First element in the array corresponds to "false", second one corresponds to "true"
     predict_attributes_values: &'a [&'a str; 2],
     binarized_sensible_attribute_column: Option<&'a str>,
+    dataset_subject_label: &'a str,
 }
 
 const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
@@ -103,6 +117,7 @@ const PISA_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["0", "1"],
     predict_attributes_values: &["L", "H"],
     binarized_sensible_attribute_column: None,
+    dataset_subject_label: "Student",
 };
 
 // Reduced version for testing purposes
@@ -117,6 +132,7 @@ const PISA_TEST_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["0", "1"],
     predict_attributes_values: &["L", "H"],
     binarized_sensible_attribute_column: None,
+    dataset_subject_label: "Student",
 };
 
 const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
@@ -131,6 +147,7 @@ const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
     sensible_attribute_values: &["Black", "White"], // Black=0, White=1
     predict_attributes_values: &["0", "1"],
     binarized_sensible_attribute_column: Some("binarized_race"),
+    dataset_subject_label: "Subject",
 };
 
 const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] =
@@ -138,12 +155,13 @@ const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] =
 
 /// Formats a single example for llm fairness call
 pub fn format_example(
+    dataset_subject_label: &str,
     example: &HashMap<String, String>,
     sensible_attribute: &str,
     predict_attribute: &str,
     ignore_columns: &Vec<&str>,
 ) -> String {
-    let mut sample = "<Student Attributes>: ".to_string();
+    let mut sample = format!("<{} Attributes>: ", dataset_subject_label);
     let mut answer_str = "<Answer>: ".to_string();
 
     // Sorting keys to avoid inconsistent order in the produced text
@@ -179,6 +197,7 @@ fn get_example_strings(
     seed: u32,
     query_number: usize,
     ignore_columns: &Vec<&str>,
+    dataset_subject_label: &str,
 ) -> Result<[String; 4], String> {
     // 1. Pick 4 random examples based on the dynamic sensible attribute and predict attribute
     let attribute_high = select_random_element(
@@ -248,7 +267,15 @@ fn get_example_strings(
         (seed + (query_number as u32)) * 5,
     )
     .iter()
-    .map(|x| format_example(&x, &sensible_attribute, &predict_attribute, &ignore_columns))
+    .map(|x| {
+        format_example(
+            dataset_subject_label,
+            &x,
+            &sensible_attribute,
+            &predict_attribute,
+            &ignore_columns,
+        )
+    })
     .collect::<Vec<_>>()
     .try_into()
     .unwrap_or_else(|v: Vec<String>| panic!("Expected a Vec of length 4 but it was {}", v.len()));
@@ -268,6 +295,7 @@ pub fn build_prompts(
     query_number: usize,
     prompt_template: String,
     result: &HashMap<String, String>,
+    dataset_subject_label: &str,
 ) -> Result<(String, String), String> {
     let attributes = get_example_strings(
         &records,
@@ -278,6 +306,7 @@ pub fn build_prompts(
         seed,
         query_number,
         ignore_columns,
+        dataset_subject_label,
     )?;
 
     let prompt = prompt_template
@@ -296,6 +325,11 @@ pub fn build_prompts(
 
     for key in keys {
         if (*ignore_columns).contains(&key.as_str()) {
+            continue;
+        }
+
+        if key.trim() == "" {
+            // Removing fields without a name (which usually includes ids)
             continue;
         }
 
@@ -327,7 +361,7 @@ pub fn build_prompts(
 /// Asynchronously runs metrics calculation based on provided parameters.
 ///
 /// # Arguments
-/// * `hf_model` - A string representing the model for Hugging face.
+/// * `model_data` - LLM Model data.
 /// * `seed` - An unsigned 32-bit integer used as the seed for both Hugging Face and examples shuffling.
 /// * `max_queries` - The maximum number of queries. Set to 0 for infinite.
 /// * `train_csv` - Full CSV with train data.
@@ -344,7 +378,7 @@ pub fn build_prompts(
 ///   and two `u32` values representing wrong responses and call errors.
 /// * On failure: A string indicating the error.
 async fn run_metrics_calculation(
-    hf_model: String,
+    model_data: &LLMModelData,
     seed: u32,
     max_queries: usize,
     train_csv: &str,
@@ -357,6 +391,8 @@ async fn run_metrics_calculation(
     sensible_attribute_values: &[&str; 2],
     predict_attributes_values: &[&str; 2],
     binarized_sensible_attribute_column: Option<&str>,
+    max_errors: u32,
+    dataset_subject_label: &str,
     max_errors: u32,
     job_id: u128,
 ) -> Result<(usize, u32, u32), String> {
@@ -438,6 +474,7 @@ async fn run_metrics_calculation(
             queries,
             prompt_template.clone(),
             &result,
+            dataset_subject_label,
         )?;
 
         // Parsing column to f64
@@ -488,9 +525,10 @@ async fn run_metrics_calculation(
 
         let res = call_hugging_face(
             personalized_prompt.clone(),
-            hf_model.clone(),
+            model_data.hugging_face_url.clone(),
             seed,
             Some(hf_parameters.clone()),
+            &model_data.inference_provider,
         )
         .await;
 
@@ -517,9 +555,10 @@ async fn run_metrics_calculation(
                 let timestamp_cf: u64 = ic_cdk::api::time();
                 let res_cf = call_hugging_face(
                     personalized_prompt_cf.clone(),
-                    hf_model.clone(),
+                    model_data.hugging_face_url.clone(),
                     seed,
                     Some(hf_parameters.clone()),
+                    &model_data.inference_provider,
                 )
                 .await;
 
@@ -747,8 +786,8 @@ pub async fn calculate_llm_metrics(
     let model = model.unwrap();
     is_owner(&model, caller);
 
-    let hf_model = if let ModelType::LLM(model_data) = model.model_type {
-        model_data.hugging_face_url
+    let model_data = if let ModelType::LLM(model_data) = model.model_type {
+        model_data
     } else {
         job_fail(job_id, llm_model_id);
         return Err("Model should be a LLM".to_string());
@@ -778,7 +817,7 @@ pub async fn calculate_llm_metrics(
             prompt_template = String::from(ds.prompt_template);
 
             res = run_metrics_calculation(
-                hf_model,
+                &model_data,
                 seed,
                 max_queries,
                 train_csv,
@@ -792,6 +831,7 @@ pub async fn calculate_llm_metrics(
                 ds.predict_attributes_values,
                 ds.binarized_sensible_attribute_column,
                 max_errors,
+                ds.dataset_subject_label,
                 job_id,
             )
             .await;
@@ -895,6 +935,8 @@ pub async fn calculate_llm_metrics(
                 sensible_attribute,
             };
 
+            let (queries, invalid_responses, call_errors) = ret;
+
             // Saving metrics
             MODELS.with(|models| {
                 let mut models = models.borrow_mut();
@@ -912,6 +954,12 @@ pub async fn calculate_llm_metrics(
                         // Left here in case we want to use data_points for normal models
                         data_points: None,
                         metrics: metrics.clone(),
+                        queries,
+                        max_queries,
+                        max_errors,
+                        invalid_responses,
+                        errors: call_errors,
+                        seed,
                         llm_data_points: Some(data_points),
                         privileged_map: privileged_map
                             .into_iter()
@@ -931,7 +979,6 @@ pub async fn calculate_llm_metrics(
 
             job_complete(job_id, llm_model_id);
 
-            let (queries, invalid_responses, call_errors) = ret;
             Ok(LLMMetricsAPIResult {
                 metrics,
                 queries,
@@ -1090,7 +1137,7 @@ pub async fn calculate_all_llm_metrics(
         .collect();
     let mut last_result: Option<LLMMetricsAPIResult> = None;
 
-    for dataset in &dataset_names {
+    for dataset in &dataset_name_names {
         ic_cdk::println!(
             "Calculating LLM metrics for model {} for dataset {}",
             llm_model_id,
@@ -1102,6 +1149,7 @@ pub async fn calculate_all_llm_metrics(
             dataset.clone(),
             max_queries,
             seed,
+            max_errors,
             max_errors,
             job_id,
         )
@@ -1120,55 +1168,6 @@ pub async fn calculate_all_llm_metrics(
             .map(|_| metrics_result)
     } else {
         Err("No datasets processed, metrics could not be calculated.".to_string())
-    }
-}
-
-#[query]
-pub async fn get_llm_fairness_data_points(
-    llm_model_id: u128,
-    llm_evaluation_id: u128,
-    limit: u32,
-    offset: usize,
-) -> Result<(Vec<LLMDataPoint>, usize), GenericError> {
-    only_admin();
-    check_cycles_before_action();
-
-    let caller = ic_cdk::api::caller();
-
-    // Check the model exists and is a LLM
-    let model = get_model_from_memory(llm_model_id);
-    if let Err(err) = model {
-        return Err(err);
-    }
-    let model = model.unwrap();
-    is_owner(&model, caller);
-
-    if let ModelType::LLM(model_data) = model.model_type {
-        let evaluation: ModelEvaluationResult = model_data
-            .evaluations
-            .into_iter()
-            .find(|evaluation| evaluation.model_evaluation_id == llm_evaluation_id)
-            .expect("Evaluation with passed id should exist");
-
-        let evaluation_data_points = evaluation
-            .llm_data_points
-            .expect("The model should have data points");
-
-        let data_points_total_length = evaluation_data_points.len();
-
-        // Get a slice of data points based on offset and limit
-        let start = offset;
-        let end = (offset + limit as usize).min(evaluation_data_points.len());
-
-        // Clone the selected range of data points
-        let data_points = evaluation_data_points[start..end].to_vec();
-
-        return Ok((data_points, data_points_total_length));
-    } else {
-        return Err(GenericError::new(
-            GenericError::INVALID_MODEL_TYPE,
-            "Model should be an LLM.",
-        ));
     }
 }
 

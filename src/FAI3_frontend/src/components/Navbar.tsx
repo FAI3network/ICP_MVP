@@ -9,7 +9,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { clear } from "console";
 
 export default function Navbar() {
   const { authClient, address, webapp, connect, disconnect, connecting } = useAuthClient();
