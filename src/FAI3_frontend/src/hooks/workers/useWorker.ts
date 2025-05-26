@@ -89,15 +89,6 @@ export function useWorker() {
                   jobId: newJobId,
                 }]);
 
-                // result = await webapp?.calculate_llm_metrics(
-                //   BigInt(modelId),
-                //   item,
-                //   max_queries,
-                //   seed,
-                //   100,
-                //   newJobId
-                // );
-
                 try {
                   result = await webapp?.calculate_llm_metrics(
                     BigInt(modelId),
@@ -113,12 +104,6 @@ export function useWorker() {
                   throw new Error("Failed to calculate LLM metrics.");
                 }
               };
-
-              // result = await webapp?.average_llm_metrics(
-              //   BigInt(modelId),
-              //   dataset,
-              //   newJobId
-              // );
 
               try {
                 result = await webapp?.average_llm_metrics(
