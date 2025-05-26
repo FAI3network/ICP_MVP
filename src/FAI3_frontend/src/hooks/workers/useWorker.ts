@@ -6,6 +6,7 @@ import { toasts } from "@/utils";
 type WorkerTypes = {
   CAT: string;
   FAIRNESS: string;
+  KALEIDOSCOPE: string;
 };
 
 type BaseWorkerData = {
@@ -16,7 +17,8 @@ type BaseWorkerData = {
 
 type WorkerDataTypes = BaseWorkerData & (
   { shuffle: boolean } |
-  { dataset: string[] }
+  { dataset: string[] } |
+  { languages: string[] }
 );
 
 export function useWorker() {
@@ -116,6 +118,26 @@ export function useWorker() {
                 throw new Error("Failed to calculate average LLM metrics.");
               }
 
+              break;
+            case "kaleidoscope_test":
+              const { languages } = payload;
+              const newJobIdKaleidoscope = await webapp?.create_job(BigInt(payload.modelId));
+              if (!newJobIdKaleidoscope) {
+                throw new Error("Failed to create job for Kaleidoscope test.");
+              }
+              console.log("New job ID for Kaleidoscope:", newJobIdKaleidoscope);
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: newJobIdKaleidoscope,
+              }]);
+
+              result = await webapp?.llm_evaluate_languages(
+                BigInt(payload.modelId),
+                languages,
+                payload.max_queries,
+                payload.seed,
+                newJobIdKaleidoscope
+              );
               break;
           }
 
