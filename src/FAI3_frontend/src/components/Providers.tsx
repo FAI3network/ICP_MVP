@@ -90,7 +90,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     });
 
     if (is_admin === undefined) {
-      disconnect();
+      disconnect(); 
       return;
     }
 

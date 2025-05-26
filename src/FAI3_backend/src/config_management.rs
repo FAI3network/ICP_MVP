@@ -1,8 +1,6 @@
-use crate::{
-    check_cycles_before_action, CONFIGURATION,
-};
-use crate::errors::GenericError;
 use crate::admin_management::only_admin;
+use crate::errors::GenericError;
+use crate::{check_cycles_before_action, CONFIGURATION};
 
 pub const HUGGING_FACE_API_KEY_CONFIG_KEY: &str = "hugging_face_api_key";
 
@@ -29,6 +27,11 @@ pub fn get_config(config_key: String) -> Result<String, GenericError> {
 
     match result {
         Some(value) => return Ok(value),
-        None => return Err(GenericError::new(GenericError::CONFIGURATION_KEY_NOT_FOUND, "Key not set")),
+        None => {
+            return Err(GenericError::new(
+                GenericError::CONFIGURATION_KEY_NOT_FOUND,
+                "Key not set",
+            ))
+        }
     }
 }

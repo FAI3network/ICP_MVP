@@ -1,12 +1,47 @@
 // Use Candid for on-chain data
 use candid::{CandidType, Deserialize as CandidDeserialize, Principal};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use ic_stable_structures::Storable;
 use ic_stable_structures::storable::Bound;
+use ic_stable_structures::Storable;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 pub type PrivilegedMap = HashMap<String, u128>;
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub struct Job {
+    pub id: u128,
+    pub model_id: u128,
+    pub owner: Principal,
+    pub status: String,
+    pub timestamp: u64,
+}
+
+impl Storable for Job {
+    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+
+    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+        match candid::decode_one(&bytes) {
+            Ok(job) => job,
+            Err(e) => {
+                ic_cdk::println!("Error decoding Job: {}", e);
+                // Provide a fallback or try alternative decoding approach
+                // For now, create a minimal valid job to prevent crashes
+                Job {
+                    id: 0,
+                    model_id: 0,
+                    owner: Principal::anonymous(),
+                    status: "error_decoding".to_string(),
+                    timestamp: 0,
+                }
+            }
+        }
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct DataPoint {
@@ -46,7 +81,7 @@ pub struct LLMDataPoint {
     pub counter_factual: Option<LLMDataPointCounterFactual>,
 }
 
-impl LLMDataPoint { 
+impl LLMDataPoint {
     /// Transforms a LLM_DataPoint to a DataPoint, so it can be used for metrics
     // If the LLM DataPoint had an error of some type, it returns None
     pub fn to_data_point(&self, privileged_map: PrivilegedMap) -> Option<DataPoint> {
@@ -63,8 +98,14 @@ impl LLMDataPoint {
         }
     }
 
-    pub fn reduce_to_data_points(data_points: &Vec<LLMDataPoint>, privileged_map: PrivilegedMap) -> Vec<DataPoint> {
-        data_points.into_iter().filter_map(|dp| dp.to_data_point(privileged_map.clone())).collect()
+    pub fn reduce_to_data_points(
+        data_points: &Vec<LLMDataPoint>,
+        privileged_map: PrivilegedMap,
+    ) -> Vec<DataPoint> {
+        data_points
+            .into_iter()
+            .filter_map(|dp| dp.to_data_point(privileged_map.clone()))
+            .collect()
     }
 }
 
@@ -168,10 +209,11 @@ impl AverageLLMFairnessMetrics {
             model_evaluation_ids: Vec::new(),
         }
     }
-    
+
     /// Adds a new dataset's metrics to the averages, updating each metric and the count.
     pub fn add_metrics(&mut self, model_evaluation: &ModelEvaluationResult) {
-        self.model_evaluation_ids.push(model_evaluation.model_evaluation_id);
+        self.model_evaluation_ids
+            .push(model_evaluation.model_evaluation_id);
 
         let metrics = &model_evaluation.metrics;
 
@@ -179,22 +221,26 @@ impl AverageLLMFairnessMetrics {
         // But normally for LLMs, it should have length 1
         if let Some(spd) = &metrics.statistical_parity_difference {
             if !spd.is_empty() {
-                self.statistical_parity_difference += spd.iter().map(|index| index.value).sum::<f32>() / spd.len() as f32;
+                self.statistical_parity_difference +=
+                    spd.iter().map(|index| index.value).sum::<f32>() / spd.len() as f32;
             }
         }
         if let Some(di) = &metrics.disparate_impact {
             if !di.is_empty() {
-                self.disparate_impact += di.iter().map(|index| index.value).sum::<f32>() / di.len() as f32;
+                self.disparate_impact +=
+                    di.iter().map(|index| index.value).sum::<f32>() / di.len() as f32;
             }
         }
         if let Some(aod) = &metrics.average_odds_difference {
             if !aod.is_empty() {
-                self.average_odds_difference += aod.iter().map(|index| index.value).sum::<f32>() / aod.len() as f32;
+                self.average_odds_difference +=
+                    aod.iter().map(|index| index.value).sum::<f32>() / aod.len() as f32;
             }
         }
         if let Some(eod) = &metrics.equal_opportunity_difference {
             if !eod.is_empty() {
-                self.equal_opportunity_difference += eod.iter().map(|index| index.value).sum::<f32>() / eod.len() as f32;
+                self.equal_opportunity_difference +=
+                    eod.iter().map(|index| index.value).sum::<f32>() / eod.len() as f32;
             }
         }
         if let Some(acc) = metrics.accuracy {
@@ -214,19 +260,19 @@ impl AverageLLMFairnessMetrics {
     pub fn count(&self) -> usize {
         self.model_evaluation_ids.len()
     }
-    
+
     /// Finalizes the averages by dividing each summed metric by the count of contributing datasets.
     pub fn finalize_averages(&mut self) {
         let count = self.count() as f32;
         if count > 0.0 {
-            self.statistical_parity_difference /= count ;
-            self.disparate_impact /= count ;
-            self.average_odds_difference /= count ;
-            self.equal_opportunity_difference /= count ;
-            self.accuracy /= count ;
-            self.precision /= count ;
-            self.recall /= count ;
-            self.counter_factual_overall_change_rate /= count ;
+            self.statistical_parity_difference /= count;
+            self.disparate_impact /= count;
+            self.average_odds_difference /= count;
+            self.equal_opportunity_difference /= count;
+            self.accuracy /= count;
+            self.precision /= count;
+            self.recall /= count;
+            self.counter_factual_overall_change_rate /= count;
         }
     }
 
@@ -238,15 +284,18 @@ impl AverageLLMFairnessMetrics {
 
     /// Given a vector of ModelEvaluationResult, it returns the one that was calculated last, ordered by id and filtering by dataset
     /// If no one is found, it returns an error
-    pub fn last_computed_evaluation_id_for_dataset(evaluations: &Vec<ModelEvaluationResult>, dataset: String) -> Result<ModelEvaluationResult, String> {
-        evaluations.iter()
+    pub fn last_computed_evaluation_id_for_dataset(
+        evaluations: &Vec<ModelEvaluationResult>,
+        dataset: String,
+    ) -> Result<ModelEvaluationResult, String> {
+        evaluations
+            .iter()
             .filter(|e| e.dataset == dataset)
             .max_by(|a, b| a.model_evaluation_id.cmp(&b.model_evaluation_id))
             .cloned()
             .ok_or_else(|| format!("No evaluations found for the dataset `{}`.", dataset))
     }
 }
-
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LLMModelData {
@@ -275,11 +324,14 @@ impl Default for LLMModelData {
 
 impl LLMModelData {
     /// Returns last model evaluations for some datasets
-    pub fn get_last_model_evaluations(&self, datasets: Vec<String>) -> Result<Vec<ModelEvaluationResult>, String> {
+    pub fn get_last_model_evaluations(
+        &self,
+        datasets: Vec<String>,
+    ) -> Result<Vec<ModelEvaluationResult>, String> {
         if datasets.len() == 0 {
             return Err("Datasets length cannot be zero".to_string());
         }
-        
+
         let mut ret = Vec::new();
 
         let mut found = HashMap::<String, ModelEvaluationResult>::new();
@@ -289,14 +341,16 @@ impl LLMModelData {
             if !datasets.contains(&evaluation.dataset) {
                 continue;
             }
-            
+
             if found.contains_key(&evaluation.dataset) {
-                if found.get(&evaluation.dataset).unwrap().model_evaluation_id < evaluation.model_evaluation_id {
+                if found.get(&evaluation.dataset).unwrap().model_evaluation_id
+                    < evaluation.model_evaluation_id
+                {
                     found.insert(evaluation.dataset.clone(), evaluation.clone());
                 }
             } else {
                 found.insert(evaluation.dataset.clone(), evaluation.clone());
-                count+=1;
+                count += 1;
             }
         }
 
@@ -307,14 +361,14 @@ impl LLMModelData {
         for key in found.keys() {
             ret.push(found.get(key).unwrap().clone());
         }
-        
+
         return Ok(ret);
     }
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
 pub struct CachedThresholds {
-    pub thresholds: Option<HashMap<String, (f64, bool)>>
+    pub thresholds: Option<HashMap<String, (f64, bool)>>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug)]
@@ -347,10 +401,8 @@ impl Model {
     /// Like data points, multiple models, etc.
     /// Currently it only prunes LLM models.
     pub fn prune(self) -> Model {
-        match self.model_type {   
-            ModelType::LLM(_) => {
-                self.prune_llm_model()
-            },
+        match self.model_type {
+            ModelType::LLM(_) => self.prune_llm_model(),
             _ => self,
         }
     }
@@ -369,16 +421,24 @@ impl Model {
             model_data.cat_metrics = Some(cat);
         }
 
-        model_data.evaluations = model_data.evaluations.into_iter().map(|mut evaluation: ModelEvaluationResult| {
-            evaluation.data_points = None;
-            evaluation.llm_data_points = None;
-            evaluation
-        }).collect();
+        model_data.evaluations = model_data
+            .evaluations
+            .into_iter()
+            .map(|mut evaluation: ModelEvaluationResult| {
+                evaluation.data_points = None;
+                evaluation.llm_data_points = None;
+                evaluation
+            })
+            .collect();
 
-        model_data.language_evaluations = model_data.language_evaluations.into_iter().map(|mut levaluation: LanguageEvaluationResult| {
-            levaluation.data_points = Vec::new();
-            levaluation
-        }).collect();
+        model_data.language_evaluations = model_data
+            .language_evaluations
+            .into_iter()
+            .map(|mut levaluation: LanguageEvaluationResult| {
+                levaluation.data_points = Vec::new();
+                levaluation
+            })
+            .collect();
 
         self.model_type = ModelType::LLM(model_data);
         self
@@ -517,7 +577,6 @@ impl Storable for ClassifierModelData {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-
 impl Storable for LLMModelData {
     fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
         Cow::Owned(candid::encode_one(self).unwrap())
@@ -526,14 +585,14 @@ impl Storable for LLMModelData {
     fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
         candid::decode_one(&bytes).unwrap()
     }
-    
+
     const BOUND: Bound = Bound::Unbounded;
 }
 
 #[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone, PartialEq)]
 pub struct ContextAssociationTestAPIResult {
     pub error_count: u32,
-    pub general_ss: f32, 
+    pub general_ss: f32,
     pub general_n: u32,
     pub general_lms: f32,
     pub general: ContextAssociationTestMetrics,
@@ -624,24 +683,33 @@ impl LanguageEvaluationMetrics {
     }
 
     pub fn calculate_rates(&mut self) {
-        self.n = self.error_count + self.invalid_responses + self.incorrect_responses + self.correct_responses;
- 
+        self.n = self.error_count
+            + self.invalid_responses
+            + self.incorrect_responses
+            + self.correct_responses;
+
         if self.n > 0 && self.error_count < self.n {
             // overall accuracy does not consider Hugging Face errors.
-            self.overall_accuracy = Some(self.correct_responses as f32 / ((self.correct_responses + self.incorrect_responses + self.invalid_responses) as f32));
+            self.overall_accuracy = Some(
+                self.correct_responses as f32
+                    / ((self.correct_responses + self.incorrect_responses + self.invalid_responses)
+                        as f32),
+            );
 
             if self.valid_responses() > 0 {
-                self.format_error_rate = Some(self.invalid_responses as f32 / (self.n as f32 - self.error_count as f32));
+                self.format_error_rate =
+                    Some(self.invalid_responses as f32 / (self.n as f32 - self.error_count as f32));
                 let valid_responses = self.n - self.invalid_responses - self.error_count;
                 if valid_responses > 0 {
                     // Adjust accuracy calculations based on valid responses
-                    self.accuracy_on_valid_responses = Some((self.correct_responses as f32) / ((self.correct_responses + self.incorrect_responses) as f32));
+                    self.accuracy_on_valid_responses = Some(
+                        (self.correct_responses as f32)
+                            / ((self.correct_responses + self.incorrect_responses) as f32),
+                    );
                 } else {
                     self.accuracy_on_valid_responses = Some(0.0);
                 }
             }
-
-            
         }
     }
 }

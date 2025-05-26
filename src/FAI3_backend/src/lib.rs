@@ -1,28 +1,32 @@
-pub(crate) mod cycles_management;
-pub mod types;
 mod admin_management;
-mod data_management;
-mod model;
-mod metrics_calculation;
-mod hugging_face;
+mod config_management;
 pub mod context_association_test;
+pub(crate) mod cycles_management;
+mod data_management;
+pub mod errors;
+mod hugging_face;
+pub mod inference_providers;
+mod job_management;
 pub mod llm_fairness;
 pub mod llm_language_evaluations;
+mod metrics_calculation;
+mod model;
+pub mod types;
 mod utils;
-pub mod errors;
-mod config_management;
-pub mod inference_providers;
 
-use errors::GenericError;
 use candid::Principal;
+use errors::GenericError;
 
 use ic_cdk_macros::*;
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    Cell, DefaultMemoryImpl, StableBTreeMap,
+};
 use std::cell::RefCell;
-use ic_stable_structures::{StableBTreeMap, Cell, memory_manager::{MemoryManager, MemoryId, VirtualMemory}, DefaultMemoryImpl};
 
-use cycles_management::check_cycles_before_action;
-use types::{DataPoint, Metrics, Model, ModelDetails, AverageMetrics};
 use admin_management::only_admin;
+use cycles_management::check_cycles_before_action;
+use types::{AverageMetrics, DataPoint, Job, Metrics, Model, ModelDetails};
 use utils::is_owner;
 
 // thread_local! {
@@ -41,6 +45,19 @@ thread_local! {
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))
         )
+    );
+
+    static JOBS: RefCell<StableBTreeMap<u128, Job, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(8)))
+        )
+    );
+
+    static NEXT_JOB_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(9))),
+            1
+        ).unwrap()
     );
 
     static MODELS: RefCell<StableBTreeMap<u128, Model, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
@@ -95,9 +112,7 @@ thread_local! {
 #[ic_cdk::init]
 fn init() {
     let deployer = ic_cdk::caller();
-    ADMINS.with(|admins| 
-        admins.borrow_mut().insert(deployer, ())
-    );
+    ADMINS.with(|admins| admins.borrow_mut().insert(deployer, ()));
 }
 
 #[ic_cdk::query]
@@ -119,6 +134,9 @@ pub(crate) fn get_model_from_memory(model_id: u128) -> Result<Model, GenericErro
 
     match model {
         Some(model) => Ok(model),
-        None => Err(GenericError::new(GenericError::NOT_FOUND, "Model not found"))
+        None => Err(GenericError::new(
+            GenericError::NOT_FOUND,
+            "Model not found",
+        )),
     }
 }

@@ -1,21 +1,19 @@
-use crate::CONFIGURATION;
 use crate::config_management::HUGGING_FACE_API_KEY_CONFIG_KEY;
+use crate::CONFIGURATION;
 use serde::{Deserialize, Serialize};
 
 use super::inference_providers::{
-    InferenceProvider,
-    novita::NovitaProvider,
-    together::TogetherAIProvider,
-    nebius::NebiusProvider,
-    none::NoneProvider,
-    lib::HuggingFaceRequestParameters,
+    lib::HuggingFaceRequestParameters, nebius::NebiusProvider, none::NoneProvider,
+    novita::NovitaProvider, together::TogetherAIProvider, InferenceProvider,
 };
 
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
 };
 
-use ic_cdk::api::management_canister::http_request::{TransformContext, TransformFunc, TransformArgs};
+use ic_cdk::api::management_canister::http_request::{
+    TransformArgs, TransformContext, TransformFunc,
+};
 
 use num_traits::cast::ToPrimitive;
 
@@ -59,10 +57,13 @@ fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
         },
     ];
 
-    let body: Vec::<u8>;
+    let body: Vec<u8>;
     let status = raw.response.status.clone();
     if status != 200_u16 {
-        ic_cdk::api::print(format!("Transform function: received an error from Hugging Face: err = {:?}", raw));  
+        ic_cdk::api::print(format!(
+            "Transform function: received an error from Hugging Face: err = {:?}",
+            raw
+        ));
         return raw.response;
     }
 
@@ -105,13 +106,23 @@ fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
 /// # Returns
 /// - `Result<String, String>`: if successful, it returns the model answer, without the prompt text. Otherwise, it returns an error description.
 ///
-pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32, hf_parameters: Option<HuggingFaceRequestParameters>, inference_provider: &Option<String>) -> Result<String, String> {
-
+pub async fn call_hugging_face(
+    input_text: String,
+    llm_model: String,
+    seed: u32,
+    hf_parameters: Option<HuggingFaceRequestParameters>,
+    inference_provider: &Option<String>,
+) -> Result<String, String> {
     let hugging_face_bearer_token = CONFIGURATION.with(|config| {
         let config_tree = config.borrow();
 
-        let not_found_error_message = format!("{} config key should be set.", HUGGING_FACE_API_KEY_CONFIG_KEY.to_string());
-        return config_tree.get(&HUGGING_FACE_API_KEY_CONFIG_KEY.to_string()).expect(not_found_error_message.as_str());
+        let not_found_error_message = format!(
+            "{} config key should be set.",
+            HUGGING_FACE_API_KEY_CONFIG_KEY.to_string()
+        );
+        return config_tree
+            .get(&HUGGING_FACE_API_KEY_CONFIG_KEY.to_string())
+            .expect(not_found_error_message.as_str());
     });
 
     let default_parameters = HuggingFaceRequestParameters {
@@ -134,16 +145,16 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     let provider: Box<dyn InferenceProvider> = if let Some(_provider) = inference_provider.clone() {
         ic_cdk::println!("configured provider: {}", _provider);
         match _provider.as_str() {
-            "novita" => Box::new(NovitaProvider{}),
-            "togetherai" => Box::new(TogetherAIProvider{}),
-            "nebius" => Box::new(NebiusProvider{}),
+            "novita" => Box::new(NovitaProvider {}),
+            "togetherai" => Box::new(TogetherAIProvider {}),
+            "nebius" => Box::new(NebiusProvider {}),
             p => {
                 ic_cdk::println!("No known provider {}, using NoneProvider", p);
-                Box::new(NoneProvider{})
+                Box::new(NoneProvider {})
             }
         }
     } else {
-        Box::new(NoneProvider{})
+        Box::new(NoneProvider {})
     };
 
     ic_cdk::println!("Using {} provider", provider.name());
@@ -152,7 +163,6 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
     let json_payload = provider.generate_payload(llm_model.clone(), input_text, parameters)?;
 
     // ic_cdk::println!("{}", String::from_utf8(json_payload.clone()).unwrap());
- 
 
     // 2) Prepare headers
     let headers = vec![
@@ -181,12 +191,12 @@ pub async fn call_hugging_face(input_text: String, llm_model: String, seed: u32,
         function: TransformFunc(candid::Func {
             principal: ic_cdk::api::id(),
             method: "transform_hf_response".to_string(),
-        }),         
+        }),
     });
 
     ic_cdk::println!("Endpoint url: {}", url);
     ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
-    
+
     let request_arg = CanisterHttpRequestArgument {
         url,
         method: HttpMethod::POST,
