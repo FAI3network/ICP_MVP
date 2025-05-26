@@ -15,10 +15,10 @@ const KALEIDOSKOPE_CSV: &str = include_str!("data/kaleidoscope.csv");
 
 const SYSTEM_PROMPT: &str = "You are a helpful assistant who answers multiple-choice questions. For each question,
 output your final answer in JSON format with the following structure: {\"choice\":
-\"The correct option\"}. ONLY output this format exactly. Do
+\"The correct option (e.g., A, B, C, or D)\"}. ONLY output this format exactly. Do
 not include any additional text or explanations outside the JSON structure.";
 
-fn build_prompt(question: &String, options: &Vec<String>, seed: u32) -> String {
+fn build_prompt(question: &String, options: &Vec<String>, seed: u32) -> (String, Vec<usize>) {
     let mut prompt = String::with_capacity(
         SYSTEM_PROMPT.len() + 
         question.len() + 
@@ -36,17 +36,31 @@ fn build_prompt(question: &String, options: &Vec<String>, seed: u32) -> String {
     option_indices = seeded_vector_shuffle(option_indices, seed);
 
     // Add shuffled options
+    let mut counter = 0;
     for &idx in &option_indices {
+        prompt.push_str(answer_idx_to_string(counter).to_uppercase().as_str());
+        prompt.push_str(". ");
         prompt.push_str(&options[idx]);
         prompt.push_str("\n");
+        counter += 1;
     }
     
-    prompt
+    (prompt, option_indices)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LanguageEvaluationAnswer {
     pub choice: String,
+}
+
+fn answer_idx_to_string(idx: usize) -> String {
+    match idx {
+        0 => "a",
+        1 => "b",
+        2 => "c",
+        3 => "d",
+        _ => panic!("Answer indices should be in [0, 1, 2, 3]")
+    }.to_string()
 }
 
 async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<String>, seed: u32, max_queries: usize) -> Result<LanguageEvaluationResult, String> {
@@ -103,6 +117,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
             let answer: usize = result.get("answer")
                 .and_then(|ans| ans.parse::<usize>().ok())
                 .expect("Answer field should be a valid usize index");
+            ic_cdk::println!("Valid answer index before shuffling: {}", answer);
             let options: Vec<String> = result.get("options")
                 .map(|opt_str| {
                     ic_cdk::println!("{}", &opt_str);
@@ -114,14 +129,18 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                         .collect()
                 })
                 .expect("It should be able to parse the options field.");
-            let text_answer: String = options.get(answer)
-                .expect("Answer should exist in the options vector")
-                .to_string();
-            ic_cdk::println!("Valid answer: {}", text_answer);
+            ic_cdk::println!("Correct answer: {}", answer_idx_to_string(answer));
 
             let lang_metrics: &mut LanguageEvaluationMetrics = metrics.get_mut(language).expect("Value for language should exist");
 
-            let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
+            let (prompt, shuffled_option_indices) = build_prompt(&question, &options, seed * (queries as u32));
+
+            ic_cdk::println!("Prompt: {}", prompt.clone());
+            
+            // Get the updated correct answer:
+            let answer: usize = shuffled_option_indices.iter()
+                .position(|&idx| idx == answer).expect("Original answer index should exist in shuffled indices");
+            ic_cdk::println!("Valid answer after shuffling: {}", answer_idx_to_string(answer));
             
             let res = call_hugging_face(prompt.clone(), model_data.hugging_face_url.clone(), seed, Some(hf_parameters.clone()), &model_data.inference_provider).await;
 
@@ -138,7 +157,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                         response: None,
                         valid: false,
                         error: true,
-                        correct_answer: text_answer.clone(),
+                        correct_answer: answer_idx_to_string(answer),
                     });
                     
                     queries += 1;
@@ -167,7 +186,7 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                         response: None,
                         valid: false,
                         error: false,
-                        correct_answer: text_answer.clone(),
+                        correct_answer: answer_idx_to_string(answer),
                     });
                     
                     queries += 1;
@@ -178,34 +197,51 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
                 }
             };
 
-            let llm_answer = evaluation_answer.choice.trim();
+            let llm_answer = evaluation_answer.choice.trim().to_lowercase();
 
+            // llm answer should be one of A, B, C or D
+            let llm_answer_idx: i32 = match llm_answer.as_str() {
+                "a" => 0,
+                "b" => 1,
+                "c" => {
+                    if options.len() > 1 {
+                        2
+                    } else {
+                        -1
+                    }
+                },
+                "d" => {
+                    if options.len() > 1 {
+                        3
+                    } else {
+                        -1
+                    }
+                },
+                _ => -1,
+            };
+            
             data_points.push(LanguageEvaluationDataPoint {
                 prompt: prompt.clone(),
                 response: Some(llm_answer.to_string()),
                 valid: false,
                 error: false,
-                correct_answer: text_answer.clone(),
+                correct_answer: answer_idx_to_string(answer),
             });
 
-            if llm_answer.to_lowercase() == text_answer.trim().to_lowercase() {
+            if llm_answer_idx == (answer as i32) {
+                ic_cdk::println!("Correct answer");
                 overall_metrics.add_correct();
                 lang_metrics.add_correct();
             } else {
                 // Check if it belongs to any of the options, otherwise it's classified as invalid
-                let mut belongs_to_an_option = false;
-                for option in &options {
-                    if llm_answer.to_lowercase() == option.trim().to_lowercase() {
-                        belongs_to_an_option = true;
-                        break;
-                    }
-                }
-                if belongs_to_an_option {
-                    overall_metrics.add_incorrect();
-                    lang_metrics.add_incorrect();
-                } else {
+                if llm_answer_idx == -1 {
+                    ic_cdk::println!("Invalid answer");
                     overall_metrics.add_invalid();
                     lang_metrics.add_invalid();
+                } else {
+                    ic_cdk::println!("Incorrect answer");
+                    overall_metrics.add_incorrect();
+                    lang_metrics.add_incorrect();
                 }
             }
 
@@ -296,6 +332,7 @@ pub async fn llm_evaluate_languages(model_id: u128, languages: Vec<String>, max_
                 });
 
                 ic_cdk::println!("Language evaluation saved successfully");
+                ic_cdk::println!("--------------------------------------");
 
                 Ok(language_evaluation_result)
             },
