@@ -299,9 +299,6 @@ service : () -> {
     "get_job": (nat) -> (opt Job);
     "get_jobs": () -> (vec Job);
     "update_job_status": (nat, text, nat) -> ();
-    "job_fail": (nat, nat) -> ();
-    "job_complete": (nat, nat) -> ();
-    "job_in_progress": (nat, nat) -> ();
     "get_job_status": (nat) -> (opt text);
     "delete_job": (nat) -> ();
     "check_job_stopped": (nat) -> (bool);
@@ -342,7 +339,7 @@ service : () -> {
     );
 
     "calculate_llm_metrics": (nat, text, nat64, nat32, nat32, nat) -> (variant { Ok: LLMMetricsAPIResult; Err: text });
-    "average_llm_metrics": (nat, vec text, nat) -> (variant {Ok: AverageLLMFairnessMetrics; Err: GenericError });
+    "average_llm_metrics": (nat, vec text) -> (variant {Ok: AverageLLMFairnessMetrics; Err: GenericError });
     "llm_fairness_datasets": () -> (vec record {text; nat64}) query;
     "calculate_all_llm_metrics": (nat, nat64, nat32, nat32) -> (variant { Ok: LLMMetricsAPIResult; Err: text }); 
 

@@ -114,18 +114,6 @@ export function useWorker() {
                 }
               };
 
-              const averageJobId = await webapp?.create_job(BigInt(payload.modelId));
-
-              if (!averageJobId) {
-                throw new Error("Failed to create job.");
-              }
-
-              console.log("New job ID:", averageJobId);
-              setWorkerProcesses([...workerProcesses, {
-                type: workerType,
-                jobId: averageJobId,
-              }]);
-
               // result = await webapp?.average_llm_metrics(
               //   BigInt(modelId),
               //   dataset,
@@ -135,8 +123,7 @@ export function useWorker() {
               try {
                 result = await webapp?.average_llm_metrics(
                   BigInt(modelId),
-                  dataset,
-                  averageJobId
+                  dataset
                 );
               }
               catch (error) {

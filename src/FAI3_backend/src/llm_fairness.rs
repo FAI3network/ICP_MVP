@@ -988,21 +988,10 @@ fn calculate_average_fairness_metrics(
     model_id: u128,
     model_data: &LLMModelData,
     datasets: Vec<String>,
-    job_id: u128,
 ) -> Result<AverageLLMFairnessMetrics, GenericError> {
     // first, we check that there are metrics for all the required datasets
     let mut avg_fairness_metrics = AverageLLMFairnessMetrics::new(model_id);
     for dataset in datasets {
-        let should_stop = check_job_stopped(job_id);
-
-        if should_stop {
-            ic_cdk::println!("Job stopped by user");
-            return Err(GenericError::new(
-                GenericError::RESOURCE_ERROR,
-                "Job stopped by user".to_string(),
-            ));
-        }
-
         match AverageLLMFairnessMetrics::last_computed_evaluation_id_for_dataset(
             &model_data.evaluations,
             dataset,
@@ -1027,7 +1016,6 @@ fn calculate_average_fairness_metrics(
 pub async fn average_llm_metrics(
     llm_model_id: u128,
     datasets: Vec<String>,
-    job_id: u128,
 ) -> Result<AverageLLMFairnessMetrics, GenericError> {
     only_admin();
     check_cycles_before_action();
@@ -1038,17 +1026,14 @@ pub async fn average_llm_metrics(
 
     let model = get_model_from_memory(llm_model_id);
     if let Err(err) = model {
-        job_fail(job_id, llm_model_id);
         return Err(err);
     }
     let model = model.unwrap();
     is_owner(&model, caller);
 
-    job_in_progress(job_id, llm_model_id);
-
     if let ModelType::LLM(model_data) = &model.model_type {
         let average_fairness_metrics =
-            calculate_average_fairness_metrics(llm_model_id, model_data, datasets, job_id)?;
+            calculate_average_fairness_metrics(llm_model_id, model_data, datasets)?;
 
         // saving model
         MODELS.with(|models| {
@@ -1060,11 +1045,8 @@ pub async fn average_llm_metrics(
             model.model_type = ModelType::LLM(model_data);
             models.insert(llm_model_id, model);
         });
-
-        job_complete(job_id, llm_model_id);
         return Ok(average_fairness_metrics);
     } else {
-        job_fail(job_id, llm_model_id);
         return Err(GenericError::new(
             GenericError::INVALID_MODEL_TYPE,
             "Model should be an LLM.",
@@ -1147,8 +1129,7 @@ pub async fn calculate_all_llm_metrics(
     }
 
     if let Some(metrics_result) = last_result {
-        let job_id = create_job(llm_model_id);
-        average_llm_metrics(llm_model_id, dataset_names, job_id)
+        average_llm_metrics(llm_model_id, dataset_names)
             .await
             .map_err(|err| format!("Error calculating average metrics: {}", err))
             .map(|_| metrics_result)

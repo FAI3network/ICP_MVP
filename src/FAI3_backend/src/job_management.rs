@@ -1,10 +1,17 @@
 use candid::Principal;
 
 use crate::types::Job;
-use crate::{JOBS, NEXT_JOB_ID};
+use crate::{only_admin, JOBS, NEXT_JOB_ID};
+
+pub const JOB_STATUS_PENDING: &str = "Pending";
+pub const JOB_STATUS_IN_PROGRESS: &str = "In Progress";
+pub const JOB_STATUS_COMPLETED: &str = "Completed";
+pub const JOB_STATUS_FAILED: &str = "Failed";
+pub const JOB_STATUS_STOPPED: &str = "Stopped";
 
 #[ic_cdk::update]
 pub fn create_job(model_id: u128) -> u128 {
+    only_admin();
     let id = NEXT_JOB_ID.with(|id| {
         let current_id = *id.borrow().get();
 
@@ -19,7 +26,7 @@ pub fn create_job(model_id: u128) -> u128 {
         id: id,
         model_id,
         owner: owner_id,
-        status: "Pending".to_string(),
+        status: JOB_STATUS_PENDING.to_string(),
         timestamp: ic_cdk::api::time(),
     };
     JOBS.with(|jobs| {
@@ -48,6 +55,7 @@ pub fn get_jobs() -> Vec<Job> {
 
 #[ic_cdk::update]
 pub fn update_job_status(job_id: u128, status: String, model_id: u128) {
+    only_admin();
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
         if let Some(job) = jobs.get(&job_id) {
@@ -62,19 +70,16 @@ pub fn update_job_status(job_id: u128, status: String, model_id: u128) {
     });
 }
 
-#[ic_cdk::update]
 pub fn job_fail(job_id: u128, model_id: u128) {
-    update_job_status(job_id, "Failed".to_string(), model_id);
+    update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id);
 }
 
-#[ic_cdk::update]
 pub fn job_complete(job_id: u128, model_id: u128) {
-    update_job_status(job_id, "Completed".to_string(), model_id);
+    update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id);
 }
 
-#[ic_cdk::update]
 pub fn job_in_progress(job_id: u128, model_id: u128) {
-    update_job_status(job_id, "In Progress".to_string(), model_id);
+    update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id);
 }
 
 #[ic_cdk::query]
@@ -94,7 +99,7 @@ pub fn check_job_stopped(job_id: u128) -> bool {
     JOBS.with(|jobs| {
         let jobs = jobs.borrow();
         if let Some(job) = jobs.get(&job_id) {
-            job.status == "Stopped"
+            job.status == JOB_STATUS_STOPPED.to_string()
         } else {
             false
         }
@@ -103,11 +108,12 @@ pub fn check_job_stopped(job_id: u128) -> bool {
 
 #[ic_cdk::update]
 pub fn stop_job(job_id: u128) {
+    only_admin();
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
         if let Some(job) = jobs.get(&job_id) {
             let mut updated_job = job.clone();
-            updated_job.status = "Stopped".to_string();
+            updated_job.status = JOB_STATUS_STOPPED.to_string();
             jobs.insert(job_id, updated_job);
         }
     });
