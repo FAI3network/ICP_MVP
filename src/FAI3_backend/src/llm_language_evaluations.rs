@@ -239,6 +239,9 @@ async fn run_evaluate_languages(model_data: &LLMModelData, languages: &Vec<Strin
             metrics: overall_metrics,
             metrics_per_language,
             max_queries: original_max_queries,
+            finished: true,
+            canceled: false,
+            job_id: None,
         };
 
         id.borrow_mut().set(current_id + 1).unwrap();

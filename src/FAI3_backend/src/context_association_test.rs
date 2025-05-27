@@ -11,10 +11,9 @@ use crate::types::{
     ContextAssociationTestType, LLMModelData, ModelType,
 };
 use crate::utils::{clean_llm_response, is_owner, seeded_vector_shuffle};
-use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID};
+use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID, NEXT_CONTEXT_ASSOCIATION_TEST_ID};
 use candid::CandidType;
 use ic_cdk_macros::*;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -880,33 +879,46 @@ pub async fn context_association_test(
             ));
         };
 
-        let result = ContextAssociationTestMetricsBag {
-            general: general_metrics.clone(),
-            intrasentence: intra_metrics.clone(),
-            intersentence: inter_metrics.clone(),
-            gender: gender_metrics.clone(),
-            race: race_metrics.clone(),
-            profession: profession_metrics.clone(),
-            religion: religion_metrics.clone(),
-            error_count,
-            error_rate,
-            total_queries,
-            intersentence_prompt_template: String::from(CAT_INTERSENTENCE_PROMPT),
-            intrasentence_prompt_template: String::from(CAT_INTRASENTENCE_PROMPT),
-            seed,
-            timestamp: ic_cdk::api::time(),
-            icat_score_intra: intra_metrics.icat_score(),
-            icat_score_inter: inter_metrics.icat_score(),
-            icat_score_gender: gender_metrics.icat_score(),
-            icat_score_race: race_metrics.icat_score(),
-            icat_score_profession: profession_metrics.icat_score(),
-            icat_score_religion: religion_metrics.icat_score(),
-            general_lms: general_metrics.lms(),
-            general_ss: general_metrics.ss(),
-            general_n: general_metrics.total(),
-            icat_score_general: general_metrics.icat_score(),
-            data_points,
-        };
+        let result = NEXT_CONTEXT_ASSOCIATION_TEST_ID.with(|id| {
+            let mut next_data_point_id = id.borrow_mut();
+
+            let metrics_bag = ContextAssociationTestMetricsBag {
+                context_association_test_id: *next_data_point_id.get(),
+                general: general_metrics.clone(),
+                intrasentence: intra_metrics.clone(),
+                intersentence: inter_metrics.clone(),
+                gender: gender_metrics.clone(),
+                race: race_metrics.clone(),
+                profession: profession_metrics.clone(),
+                religion: religion_metrics.clone(),
+                error_count,
+                error_rate,
+                total_queries,
+                intersentence_prompt_template: String::from(CAT_INTERSENTENCE_PROMPT),
+                intrasentence_prompt_template: String::from(CAT_INTRASENTENCE_PROMPT),
+                seed,
+                timestamp: ic_cdk::api::time(),
+                icat_score_intra: intra_metrics.icat_score(),
+                icat_score_inter: inter_metrics.icat_score(),
+                icat_score_gender: gender_metrics.icat_score(),
+                icat_score_race: race_metrics.icat_score(),
+                icat_score_profession: profession_metrics.icat_score(),
+                icat_score_religion: religion_metrics.icat_score(),
+                general_lms: general_metrics.lms(),
+                general_ss: general_metrics.ss(),
+                general_n: general_metrics.total(),
+                icat_score_general: general_metrics.icat_score(),
+                data_points,
+                finished: true,
+                canceled: false,
+                job_id: None,
+            };
+
+            let current_id = *next_data_point_id.get();
+            next_data_point_id.set(current_id + 1).unwrap();
+
+            return metrics_bag;
+        });
 
         // Saving metrics
         MODELS.with(|models| {

@@ -1,6 +1,6 @@
 use candid::Principal;
 
-use crate::types::Job;
+use crate::types::{Job, JobType};
 use crate::{only_admin, JOBS, NEXT_JOB_ID};
 
 pub const JOB_STATUS_PENDING: &str = "Pending";
@@ -23,11 +23,13 @@ pub fn create_job(model_id: u128) -> u128 {
     let owner_id = ic_cdk::caller();
 
     let job = Job {
-        id: id,
+        id,
         model_id,
         owner: owner_id,
         status: JOB_STATUS_PENDING.to_string(),
         timestamp: ic_cdk::api::time(),
+        job_type: JobType::Unassigned,
+        status_detail: None,
     };
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
