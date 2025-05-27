@@ -15,6 +15,8 @@ pub struct Job {
     pub owner: Principal,
     pub status: String,
     pub timestamp: u64,
+    pub job_type: JobType,
+    pub status_detail: Option<String>,
 }
 
 impl Storable for Job {
@@ -35,12 +37,31 @@ impl Storable for Job {
                     owner: Principal::anonymous(),
                     status: "error_decoding".to_string(),
                     timestamp: 0,
+                    job_type: JobType::Unassigned,
+                    status_detail: None,
                 }
             }
         }
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub enum JobType {
+    LLMFairness {
+        model_evaluation_id: u128,
+    },
+    ContextAssociationTest {
+        metrics_bag_id: u128,
+    },
+    LanguageEvaluation {
+        language_model_evaluation_id: u128,
+    },
+    AverageFairness {
+        job_dependencies: Vec<u128>,
+    },
+    Unassigned, // used for now for jobs without type
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -142,6 +163,9 @@ pub struct ModelEvaluationResult {
     pub llm_data_points: Option<Vec<LLMDataPoint>>,
     pub prompt_template: Option<String>,
     pub counter_factual: Option<CounterFactualModelEvaluationResult>,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>, 
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -520,6 +544,7 @@ pub struct ContextAssociationTestMetrics {
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestMetricsBag {
+    pub context_association_test_id: u128,
     pub general: ContextAssociationTestMetrics,
     pub intersentence: ContextAssociationTestMetrics,
     pub intrasentence: ContextAssociationTestMetrics,
@@ -546,6 +571,9 @@ pub struct ContextAssociationTestMetricsBag {
     pub general_n: u32,
     pub icat_score_general: f32,
     pub data_points: Vec<ContextAssociationTestDataPoint>,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>,
 }
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -634,6 +662,9 @@ pub struct LanguageEvaluationResult {
     pub metrics: LanguageEvaluationMetrics,
     pub metrics_per_language: Vec<(String, LanguageEvaluationMetrics)>,
     pub max_queries: usize,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]

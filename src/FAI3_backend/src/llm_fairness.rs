@@ -955,6 +955,9 @@ pub async fn calculate_llm_metrics(
                             .collect(),
                         prompt_template: Some(prompt_template.clone()),
                         counter_factual: Some(counter_factual.clone()),
+                        finished: true,
+                        canceled: false,
+                        job_id: None,
                     });
 
                     let current_id = *next_data_point_id.get();
