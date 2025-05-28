@@ -92,7 +92,7 @@ export default function KaleidoscopeChart({ metrics }: { metrics: any }) {
                                 <CardDescription>Distribution of response types across evaluations</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px]">
+                                <div>
                                     <div className="flex flex-col h-full justify-center">
                                         {metrics.length > 0 && (
                                             <div className="space-y-4">
@@ -153,7 +153,7 @@ export default function KaleidoscopeChart({ metrics }: { metrics: any }) {
                                 <CardDescription>Number of queries per evaluation</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px]">
+                                <div>
                                     <LineChartchart
                                         dataKey="metrics.n"
                                         label="Total Queries"
