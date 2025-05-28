@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { LLMTestsContext } from "../utils";
 import ContextAssociation from "./ContextAssociation";
 import Fairness from "./Fairness";
+import Kaleidoscope from "./Kaleidoscope";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -21,6 +22,12 @@ const fairnessFormSchema = z.object({
   max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
   seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
   dataset: z.array(z.string()).min(1, "At least one dataset must be selected"),
+});
+
+const kaleidoscopeFormSchema = z.object({
+  languages: z.array(z.string()).min(1, "At least one dataset must be selected"),
+  max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
+  seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
 });
 
 export default function TestSelection({ setLoading, fetchModel }: { setLoading: (loading: boolean) => void; fetchModel: () => void }) {
@@ -49,27 +56,30 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
     },
   });
 
+  const kaleidoscopeForm = useForm<z.infer<typeof kaleidoscopeFormSchema>>({
+    resolver: zodResolver(kaleidoscopeFormSchema),
+    defaultValues: {
+      languages: [],
+      max_queries: 10,
+      seed: 0,
+    },
+  });
+
   const evaluate = async () => {
     setLoading(true);
     if (selectedTest.includes("Context Association")) {
       await catForm.handleSubmit(async (data) => {
-        // console.log("Context Association Data", data);
-
-        // const res = await webapp?.context_association_test(BigInt(modelId!), data.max_queries, data.seed, data.shuffle);
-        // if (res && typeof res === "object" && res !== null && "Err" in res) {
-        //   console.error("Failed to run context association test:", res.Err);
-        //   const err = res.Err as GenericError;
-        //   toasts.genericErrorToast(err);
-        // } else {
-        //   console.log(res);
-        // }
-
-        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, shuffle: data.shuffle}, "CAT");
+        runTest({ modelId: modelId!, max_queries: data.max_queries, seed: data.seed, shuffle: data.shuffle }, "CAT");
       })();
     }
     if (selectedTest.includes("Fairness")) {
       await fairnessForm.handleSubmit(async (data) => {
-        runTest({modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset.map((dataset: string) => dataset.split(" (")[0])}, "FAIRNESS");
+        runTest({ modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset.map((dataset: string) => dataset.split(" (")[0]) }, "FAIRNESS");
+      })();
+    }
+    if (selectedTest.includes("Kaleidoscope")) {
+      await kaleidoscopeForm.handleSubmit(async (data) => {
+        runTest({ modelId: modelId!, languages: data.languages, max_queries: data.max_queries, seed: data.seed }, "KALEIDOSCOPE");
       })();
     }
 
@@ -86,10 +96,12 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
         <ModalTitle>Which test would you like to run?</ModalTitle>
       </ModalHeader>
       <ModalBody className="flex flex-col gap-4">
-        <Select options={["Context Association", "Fairness"]} multiple selection={selectedTest} setSelection={(selection: string) => setSelectedTest(selection)} />
+        <Select options={["Context Association", "Fairness", "Kaleidoscope"]} multiple selection={selectedTest} setSelection={(selection: string) => setSelectedTest(selection)} />
 
         {selectedTest.includes("Context Association") && <ContextAssociation form={catForm} />}
         {selectedTest.includes("Fairness") && <Fairness form={fairnessForm} />}
+        {selectedTest.includes("Kaleidoscope") && <Kaleidoscope form={kaleidoscopeForm} />}
+
       </ModalBody>
       <ModalFooter>
         <Button variant="secondary" onClick={closeModal}>

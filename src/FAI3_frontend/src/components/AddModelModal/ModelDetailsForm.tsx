@@ -5,8 +5,8 @@ import { useAuthClient, useDataContext } from "@/utils";
 import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 import FormBody from "./FormBody";
 
-export default function ModelDetailsForm({ update, modelId, name, details, is_llm, hf_url, fetchModel }: { update?: boolean, modelId?: number, name?: string | null, details?: ModelDetails | null, is_llm?: boolean, hf_url?: string, fetchModel?: () => Promise<any>, clearModelForm: () => void, closeModal: () => void }) {
-    const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "" });
+export default function ModelDetailsForm({ update, modelId, name, details, is_llm, hf_url, inference_provider, fetchModel }: { update?: boolean, modelId?: number, name?: string | null, details?: ModelDetails | null, is_llm?: boolean, hf_url?: string, inference_provider?: string, fetchModel?: () => Promise<any>, clearModelForm: () => void, closeModal: () => void }) {
+    const [newModel, setNewModel] = useState<{ name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string, inference_provider?: string }>({ name: name ?? "", details: details ?? { description: "", framework: "", objective: "", url: "" }, is_llm: is_llm ?? false, hf_url: hf_url ?? "", inference_provider: inference_provider ?? "" });
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const { webapp } = useAuthClient();
@@ -29,7 +29,7 @@ export default function ModelDetailsForm({ update, modelId, name, details, is_ll
         const model = await (update ?
             webapp?.update_model(modelId, newModel.name, newModel.details, true)
             : newModel.is_llm ?
-                webapp?.add_llm_model(modelName, newModel.hf_url, details, [])
+                webapp?.add_llm_model(modelName, newModel.hf_url, details, [newModel.inference_provider])
                 : webapp?.add_classifier_model(modelName, details));
 
         if (model) {
@@ -53,7 +53,7 @@ export default function ModelDetailsForm({ update, modelId, name, details, is_ll
     }, [newModel]);
 
     const clearModelForm = () => {
-        setNewModel({ name: "", details: { description: "", framework: "", objective: "", url: "" }, is_llm: false, hf_url: "" });
+        setNewModel({ name: "", details: { description: "", framework: "", objective: "", url: "" }, is_llm: false, hf_url: "", inference_provider: "" });
         closeModal();
     }
 
