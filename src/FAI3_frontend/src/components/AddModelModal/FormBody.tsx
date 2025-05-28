@@ -2,7 +2,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, Input, ModalFo
 import { Toggle } from "@/components/ui/toggle";
 import { ModelDetails } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
-export default function FormBody({ update=false, newModel, setNewModel }: { update?: boolean, newModel: { name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string}, setNewModel: (model: { name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string }) => void }) {
+export default function FormBody({ update = false, newModel, setNewModel }: { update?: boolean, newModel: { name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string, inference_provider?: string }, setNewModel: (model: { name: string, details: ModelDetails, is_llm?: boolean, hf_url?: string, inference_provider?: string }) => void }) {
     return (
         <ModalBody className="my-4">
             <h3 className="text-lg font-bold mb-4">
@@ -78,18 +78,31 @@ export default function FormBody({ update=false, newModel, setNewModel }: { upda
 
             {
                 newModel.is_llm && (
-                    <div>
-                        <h4 className="text-sm font-bold mb-2">
-                            Hugging Face URL
-                        </h4>
+                    <>
+                        <div>
+                            <h4 className="text-sm font-bold mb-2">
+                                Hugging Face URL
+                            </h4>
 
-                        <Input
-                            placeholder="hf_url"
-                            className="mb-4"
-                            value={newModel.hf_url}
-                            onChange={(event: any) => setNewModel({ ...newModel, hf_url: event.target.value })}
-                        />
-                    </div>
+                            <Input
+                                placeholder="hf_url"
+                                className="mb-4"
+                                value={newModel.hf_url}
+                                onChange={(event: any) => setNewModel({ ...newModel, hf_url: event.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold mb-2">
+                                Inference Provider
+                            </h4>
+                            <Input
+                                placeholder="inference_provider"
+                                className="mb-4"
+                                value={newModel.inference_provider || ""}
+                                onChange={(event: any) => setNewModel({ ...newModel, inference_provider: event.target.value })}
+                            />
+                        </div>
+                    </>
                 )
             }
         </ModalBody>

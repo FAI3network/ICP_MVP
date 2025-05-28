@@ -23,19 +23,43 @@ export default function LineChartchart({
   unfairRange,
   maxVal,
   minVal,
+  map = true,
+  iterable = true
 }: any) {
   //   console.log(label, ": ", Math.min(unfairRange[0], minVal));
 
   const dataset = []; // [{timestamp: "2021-10-01", <dataKey>: 32}, ...]
   const variableNames: string[] = [];
+  const formattedDataKey = dataKey.split(".")
 
   for (let i = 0; i < chartData.length; i++) {
     const result: { [key: string]: any } = { timestamp: chartData[i].timestamp };
 
-    for (const variable of chartData[i][dataKey] as { variable_name: string, value: number }[]) {
-      result[variable.variable_name] = variable.value;
-      if (!variableNames.includes(variable.variable_name)) {
-        variableNames.push(variable.variable_name);
+    if (map) {
+      for (const variable of chartData[i][dataKey] as { variable_name: string, value: number }[]) {
+        result[variable.variable_name] = variable.value;
+        if (!variableNames.includes(variable.variable_name)) {
+          variableNames.push(variable.variable_name);
+        }
+      }
+    } else {
+      const varName = formattedDataKey[formattedDataKey.length - 1];
+
+      // if dataKey is a nested key like "metrics.overall_accuracy" we need get use the formattedDataKey to access the value
+      if (formattedDataKey.length > 1) {
+        let value = chartData[i];
+        for (const key of formattedDataKey) {
+          value = value[key];
+        }
+        result[varName] = iterable ? value[0] : value;
+      }
+      // if dataKey is a direct key
+      else {
+        result["data"] = chartData[i][dataKey];
+      }
+
+      if (!variableNames.includes(varName)) {
+        variableNames.push(varName);
       }
     }
 

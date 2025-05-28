@@ -1,11 +1,11 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui";
-import { TabChart, FairnessCharts } from "../../components/charts";
+import { TabChart, FairnessCharts, KaleidoscopeChart } from "../../components/charts";
 import { AddModelModal, LLMTestsModal } from "../../components";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuthClient, useDataContext, toasts } from "../../utils";
 import { Principal } from "@dfinity/principal";
-import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics, GenericError } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
+import { ContextAssociationTestMetricsBag, ContextAssociationTestMetrics, GenericError, LanguageEvaluationResult } from "../../../../declarations/FAI3_backend/FAI3_backend.did";
 
 export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const { modelId } = useParams();
@@ -16,6 +16,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
   const { address, webapp } = useAuthClient();
   const { fetchModels } = useDataContext();
   const catMetricsHistory = model?.model_type.LLM.cat_metrics_history as ContextAssociationTestMetricsBag[];
+  const languageEvaluationData = model?.model_type.LLM.language_evaluations as LanguageEvaluationResult[];
 
   useEffect(() => {
     if (Object.keys(model).length === 0 || !address) {
@@ -231,6 +232,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
             </div>
           )}
           {metrics.length > 0 && <FairnessCharts metrics={metrics} />}
+          {languageEvaluationData.length > 0 && <KaleidoscopeChart metrics={languageEvaluationData} />}
           {catMetricsHistory.length == 0 && metrics.length == 0 && <div className="w-full text-center">No metrics available</div>}
         </section>
       )}
