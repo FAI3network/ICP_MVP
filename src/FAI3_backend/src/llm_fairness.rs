@@ -871,7 +871,118 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
             let evaluation = &mut model_data.evaluations[model_evaluation_index];
             evaluation.finished = true;
 
-            // TODO: metrics should be calculated here
+            // Metrics calculation from data points
+            if let Some(ds) = LLMFAIRNESS_DATASETS.iter().find(|ds| ds.name == model_evaluation.dataset.as_str()) {
+
+                let timestamp: u64 = ic_cdk::api::time();
+                
+                // Calculate metrics for data_points
+                let simplified_data_points: Vec<DataPoint> =
+                    LLMDataPoint::reduce_to_data_points(evaluation.llm_data_points.as_ref().unwrap(), KeyValuePair::to_hashmap(evaluation.privileged_map.clone()));
+
+                let privileged_threshold = None;
+                let (privileged_count, unprivileged_count, _, _) =
+                    calculate_group_counts(&simplified_data_points, privileged_threshold.clone());
+
+                // In some cases the model returns only a few valid answers, and not all metrics can be calculated
+                let can_calculate_all_metrics =
+                    privileged_count.len() > 0 && unprivileged_count.len() > 0;
+
+                ic_cdk::println!("can calculate all metrics: {can_calculate_all_metrics}");
+
+                let metrics: Metrics = match can_calculate_all_metrics {
+                    true => {
+                        let (spd, di, aod, eod, acc, prec, rec) =
+                            all_metrics(&simplified_data_points, privileged_threshold.clone());
+
+                        Metrics {
+                            statistical_parity_difference: Some(spd.0),
+                            disparate_impact: Some(di.0),
+                            average_odds_difference: Some(aod.0),
+                            equal_opportunity_difference: Some(eod.0),
+                            average_metrics: AverageMetrics {
+                                statistical_parity_difference: Some(spd.1),
+                                disparate_impact: Some(di.1),
+                                average_odds_difference: Some(aod.1),
+                                equal_opportunity_difference: Some(eod.1),
+                            },
+                            accuracy: Some(acc),
+                            precision: Some(prec),
+                            recall: Some(rec),
+                            timestamp,
+                        }
+                    }
+                    false => {
+                        ic_cdk::println!("Some metrics cannot be calculated because one of the groups is not present.");
+
+                        let mut acc: Option<f32> = None;
+                        let mut prec: Option<f32> = None;
+                        let mut rec: Option<f32> = None;
+                        if simplified_data_points.len() != 0 {
+                            acc = Some(accuracy(&simplified_data_points));
+
+                            let (tp, _, fp, fn_) =
+                                calculate_overall_confusion_matrix(&simplified_data_points);
+                            if can_calculate_recall(tp, fn_) {
+                                rec = Some(recall(&simplified_data_points));
+                            }
+                            if can_calculate_precision(tp, fp) {
+                                prec = Some(precision(&simplified_data_points));
+                            }
+                        }
+
+                        Metrics {
+                            statistical_parity_difference: None,
+                            disparate_impact: None,
+                            average_odds_difference: None,
+                            equal_opportunity_difference: None,
+                            average_metrics: AverageMetrics {
+                                statistical_parity_difference: None,
+                                disparate_impact: None,
+                                average_odds_difference: None,
+                                equal_opportunity_difference: None,
+                            },
+                            accuracy: acc,
+                            precision: prec,
+                            recall: rec,
+                            timestamp,
+                        }
+                    }
+                };
+
+                let (
+                    change_rate_overall,
+                    change_rate_sensible_attr0,
+                    change_rate_sensible_attr1,
+                    total_sensible_attr0,
+                    total_sensible_attr1,
+                ) = calculate_counter_factual_metrics(evaluation.llm_data_points.as_ref().unwrap());
+
+                let counter_factual = CounterFactualModelEvaluationResult {
+                    change_rate_overall,
+                    change_rate_sensible_attributes: vec![
+                        change_rate_sensible_attr0,
+                        change_rate_sensible_attr1,
+                    ],
+                    total_sensible_attributes: vec![total_sensible_attr0, total_sensible_attr1],
+                    sensible_attribute: ds.sensible_attribute.to_string(),
+                };
+
+                ic_cdk::println!("LLM fairness metrics calculated successfully for evaluation {} of model {}", &evaluation.model_evaluation_id, &model.model_id);
+
+                // TODO: implement fmt::Display
+                // ic_cdk::println!("Metrics:");
+                // ic_cdk::println!("{}", &metrics);
+                // ic_cdk::println!("Counter factual metrics:");
+                // ic_cdk::println!("{}", &counter_factual);
+
+                evaluation.metrics = metrics;
+                evaluation.counter_factual = Some(counter_factual);
+            } else {
+                ic_cdk::eprintln!("Not saving metrics because unkown dataset {}", &evaluation.dataset);
+            }
+                
+            // End of metrics calculation
             
             model.model_type = ModelType::LLM(model_data);
             models.insert(llm_model_id, model);
