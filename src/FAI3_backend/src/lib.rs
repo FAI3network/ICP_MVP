@@ -20,7 +20,7 @@ use errors::GenericError;
 use ic_cdk_macros::*;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    Cell, DefaultMemoryImpl, StableBTreeMap,
+    Cell, DefaultMemoryImpl, StableBTreeMap, StableVec,
 };
 use std::cell::RefCell;
 
@@ -112,6 +112,13 @@ thread_local! {
         Cell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(10))),
             1
+        ).unwrap()
+    );
+
+    static LAST_PROCESSED_JOB_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(11))),
+            0
         ).unwrap()
     );
 }

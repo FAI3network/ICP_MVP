@@ -338,7 +338,7 @@ service : () -> {
       vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, vec PrivilegedIndex, float32, float32, float32
     );
 
-    "calculate_llm_metrics": (nat, text, nat64, nat32, nat32, nat) -> (variant { Ok: LLMMetricsAPIResult; Err: text });
+    "calculate_llm_metrics": (nat, text, nat64, nat32, nat32) -> (variant { Ok: nat; Err: text });
     "average_llm_metrics": (nat, vec text) -> (variant {Ok: AverageLLMFairnessMetrics; Err: GenericError });
     "llm_fairness_datasets": () -> (vec record {text; nat64}) query;
     "calculate_all_llm_metrics": (nat, nat64, nat32, nat32) -> (variant { Ok: LLMMetricsAPIResult; Err: text }); 

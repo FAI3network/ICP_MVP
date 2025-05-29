@@ -77,7 +77,6 @@ fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
                 *id = serde_json::Value::String("".to_string());
             }
             if let Some(created) = obj.get_mut("created") {
-                ic_cdk::println!("Changing created");
                 *created = serde_json::Value::Number(serde_json::Number::from(0));
             }
         }
