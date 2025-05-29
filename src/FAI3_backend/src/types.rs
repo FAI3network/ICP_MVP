@@ -136,6 +136,12 @@ pub struct KeyValuePair {
     pub value: u128,
 }
 
+impl KeyValuePair {
+    pub fn to_hashmap(pairs: Vec<KeyValuePair>) -> std::collections::HashMap<String, u128> {
+        pairs.into_iter().map(|pair| (pair.key, pair.value)).collect()
+    }
+}
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct CounterFactualModelEvaluationResult {
     pub change_rate_overall: f32,
