@@ -1,9 +1,19 @@
+type JobType = variant {
+    LLMFairness : record { model_evaluation_id: nat };
+    ContextAssociationTest : record { metrics_bag_id: nat };
+    LanguageEvaluation : record { language_model_evaluation_id: nat };
+    AverageFairness : record { job_dependencies: vec nat };
+    Unassigned;
+};
+
 type Job = record {
   id: nat;
   model_id: nat;
   owner: principal;
   status: text;
+  status_detail: opt text;
   timestamp: nat64;
+  job_type: JobType;
 };
 
 type DataPoint = record {
@@ -77,6 +87,7 @@ type ClassifierModelData = record {
 };
 
 type ContextAssociationTestMetricsBag = record {
+    context_association_test_id: nat;
     general: ContextAssociationTestMetrics;
     intersentence: ContextAssociationTestMetrics;
     intrasentence: ContextAssociationTestMetrics;
@@ -153,6 +164,9 @@ type ModelEvaluationResult = record {
     llm_data_points: opt vec LLMDataPoint;
     prompt_template: opt text;
     counter_factual: opt CounterFactualModelEvaluationResult;
+    finished: bool;
+    canceled: bool;
+    job_id: opt nat;
 };
 
 type LLMModelData = record {
@@ -179,6 +193,7 @@ type Model = record {
   model_name: text;
   owners: vec principal;
   details: ModelDetails;
+  details_history: vec ModelDetailsHistory;
   model_type: ModelType;
   cached_thresholds: opt CachedThresholds;
   cached_selections: opt vec text;
@@ -280,6 +295,9 @@ type LanguageEvaluationResult = record {
     metrics: LanguageEvaluationMetrics;
     metrics_per_language: vec record {text; LanguageEvaluationMetrics};
     max_queries: nat64;
+    finished: bool;
+    canceled: bool;
+    job_id: opt nat;
 };
 
 type LanguageEvaluationCounts = record {
@@ -341,7 +359,7 @@ service : () -> {
     "calculate_llm_metrics": (nat, text, nat64, nat32, nat32) -> (variant { Ok: nat; Err: text });
     "average_llm_metrics": (nat, vec text) -> (variant {Ok: AverageLLMFairnessMetrics; Err: GenericError });
     "llm_fairness_datasets": () -> (vec record {text; nat64}) query;
-    "calculate_all_llm_metrics": (nat, nat64, nat32, nat32) -> (variant { Ok: LLMMetricsAPIResult; Err: text }); 
+    "calculate_all_llm_metrics": (nat, nat64, nat32, nat32) -> (variant { Ok: vec nat; Err: text }); 
 
     // Example data
     //"add_example_data_points": (nat) -> ();

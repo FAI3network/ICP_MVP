@@ -5,7 +5,8 @@ use crate::hugging_face::call_hugging_face;
 use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::job_management::{
     create_job_with_job_type, bootstrap_job_queue,
-    internal_job_complete, internal_job_fail, internal_job_in_progress,
+    internal_job_complete, internal_job_fail,
+    JOB_STATUS_COMPLETED, get_job,
 };
 use crate::metrics_calculation::{
     accuracy, all_metrics, calculate_group_counts, calculate_overall_confusion_matrix,
@@ -14,7 +15,7 @@ use crate::metrics_calculation::{
 use crate::types::{
     get_llm_model_data, AverageLLMFairnessMetrics, AverageMetrics,
     CounterFactualModelEvaluationResult, DataPoint, KeyValuePair, LLMDataPoint,
-    LLMDataPointCounterFactual, LLMMetricsAPIResult, LLMModelData, Metrics, ModelEvaluationResult,
+    LLMDataPointCounterFactual, LLMModelData, Metrics, ModelEvaluationResult,
     ModelType, PrivilegedMap, JobType, Job,
 };
 use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
@@ -439,7 +440,7 @@ async fn run_metrics_calculation(
     }
 
     // Skip to the desired query index
-    let mut test_records: Vec<HashMap<String, String>> = test_rdr
+    let test_records: Vec<HashMap<String, String>> = test_rdr
         .deserialize()
         .collect::<Result<Vec<HashMap<String, String>>, _>>()
         .map_err(|e| e.to_string())?;
@@ -1044,9 +1045,10 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     }
 
                     if evaluation.max_errors > 0 && evaluation.errors > evaluation.max_errors {
-                        ic_cdk::eprintln!("Max errors count reached: {}. Run will finish early.", evaluation.max_errors);
+                        let error = format!("Max errors count reached: {}. Run will finish early.", evaluation.max_errors);
+                        ic_cdk::eprintln!("{}", &error);
                         evaluation.finished = true;
-                        internal_job_fail(job.id, llm_model_id);
+                        internal_job_fail(job.id, llm_model_id, Some(error));
                     }
                     
                     model.model_type = ModelType::LLM(model_data);
@@ -1056,7 +1058,8 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                 return Ok(false);
             },
             Err(error_str) => {
-                ic_cdk::eprintln!("An error has ocurred: {}. Canceling job with id = {}", &error_str, job.id);
+                let error = format!("An error has ocurred: {}. Canceling job with id = {}", &error_str, job.id);
+                ic_cdk::eprintln!("{}", &error);
                 // An error here does not mean a call error, it's a configuration error
                 // Job must be stopped
                 
@@ -1079,15 +1082,15 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     models.insert(llm_model_id, model);
                 });
 
-                internal_job_fail(job.id, llm_model_id);
+                internal_job_fail(job.id, llm_model_id, Some(error));
 
                 return Ok(true);
             },
         }
     } else {
-        // TODO: specify this errors into the job itself
-        ic_cdk::eprintln!("Dataset not found. This job cannot be processed.");
-        internal_job_fail(job.id, llm_model_id);
+        let error = "Dataset not found. This job cannot be processed.".to_string();
+        ic_cdk::eprintln!("{}", &error);
+        internal_job_fail(job.id, llm_model_id, Some(error));
         return Ok(true);
     }
 }
@@ -1217,197 +1220,6 @@ pub async fn calculate_llm_metrics(
     }
     
     return res;
-    // job_in_progress(job_id, llm_model_id);
-
-    // for item in LLMFAIRNESS_DATASETS.iter().enumerate() {
-    //     let (_, ds) = item;
-    //     if ds.name == dataset.as_str() {
-    //         let train_csv = ds.train_csv;
-    //         let test_csv = ds.test_csv;
-    //         let cf_test_csv = ds.cf_test_csv;
-    //         sensible_attribute = String::from(ds.sensible_attribute);
-    //         prompt_template = String::from(ds.prompt_template);
-
-    //         res = run_metrics_calculation(
-    //             &model_data,
-    //             seed,
-    //             max_queries,
-    //             train_csv,
-    //             test_csv,
-    //             cf_test_csv,
-    //             ds.sensible_attribute,
-    //             ds.predict_attribute,
-    //             &mut data_points,
-    //             prompt_template.clone(),
-    //             ds.sensible_attribute_values,
-    //             ds.predict_attributes_values,
-    //             ds.binarized_sensible_attribute_column,
-    //             max_errors,
-    //             ds.dataset_subject_label,
-    //             job_id,
-    //         )
-    //         .await;
-
-    //         privileged_map.insert(ds.sensible_attribute.to_string(), 0);
-    //         break;
-    //     }
-    // }
-
-    // match res {
-    //     Ok(ret) => {
-    //         // Calculate metrics for data_points
-    //         let simplified_data_points: Vec<DataPoint> =
-    //             LLMDataPoint::reduce_to_data_points(&data_points, privileged_map.clone());
-
-    //         let privileged_threshold = None;
-    //         let (privileged_count, unprivileged_count, _, _) =
-    //             calculate_group_counts(&simplified_data_points, privileged_threshold.clone());
-
-    //         // In some cases the model returns only a few valid answers, and not all metrics can be calculated
-    //         let can_calculate_all_metrics =
-    //             privileged_count.len() > 0 && unprivileged_count.len() > 0;
-
-    //         ic_cdk::println!("can calculate all metrics: {can_calculate_all_metrics}");
-
-    //         let metrics: Metrics = match can_calculate_all_metrics {
-    //             true => {
-    //                 let (spd, di, aod, eod, acc, prec, rec) =
-    //                     all_metrics(&simplified_data_points, privileged_threshold.clone());
-
-    //                 Metrics {
-    //                     statistical_parity_difference: Some(spd.0),
-    //                     disparate_impact: Some(di.0),
-    //                     average_odds_difference: Some(aod.0),
-    //                     equal_opportunity_difference: Some(eod.0),
-    //                     average_metrics: AverageMetrics {
-    //                         statistical_parity_difference: Some(spd.1),
-    //                         disparate_impact: Some(di.1),
-    //                         average_odds_difference: Some(aod.1),
-    //                         equal_opportunity_difference: Some(eod.1),
-    //                     },
-    //                     accuracy: Some(acc),
-    //                     precision: Some(prec),
-    //                     recall: Some(rec),
-    //                     timestamp,
-    //                 }
-    //             }
-    //             false => {
-    //                 ic_cdk::println!("Some metrics cannot be calculated because one of the groups is not present.");
-
-    //                 let mut acc: Option<f32> = None;
-    //                 let mut prec: Option<f32> = None;
-    //                 let mut rec: Option<f32> = None;
-    //                 if simplified_data_points.len() != 0 {
-    //                     acc = Some(accuracy(&simplified_data_points));
-
-    //                     let (tp, _, fp, fn_) =
-    //                         calculate_overall_confusion_matrix(&simplified_data_points);
-    //                     if can_calculate_recall(tp, fn_) {
-    //                         rec = Some(recall(&simplified_data_points));
-    //                     }
-    //                     if can_calculate_precision(tp, fp) {
-    //                         prec = Some(precision(&simplified_data_points));
-    //                     }
-    //                 }
-
-    //                 Metrics {
-    //                     statistical_parity_difference: None,
-    //                     disparate_impact: None,
-    //                     average_odds_difference: None,
-    //                     equal_opportunity_difference: None,
-    //                     average_metrics: AverageMetrics {
-    //                         statistical_parity_difference: None,
-    //                         disparate_impact: None,
-    //                         average_odds_difference: None,
-    //                         equal_opportunity_difference: None,
-    //                     },
-    //                     accuracy: acc,
-    //                     precision: prec,
-    //                     recall: rec,
-    //                     timestamp,
-    //                 }
-    //             }
-    //         };
-
-    //         let (
-    //             change_rate_overall,
-    //             change_rate_sensible_attr0,
-    //             change_rate_sensible_attr1,
-    //             total_sensible_attr0,
-    //             total_sensible_attr1,
-    //         ) = calculate_counter_factual_metrics(&data_points);
-
-    //         let counter_factual = CounterFactualModelEvaluationResult {
-    //             change_rate_overall,
-    //             change_rate_sensible_attributes: vec![
-    //                 change_rate_sensible_attr0,
-    //                 change_rate_sensible_attr1,
-    //             ],
-    //             total_sensible_attributes: vec![total_sensible_attr0, total_sensible_attr1],
-    //             sensible_attribute,
-    //         };
-
-    //         let (queries, invalid_responses, call_errors) = ret;
-
-    //         // Saving metrics
-    //         MODELS.with(|models| {
-    //             let mut models = models.borrow_mut();
-    //             let mut model = models.get(&llm_model_id).expect("Model not found");
-
-    //             let mut model_data = get_llm_model_data(&model);
-
-    //             NEXT_LLM_MODEL_EVALUATION_ID.with(|id| {
-    //                 let mut next_data_point_id = id.borrow_mut();
-
-    //                 model_data.evaluations.push(ModelEvaluationResult {
-    //                     model_evaluation_id: *next_data_point_id.get(),
-    //                     dataset,
-    //                     timestamp,
-    //                     // Left here in case we want to use data_points for normal models
-    //                     data_points: None,
-    //                     metrics: metrics.clone(),
-    //                     queries,
-    //                     max_queries,
-    //                     max_errors,
-    //                     invalid_responses,
-    //                     errors: call_errors,
-    //                     seed,
-    //                     llm_data_points: Some(data_points),
-    //                     privileged_map: privileged_map
-    //                         .into_iter()
-    //                         .map(|(key, value)| KeyValuePair { key, value })
-    //                         .collect(),
-    //                     prompt_template: Some(prompt_template.clone()),
-    //                     counter_factual: Some(counter_factual.clone()),
-    //                     finished: true,
-    //                     canceled: false,
-    //                     job_id: None,
-    //                 });
-
-    //                 let current_id = *next_data_point_id.get();
-    //                 next_data_point_id.set(current_id + 1).unwrap();
-    //             });
-
-    //             model.model_type = ModelType::LLM(model_data);
-    //             models.insert(llm_model_id, model);
-    //         });
-
-    //         job_complete(job_id, llm_model_id);
-
-    //         Ok(LLMMetricsAPIResult {
-    //             metrics,
-    //             queries,
-    //             invalid_responses,
-    //             call_errors,
-    //             counter_factual: Some(counter_factual),
-    //         })
-    //     }
-    //     Err(e) => {
-    //         ic_cdk::eprintln!("An error has ocurred when running metrics: {}", e);
-    //         job_fail(job_id, llm_model_id);
-    //         return Err(e);
-    //     }
-    // }
 }
 
 /// Calculates average LLM fairness metrics for a model
@@ -1482,6 +1294,95 @@ pub async fn average_llm_metrics(
     }
 }
 
+pub fn average_llm_metrics_as_job(
+    llm_model_id: u128,
+    job_ids: Vec<u128>,
+) -> Result<u128, String> {
+
+    let job_id = create_job_with_job_type(llm_model_id, JobType::AverageFairness {
+        job_dependencies: job_ids,
+    });
+
+    Ok(job_id)
+}
+
+pub fn process_average_llm_metrics_from_job(avg_job: &Job, job_dependencies: Vec<u128>) -> Result<bool, String> {
+    let llm_model_id = avg_job.model_id;
+    ic_cdk::println!("Calling average_llm_metrics for model {}", llm_model_id);
+
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err.to_string());
+    }
+    let model = model.unwrap();
+
+    let model_data = get_llm_model_data(&model);
+
+    // first, we check that there are metrics for all the required datasets
+    let mut avg_fairness_metrics = AverageLLMFairnessMetrics::new(llm_model_id);
+
+    for job_id in job_dependencies {
+        let job = get_job(job_id);
+        let job = if let Some(_job) = &job {
+            _job
+        } else {
+            return Err(format!("No job with id = {} found.", job_id));
+        };
+
+        if job.status != JOB_STATUS_COMPLETED {
+            let error = format!("Job with id = {} has status = {}, exected status = {}", job_id, &job.status, JOB_STATUS_COMPLETED);
+            ic_cdk::eprintln!("{}", &error);
+            internal_job_fail(avg_job.id, llm_model_id, Some(error));
+            return Ok(true);
+        }
+
+        let evaluation_id = if let JobType::LLMFairness { model_evaluation_id } = &job.job_type {
+            model_evaluation_id
+        } else {
+            let error = "Wrong job type. job_type should be LLMFairness".to_string();
+            ic_cdk::eprintln!("{}", &error);
+            internal_job_fail(avg_job.id, llm_model_id, Some(error));
+            return Ok(true);
+        };
+
+        let evaluation = model_data
+            .evaluations.iter().find(|e| e.model_evaluation_id == *evaluation_id);
+
+        match evaluation {
+            Some(ev) => {
+                avg_fairness_metrics.add_metrics(&ev);
+            },
+            None => {
+                let error = format!("Evaluation with id = {} does not exist for model with id = {}", evaluation_id, llm_model_id);
+                ic_cdk::eprintln!("{}", &error);
+                internal_job_fail(avg_job.id, llm_model_id, Some(error));
+                return Ok(true);
+            },
+        }
+    }
+
+    // calculating average LLM fairness metrics
+    avg_fairness_metrics.finalize_averages();
+
+    ic_cdk::println!("Average metrics calculated:");
+    ic_cdk::println!("{}", &avg_fairness_metrics);
+
+    // saving model
+    MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let mut model = models.get(&llm_model_id).unwrap();
+        let mut model_data = get_llm_model_data(&model);
+        model_data.average_fairness_metrics = Some(avg_fairness_metrics.clone());
+
+        model.model_type = ModelType::LLM(model_data);
+        models.insert(llm_model_id, model);
+    });
+
+    internal_job_complete(avg_job.id, llm_model_id);
+
+    Ok(true)
+}
+
 /// Returns a list of available datasets with their row counts
 /// Each tuple contains (dataset_name, test_rows)
 #[query]
@@ -1503,68 +1404,70 @@ pub async fn llm_fairness_datasets() -> Vec<(String, usize)> {
 }
 
 /// Calculates LLM metrics using all the datasets, and averages the results.
-// #[update]
-// pub async fn calculate_all_llm_metrics(
-//     llm_model_id: u128,
-//     max_queries: usize,
-//     seed: u32,
-//     max_errors: u32,
-// ) -> Result<LLMMetricsAPIResult, String> {
-//     only_admin();
-//     check_cycles_before_action();
+/// Returns a list of jobs, one for each dataset or average metrics.
+#[update]
+pub async fn calculate_all_llm_metrics(
+    llm_model_id: u128,
+    max_queries: usize,
+    seed: u32,
+    max_errors: u32,
+) -> Result<Vec<u128>, String> {
+    only_admin();
+    check_cycles_before_action();
 
-//     let caller = ic_cdk::api::caller();
+    let caller = ic_cdk::api::caller();
 
-//     // Check the model exists and is a LLM
-//     let model = get_model_from_memory(llm_model_id);
-//     if let Err(err) = model {
-//         return Err(err.to_string());
-//     }
-//     let model = model.unwrap();
-//     is_owner(&model, caller);
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err.to_string());
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
 
-//     if !matches!(model.model_type, ModelType::LLM(_)) {
-//         return Err("Model should be a LLM".to_string());
-//     }
+    if !matches!(model.model_type, ModelType::LLM(_)) {
+        return Err("Model should be a LLM".to_string());
+    }
 
-//     let dataset_names: Vec<String> = llm_fairness_datasets()
-//         .await
-//         .into_iter()
-//         .map(|ds| ds.0)
-//         .collect();
-//     let mut last_result: Option<LLMMetricsAPIResult> = None;
+    let dataset_names: Vec<String> = llm_fairness_datasets()
+        .await
+        .into_iter()
+        .map(|ds| ds.0)
+        .collect();
+    
+    let mut jobs = Vec::<u128>::new();
 
-//     for dataset in &dataset_names {
-//         ic_cdk::println!(
-//             "Calculating LLM metrics for model {} for dataset {}",
-//             llm_model_id,
-//             dataset.clone()
-//         );
-//         let job_id = create_job(llm_model_id);
-//         let result = calculate_llm_metrics(
-//             llm_model_id,
-//             dataset.clone(),
-//             max_queries,
-//             seed,
-//             max_errors,
-//             job_id,
-//         )
-//         .await;
-//         if result.is_err() {
-//             return result; // If any error occurs return it immediately
-//         }
-//         last_result = result.ok();
-//     }
+    for dataset in &dataset_names {
+        ic_cdk::println!(
+            "Calculating LLM metrics for model {} for dataset {}",
+            llm_model_id,
+            dataset.clone()
+        );
+        let result = calculate_llm_metrics(
+            llm_model_id,
+            dataset.clone(),
+            max_queries,
+            seed,
+            max_errors,
+        ).await;
 
-//     if let Some(metrics_result) = last_result {
-//         average_llm_metrics(llm_model_id, dataset_names)
-//             .await
-//             .map_err(|err| format!("Error calculating average metrics: {}", err))
-//             .map(|_| metrics_result)
-//     } else {
-//         Err("No datasets processed, metrics could not be calculated.".to_string())
-//     }
-// }
+        match result {
+            Err(err_str) => {
+                // TODO: should we cancel previous jobs?
+                return Err(err_str)
+            },
+            Ok(job_id) => jobs.push(job_id),
+        }
+    }
+
+    let average_llm_metrics_job_id = average_llm_metrics_as_job(llm_model_id, jobs.clone())?;
+
+    // TODO: should we cancel previous jobs if this one fails??
+
+    jobs.push(average_llm_metrics_job_id);
+
+    return Ok(jobs);
+}
 
 #[query]
 pub async fn get_llm_fairness_data_points(

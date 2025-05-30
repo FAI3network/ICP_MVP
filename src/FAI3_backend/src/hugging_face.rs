@@ -194,7 +194,7 @@ pub async fn call_hugging_face(
     });
 
     ic_cdk::println!("Endpoint url: {}", url);
-    ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
+    // ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
 
     let request_arg = CanisterHttpRequestArgument {
         url,
@@ -221,13 +221,13 @@ pub async fn call_hugging_face(
         ));
     }
 
-    ic_cdk::println!("Json response: {}", String::from_utf8_lossy(&response.body));
+    // ic_cdk::println!("Json response: {}", String::from_utf8_lossy(&response.body));
 
     // 1) Parse raw bytes into a `serde_json::Value`
-    let json_val: serde_json::Value =
+    // let json_val: serde_json::Value =
         serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
 
-    ic_cdk::println!("HF response: {}", &json_val);
+    // ic_cdk::println!("HF response: {}", &json_val);
 
     return provider.get_response_text(&response.body);
 }
