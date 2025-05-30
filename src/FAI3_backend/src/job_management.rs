@@ -191,7 +191,7 @@ pub fn get_job_by_owner(owner_id: Principal) -> Vec<Job> {
 }
 
 // Internal job methods (do not require admin, which fails on timers, and are not exposed)
-pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128) {
+pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, status_detail: Option<String>) {
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
         if let Some(job) = jobs.get(&job_id) {
@@ -201,21 +201,26 @@ pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128) 
 
             let mut updated_job = job.clone();
             updated_job.status = status;
+
+            if let Some(sts_detail) = status_detail {
+                updated_job.status_detail = Some(sts_detail);
+            }
+            
             jobs.insert(job_id, updated_job);
         }
     });
 }
 
-pub fn internal_job_fail(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id);
+pub fn internal_job_fail(job_id: u128, model_id: u128, error_detail: Option<String>) {
+    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id, error_detail);
 }
 
 pub fn internal_job_complete(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id);
+    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id, None);
 }
 
 pub fn internal_job_in_progress(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id);
+    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None);
 }
 
 // JOB QUEUE
@@ -301,6 +306,9 @@ pub async fn process_job_queue() {
     let is_evaluation_finished = match job.job_type {
         JobType::LLMFairness { model_evaluation_id } => {
             crate::llm_fairness::llm_metrics_process_next_query(job.model_id, model_evaluation_id, &job).await
+        },
+        JobType::AverageFairness { ref job_dependencies } => {
+            crate::llm_fairness::process_average_llm_metrics_from_job(&job, job_dependencies.clone())
         },
         _ => {
             ic_cdk::println!("Job type not supported yet.");

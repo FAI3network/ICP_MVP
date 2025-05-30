@@ -223,6 +223,38 @@ pub struct AverageLLMFairnessMetrics {
     pub model_evaluation_ids: Vec<u128>,
 }
 
+impl std::fmt::Display for AverageLLMFairnessMetrics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "AverageLLMFairnessMetrics {{ \
+             model_id: {}, \
+             statistical_parity_difference: {:.4}, \
+             disparate_impact: {:.4}, \
+             average_odds_difference: {:.4}, \
+             equal_opportunity_difference: {:.4}, \
+             accuracy: {:.4}, \
+             precision: {:.4}, \
+             recall: {:.4}, \
+             counter_factual_overall_change_rate: {:.4}, \
+             model_evaluation_ids: {:?} \
+             }}",
+            self.model_id,
+            self.statistical_parity_difference,
+            self.disparate_impact,
+            self.average_odds_difference,
+            self.equal_opportunity_difference,
+            self.accuracy,
+            self.precision,
+            self.recall,
+            self.counter_factual_overall_change_rate,
+            self.model_evaluation_ids
+        )
+    }
+}
+
+// TODO: implement display
+
 impl AverageLLMFairnessMetrics {
     // New function initializing with last_computed_evaluation_id as None
     pub fn new(model_id: u128) -> Self {

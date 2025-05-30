@@ -20,7 +20,7 @@ use errors::GenericError;
 use ic_cdk_macros::*;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    Cell, DefaultMemoryImpl, StableBTreeMap, StableVec,
+    Cell, DefaultMemoryImpl, StableBTreeMap,
 };
 use std::cell::RefCell;
 
