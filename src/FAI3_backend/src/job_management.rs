@@ -1,13 +1,20 @@
 use candid::Principal;
-
-use crate::types::{Job, JobType};
+use crate::types::{Job, JobType, JobProgress};
 use crate::{only_admin, JOBS, NEXT_JOB_ID, LAST_PROCESSED_JOB_ID};
+use std::cell::RefCell;
 
 pub const JOB_STATUS_PENDING: &str = "Pending";
 pub const JOB_STATUS_IN_PROGRESS: &str = "In Progress";
 pub const JOB_STATUS_COMPLETED: &str = "Completed";
 pub const JOB_STATUS_FAILED: &str = "Failed";
 pub const JOB_STATUS_STOPPED: &str = "Stopped";
+pub const JOB_STATUS_PAUSED: &str = "Paused";
+
+const QUEUE_CYCLE_THRESHOLD: u64 = 40_000_000_000;
+
+thread_local! {
+    static QUEUE_BUSY: RefCell<bool> = RefCell::new(false);
+}
 
 #[ic_cdk::update]
 pub fn create_job(model_id: u128) -> u128 {
@@ -30,6 +37,7 @@ pub fn create_job(model_id: u128) -> u128 {
         timestamp: ic_cdk::api::time(),
         job_type: JobType::Unassigned,
         status_detail: None,
+        progress: Default::default(),
     };
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
@@ -39,7 +47,7 @@ pub fn create_job(model_id: u128) -> u128 {
     job.id
 }
 
-pub fn create_job_with_job_type(model_id: u128, job_type: JobType) -> u128 {
+pub fn create_job_with_job_type(model_id: u128, job_type: JobType, max_queries: usize) -> u128 {
     let id = NEXT_JOB_ID.with(|id| {
         let current_id = *id.borrow().get();
 
@@ -58,6 +66,10 @@ pub fn create_job_with_job_type(model_id: u128, job_type: JobType) -> u128 {
         timestamp: ic_cdk::api::time(),
         job_type,
         status_detail: None,
+        progress: JobProgress {
+            completed: 0,
+            target: max_queries,
+        },
     };
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
@@ -191,7 +203,7 @@ pub fn get_job_by_owner(owner_id: Principal) -> Vec<Job> {
 }
 
 // Internal job methods (do not require admin, which fails on timers, and are not exposed)
-pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, status_detail: Option<String>) {
+pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, status_detail: Option<String>, completed: Option<usize>) {
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
         if let Some(job) = jobs.get(&job_id) {
@@ -205,6 +217,12 @@ pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, 
             if let Some(sts_detail) = status_detail {
                 updated_job.status_detail = Some(sts_detail);
             }
+
+            if let Some(_completed) = completed {
+                updated_job.progress.completed = _completed;
+
+                ic_cdk::println!("Saving progress for job {}: {}/{}", job.id, _completed, job.progress.target);
+            }
             
             jobs.insert(job_id, updated_job);
         }
@@ -212,15 +230,15 @@ pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, 
 }
 
 pub fn internal_job_fail(job_id: u128, model_id: u128, error_detail: Option<String>) {
-    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id, error_detail);
+    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id, error_detail, None);
 }
 
 pub fn internal_job_complete(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id, None);
+    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id, None, None);
 }
 
-pub fn internal_job_in_progress(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None);
+pub fn internal_job_in_progress(job_id: u128, model_id: u128, completed: usize) {
+    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None, Some(completed));
 }
 
 // JOB QUEUE
@@ -235,7 +253,35 @@ pub fn restart_job_queue() {
 pub fn bootstrap_job_queue() {
     ic_cdk_timers::set_timer(
         core::time::Duration::from_secs(1),
-        || ic_cdk::spawn(crate::job_management::process_job_queue()));
+        || {
+            // Check if the queue is already processing
+            let already_busy = QUEUE_BUSY.with(|busy| {
+                let is_busy = *busy.borrow();
+                if !is_busy {
+                    *busy.borrow_mut() = true;
+                    false
+                } else {
+                    true
+                }
+            });
+
+            if !already_busy {
+                ic_cdk::spawn(async {
+
+                    crate::job_management::process_job_queue().await;
+
+                    // Release the lock when done
+                    QUEUE_BUSY.with(|busy| {
+                        *busy.borrow_mut() = false;
+                    });
+                });
+
+            } else {
+                ic_cdk::println!("Queue already processing, skipping this run");
+            }
+             
+        }
+    );
 }
 
 pub fn get_next_unfinished_job() -> Option<Job> {
@@ -288,6 +334,12 @@ pub fn increment_last_processed_job_id() -> u128 {
 /// are in each module. The queue just calls the modules
 /// And updates the last_processed_job memory number.
 pub async fn process_job_queue() {
+    // If balance is low, then we stop the queue
+    let cycles: u64 = ic_cdk::api::canister_balance();
+    if cycles < QUEUE_CYCLE_THRESHOLD {
+        ic_cdk::println!("Cycle balance too low, stopping execution to avoid canister deletion.");
+        return;
+    }
 
     let job = get_next_unfinished_job();
 
@@ -300,7 +352,12 @@ pub async fn process_job_queue() {
 
     if job.status == JOB_STATUS_PENDING {
         ic_cdk::println!("Starting job {}", job.id);
-        internal_job_in_progress(job.id, job.model_id);
+        internal_job_in_progress(job.id, job.model_id, 0);
+    }
+
+    if job.status == JOB_STATUS_PAUSED {
+        ic_cdk::println!("Job with id = {} has status = PAUSED. Set it to pending again to restore the queue processing", job.id);
+        return;
     }
 
     let is_evaluation_finished = match job.job_type {
@@ -311,7 +368,7 @@ pub async fn process_job_queue() {
             crate::llm_fairness::process_average_llm_metrics_from_job(&job, job_dependencies.clone())
         },
         _ => {
-            ic_cdk::println!("Job type not supported yet.");
+            ic_cdk::println!("Job type not supported yet. Ignoring it.");
             Ok(true)
         },
     };

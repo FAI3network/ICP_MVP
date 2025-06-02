@@ -5,7 +5,7 @@ use crate::hugging_face::call_hugging_face;
 use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::job_management::{
     create_job_with_job_type, bootstrap_job_queue,
-    internal_job_complete, internal_job_fail,
+    internal_job_complete, internal_job_fail, internal_job_in_progress,
     JOB_STATUS_COMPLETED, get_job,
 };
 use crate::metrics_calculation::{
@@ -377,7 +377,6 @@ pub fn build_prompts(
 async fn run_metrics_calculation(
     hf_data: HuggingFaceConfig,
     seed: u32,
-    max_queries: usize,
     train_csv: &str,
     test_csv: &str,
     _cf_test_csv: &str,
@@ -387,10 +386,9 @@ async fn run_metrics_calculation(
     sensible_attribute_values: &[&str; 2],
     predict_attributes_values: &[&str; 2],
     binarized_sensible_attribute_column: Option<&str>,
-    max_errors: u32,
     dataset_subject_label: &str,
     queries: usize,
-) -> Result<(usize, u32, u32, LLMDataPoint), String> {
+) -> Result<(u32, u32, LLMDataPoint), String> {
     // Create a CSV reader from the string input rather than a file path
     let mut rdr = csv::ReaderBuilder::new().from_reader(train_csv.as_bytes());
 
@@ -463,8 +461,6 @@ async fn run_metrics_calculation(
     //     return Err("Job stopped by user".to_string());
     // }
 
-    ic_cdk::println!("Executing query {}/{}", queries, max_queries);
-
     // data_point_ids are indices for this type of data
     let data_point_id = queries as u128;
     
@@ -487,7 +483,7 @@ async fn run_metrics_calculation(
 
     data_point.data_point_id = data_point_id;
 
-    Ok((queries, wrong_resp_delta, call_err_delta, data_point))
+    Ok((wrong_resp_delta, call_err_delta, data_point))
 }
 
 /// Does a LLM fairness call
@@ -607,8 +603,7 @@ pub async fn run_single_query_llm_call(
                 seed,
                 Some(hf_parameters.clone()),
                 &hf_data.inference_provider,
-            )
-                .await;
+            ).await;
 
             let counter_factual: LLMDataPointCounterFactual = match res_cf {
                 Ok(val) => {
@@ -616,7 +611,7 @@ pub async fn run_single_query_llm_call(
                     // Because we might be losing some differences
                     let trimmed_response_cf = crate::utils::clean_llm_response(&val);
                     let response_cf: Result<bool, String> = {
-                        ic_cdk::println!("Response CF: {}", trimmed_response_cf.to_string());
+                        // ic_cdk::println!("Response CF: {}", trimmed_response_cf.to_string());
 
                         if trimmed_response_cf == predict_attributes_values[1] {
                             Result::Ok(true)
@@ -795,15 +790,7 @@ pub fn calculate_counter_factual_metrics(
 ///
 /// Returns true if it finished the work with this JOB, and false if there is still remaining job to be done in this evaluation.
 /// Returns Err only if there is a general configuration error that requires the queue to be stopped.
-pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation_id: u128, job: &Job) -> Result<bool, String> {
-    
-    // let should_stop = check_job_stopped(job_id);
-
-    // if should_stop {
-    //     ic_cdk::println!("Job stopped by user");
-    //     return Err("Job stopped by user".to_string());
-    // }
-    
+pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation_id: u128, job: &Job) -> Result<bool, String> {    
     ic_cdk::println!("Loading LLMFairness evaluation data: {} of model {}", model_evaluation_id, llm_model_id);
 
     let model = get_model_from_memory(llm_model_id);
@@ -1004,7 +991,6 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
         let res = run_metrics_calculation(
             hf_data,
             model_evaluation.seed,
-            max_queries,
             train_csv,
             test_csv,
             cf_test_csv,
@@ -1014,25 +1000,25 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
             ds.sensible_attribute_values,
             ds.predict_attributes_values,
             ds.binarized_sensible_attribute_column,
-            model_evaluation.max_errors,
             ds.dataset_subject_label,
             current_queries).await;
 
         match res {
-            Ok((updated_queries, updated_wrong_responses, updated_call_errors, data_point)) => {
+            Ok((updated_wrong_responses, updated_call_errors, data_point)) => {
                 // Update the model evaluation with the new values
-                MODELS.with(|models| {
+                let job_is_finished = MODELS.with(|models| {
                     let mut models = models.borrow_mut();
                     let mut model = models.get(&llm_model_id).expect("Model not found");
                     let mut model_data = get_llm_model_data(&model);
                     
                     let evaluation = &mut model_data.evaluations[model_evaluation_index];
-                    
-                    evaluation.queries += 1;
+
+                    let current_queries = evaluation.queries;
+                    evaluation.queries = current_queries + 1;
                     evaluation.invalid_responses = evaluation.invalid_responses + updated_wrong_responses;
                     evaluation.errors = evaluation.errors + updated_call_errors;
 
-                    ic_cdk::println!("updated queries: {}, inv responses: {}, errors: {}", evaluation.queries, evaluation.invalid_responses, evaluation.errors);
+                    // ic_cdk::println!("updated queries: {}, inv responses: {}, errors: {}", evaluation.queries, evaluation.invalid_responses, evaluation.errors);
 
                     match &mut evaluation.llm_data_points {
                         Some(vector) => {
@@ -1047,15 +1033,26 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     if evaluation.max_errors > 0 && evaluation.errors > evaluation.max_errors {
                         let error = format!("Max errors count reached: {}. Run will finish early.", evaluation.max_errors);
                         ic_cdk::eprintln!("{}", &error);
+                        evaluation.canceled = true;
                         evaluation.finished = true;
                         internal_job_fail(job.id, llm_model_id, Some(error));
+
+                        model.model_type = ModelType::LLM(model_data);
+                        models.insert(llm_model_id, model);
+
+                        return true;
                     }
+
+                    // We save the number of completed queries, not the index
+                    internal_job_in_progress(job.id, llm_model_id, current_queries + 1);
                     
                     model.model_type = ModelType::LLM(model_data);
                     models.insert(llm_model_id, model);
+
+                    return false;
                 });
 
-                return Ok(false);
+                return Ok(job_is_finished);
             },
             Err(error_str) => {
                 let error = format!("An error has ocurred: {}. Canceling job with id = {}", &error_str, job.id);
@@ -1076,6 +1073,7 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     
                     evaluation.llm_data_points = model_evaluation.llm_data_points.clone();
 
+                    evaluation.canceled = true;
                     evaluation.finished = true;
                     
                     model.model_type = ModelType::LLM(model_data);
@@ -1159,7 +1157,7 @@ pub async fn calculate_llm_metrics(
 
                     let job_id = create_job_with_job_type(llm_model_id, JobType::LLMFairness {
                         model_evaluation_id: *next_data_point_id.get(),
-                    });
+                    }, max_queries);  // TODO: when is 0, use real number
 
                     model_data.evaluations.push(ModelEvaluationResult {
                         model_evaluation_id: *next_data_point_id.get(),
@@ -1301,7 +1299,7 @@ pub fn average_llm_metrics_as_job(
 
     let job_id = create_job_with_job_type(llm_model_id, JobType::AverageFairness {
         job_dependencies: job_ids,
-    });
+    }, 1);
 
     Ok(job_id)
 }

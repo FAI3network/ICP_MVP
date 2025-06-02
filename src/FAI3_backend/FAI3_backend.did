@@ -6,6 +6,11 @@ type JobType = variant {
     Unassigned;
 };
 
+type JobProgress = record {
+    completed: nat64;
+    target: nat64;
+};
+
 type Job = record {
   id: nat;
   model_id: nat;
@@ -14,6 +19,7 @@ type Job = record {
   status_detail: opt text;
   timestamp: nat64;
   job_type: JobType;
+  progress: JobProgress;
 };
 
 type DataPoint = record {
