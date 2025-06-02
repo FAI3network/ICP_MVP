@@ -9,6 +9,8 @@ type JobType = variant {
 type JobProgress = record {
     completed: nat64;
     target: nat64;
+    call_errors: nat64;
+    invalid_responses: nat64;
 };
 
 type Job = record {

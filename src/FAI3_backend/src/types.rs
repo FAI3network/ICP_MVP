@@ -12,6 +12,8 @@ pub type PrivilegedMap = HashMap<String, u128>;
 pub struct JobProgress {
     pub completed: usize,
     pub target: usize,
+    pub invalid_responses: usize,
+    pub call_errors: usize,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -49,6 +51,8 @@ impl Storable for Job {
                     progress: JobProgress {
                         completed: 0,
                         target: 0,
+                        invalid_responses: 0,
+                        call_errors: 0,
                     }
                 }
             }

@@ -1018,8 +1018,6 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     evaluation.invalid_responses = evaluation.invalid_responses + updated_wrong_responses;
                     evaluation.errors = evaluation.errors + updated_call_errors;
 
-                    // ic_cdk::println!("updated queries: {}, inv responses: {}, errors: {}", evaluation.queries, evaluation.invalid_responses, evaluation.errors);
-
                     match &mut evaluation.llm_data_points {
                         Some(vector) => {
                             vector.push(data_point);
@@ -1044,7 +1042,10 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     }
 
                     // We save the number of completed queries, not the index
-                    internal_job_in_progress(job.id, llm_model_id, current_queries + 1);
+                    internal_job_in_progress(job.id, llm_model_id,
+                                             current_queries + 1,
+                                             evaluation.invalid_responses as usize,
+                                             evaluation.errors as usize);
                     
                     model.model_type = ModelType::LLM(model_data);
                     models.insert(llm_model_id, model);

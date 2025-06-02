@@ -69,6 +69,8 @@ pub fn create_job_with_job_type(model_id: u128, job_type: JobType, max_queries: 
         progress: JobProgress {
             completed: 0,
             target: max_queries,
+            invalid_responses: 0,
+            call_errors: 0,
         },
     };
     JOBS.with(|jobs| {
@@ -203,7 +205,11 @@ pub fn get_job_by_owner(owner_id: Principal) -> Vec<Job> {
 }
 
 // Internal job methods (do not require admin, which fails on timers, and are not exposed)
-pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, status_detail: Option<String>, completed: Option<usize>) {
+pub fn internal_update_job_status(job_id: u128, status: String,
+                                  model_id: u128, status_detail: Option<String>,
+                                  completed: Option<usize>,
+                                  invalid_responses: Option<usize>,
+                                  call_errors: Option<usize>) {
     JOBS.with(|jobs| {
         let mut jobs = jobs.borrow_mut();
         if let Some(job) = jobs.get(&job_id) {
@@ -218,10 +224,19 @@ pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, 
                 updated_job.status_detail = Some(sts_detail);
             }
 
+            // Progress information
             if let Some(_completed) = completed {
                 updated_job.progress.completed = _completed;
 
                 ic_cdk::println!("Saving progress for job {}: {}/{}", job.id, _completed, job.progress.target);
+            }
+            if let Some(_invalid_responses) = invalid_responses {
+                updated_job.progress.invalid_responses = _invalid_responses;
+
+            }
+            if let Some(_call_errors) = call_errors {
+                updated_job.progress.call_errors = _call_errors;
+
             }
             
             jobs.insert(job_id, updated_job);
@@ -230,15 +245,15 @@ pub fn internal_update_job_status(job_id: u128, status: String, model_id: u128, 
 }
 
 pub fn internal_job_fail(job_id: u128, model_id: u128, error_detail: Option<String>) {
-    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id, error_detail, None);
+    internal_update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id, error_detail, None, None, None);
 }
 
 pub fn internal_job_complete(job_id: u128, model_id: u128) {
-    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id, None, None);
+    internal_update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id, None, None, None, None);
 }
 
-pub fn internal_job_in_progress(job_id: u128, model_id: u128, completed: usize) {
-    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None, Some(completed));
+pub fn internal_job_in_progress(job_id: u128, model_id: u128, completed: usize, invalid_responses: usize, call_errors: usize) {
+    internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None, Some(completed), Some(invalid_responses), Some(call_errors));
 }
 
 // JOB QUEUE
@@ -352,7 +367,7 @@ pub async fn process_job_queue() {
 
     if job.status == JOB_STATUS_PENDING {
         ic_cdk::println!("Starting job {}", job.id);
-        internal_job_in_progress(job.id, job.model_id, 0);
+        internal_job_in_progress(job.id, job.model_id, 0, 0, 0);
     }
 
     if job.status == JOB_STATUS_PAUSED {
