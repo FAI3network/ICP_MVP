@@ -8,6 +8,12 @@ use std::collections::HashMap;
 
 pub type PrivilegedMap = HashMap<String, u128>;
 
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq, Default)]
+pub struct JobProgress {
+    pub completed: usize,
+    pub target: usize,
+}
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct Job {
     pub id: u128,
@@ -17,6 +23,7 @@ pub struct Job {
     pub timestamp: u64,
     pub job_type: JobType,
     pub status_detail: Option<String>,
+    pub progress: JobProgress,
 }
 
 impl Storable for Job {
@@ -39,6 +46,10 @@ impl Storable for Job {
                     timestamp: 0,
                     job_type: JobType::Unassigned,
                     status_detail: None,
+                    progress: JobProgress {
+                        completed: 0,
+                        target: 0,
+                    }
                 }
             }
         }

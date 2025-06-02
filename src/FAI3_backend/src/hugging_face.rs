@@ -225,7 +225,7 @@ pub async fn call_hugging_face(
 
     // 1) Parse raw bytes into a `serde_json::Value`
     // let json_val: serde_json::Value =
-        serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
+    //    serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
 
     // ic_cdk::println!("HF response: {}", &json_val);
 
