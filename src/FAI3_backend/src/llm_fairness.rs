@@ -844,12 +844,12 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
 
     // Get current progress
     let current_queries = model_evaluation.queries;
-    let max_queries = model_evaluation.max_queries;
 
     // First, we check if we need to close the job and the evaluation
     
-    // TODO: do the case in which max_queries == 0
-    if max_queries > 0 && current_queries >= max_queries {
+    // job.progress.target is used here because max_queries sometimes can be 0
+    // job.progress.target contains the real number of queries to be executed
+    if current_queries >= job.progress.target {
         // Job is complete
         MODELS.with(|models| {
             let mut models = models.borrow_mut();
@@ -1140,11 +1140,12 @@ pub async fn calculate_llm_metrics(
 
     let data_points: Vec<LLMDataPoint> = Vec::new();
 
-    let privileged_map = PrivilegedMap::new();
+    let privileged_map = PrivilegedMap::new();        
 
     for item in LLMFAIRNESS_DATASETS.iter().enumerate() {
         let (_, ds) = item;
         if ds.name == dataset.as_str() {
+            
             let prompt_template = String::from(ds.prompt_template);
 
             let created_job = MODELS.with(|models| {
@@ -1156,9 +1157,21 @@ pub async fn calculate_llm_metrics(
                 let job_id = NEXT_LLM_MODEL_EVALUATION_ID.with(|id| {
                     let mut next_data_point_id = id.borrow_mut();
 
+                    let job_queries_target = if max_queries == 0 {
+                        let mut test_rdr = csv::ReaderBuilder::new().from_reader(ds.test_csv.as_bytes());
+                        let test_records: Vec<HashMap<String, String>> = test_rdr
+                            .deserialize()
+                            .collect::<Result<Vec<HashMap<String, String>>, _>>()
+                            .expect("Collecting test_recods shouldn't fail");
+                        let dataset_rows = test_records.len() - 1;
+                        dataset_rows
+                    } else {
+                        max_queries
+                    };
+
                     let job_id = create_job_with_job_type(llm_model_id, JobType::LLMFairness {
                         model_evaluation_id: *next_data_point_id.get(),
-                    }, max_queries);  // TODO: when is 0, use real number
+                    }, job_queries_target);
 
                     model_data.evaluations.push(ModelEvaluationResult {
                         model_evaluation_id: *next_data_point_id.get(),
@@ -1365,6 +1378,8 @@ pub fn process_average_llm_metrics_from_job(avg_job: &Job, job_dependencies: Vec
 
     ic_cdk::println!("Average metrics calculated:");
     ic_cdk::println!("{}", &avg_fairness_metrics);
+
+    internal_job_in_progress(avg_job.id, avg_job.model_id, 1, 0, 0);
 
     // saving model
     MODELS.with(|models| {

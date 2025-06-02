@@ -10,7 +10,11 @@ pub type PrivilegedMap = HashMap<String, u128>;
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq, Default)]
 pub struct JobProgress {
+    /// Number of completed iterations of progress.
     pub completed: usize,
+    /// Number of target iterations to be reached.
+    /// This is usually the same as queries, although some queries can be ignored for
+    /// this count, like counter factual queries.
     pub target: usize,
     pub invalid_responses: usize,
     pub call_errors: usize,
