@@ -3,7 +3,7 @@ use crate::errors::GenericError;
 use crate::get_model_from_memory;
 use crate::hugging_face::call_hugging_face;
 use crate::job_management::{
-    check_job_stopped, create_job, job_complete, job_fail, job_in_progress,
+    check_job_stopped, job_complete, job_fail, job_in_progress,
 };
 use crate::types::{
     get_llm_model_data, ContextAssociationTestAPIResult, ContextAssociationTestDataPoint,
