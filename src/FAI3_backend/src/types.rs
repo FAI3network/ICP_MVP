@@ -610,10 +610,13 @@ pub struct ContextAssociationTestMetricsBag {
     pub error_count: u32,
     pub error_rate: f32,
     pub total_queries: u32,
+    pub max_queries: usize,
     pub timestamp: u64,
     pub intrasentence_prompt_template: String,
     pub intersentence_prompt_template: String,
     pub seed: u32,
+    pub shuffle_questions: bool,
+    pub max_errors: u32,
     // precalculated fields
     pub icat_score_intra: f32,
     pub icat_score_inter: f32,
@@ -670,31 +673,6 @@ impl Storable for LLMModelData {
     }
 
     const BOUND: Bound = Bound::Unbounded;
-}
-
-#[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone, PartialEq)]
-pub struct ContextAssociationTestAPIResult {
-    pub error_count: u32,
-    pub general_ss: f32,
-    pub general_n: u32,
-    pub general_lms: f32,
-    pub general: ContextAssociationTestMetrics,
-    pub icat_score_general: f32,
-    pub icat_score_gender: f32,
-    pub icat_score_religion: f32,
-    pub icat_score_profession: f32,
-    pub icat_score_race: f32,
-    pub icat_score_intra: f32,
-    pub icat_score_inter: f32,
-}
-
-#[derive(Debug, CandidType, CandidDeserialize, Clone)]
-pub struct LLMMetricsAPIResult {
-    pub metrics: Metrics,
-    pub queries: usize,
-    pub invalid_responses: u32,
-    pub call_errors: u32,
-    pub counter_factual: Option<CounterFactualModelEvaluationResult>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -798,4 +776,11 @@ impl LanguageEvaluationMetrics {
             }
         }
     }
+}
+
+// Object used to pass configuration to lower methods
+// In a single parameter
+pub struct HuggingFaceConfig {
+    pub hugging_face_url: String,
+    pub inference_provider: Option<String>,
 }
