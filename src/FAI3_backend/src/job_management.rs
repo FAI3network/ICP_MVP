@@ -2,6 +2,7 @@ use candid::Principal;
 use crate::types::{Job, JobType, JobProgress};
 use crate::{only_admin, JOBS, NEXT_JOB_ID, LAST_PROCESSED_JOB_ID};
 use std::cell::RefCell;
+use std::collections::HashSet;
 
 pub const JOB_STATUS_PENDING: &str = "Pending";
 pub const JOB_STATUS_IN_PROGRESS: &str = "In Progress";
@@ -14,6 +15,7 @@ const QUEUE_CYCLE_THRESHOLD: u64 = 40_000_000_000;
 
 thread_local! {
     static QUEUE_BUSY: RefCell<bool> = RefCell::new(false);
+    static STOP_JOB: RefCell<HashSet<u128>> = RefCell::new(HashSet::new());
 }
 
 #[ic_cdk::update]
@@ -160,6 +162,11 @@ pub fn stop_job(job_id: u128) {
             updated_job.status = JOB_STATUS_STOPPED.to_string();
             jobs.insert(job_id, updated_job);
         }
+
+        // This is required to stop projects running on the queue
+        STOP_JOB.with(|stop_jobs| {
+            stop_jobs.borrow_mut().insert(job_id);
+        });
     });
 }
 
@@ -256,6 +263,22 @@ pub fn internal_job_in_progress(job_id: u128, model_id: u128, completed: usize, 
     internal_update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id, None, Some(completed), Some(invalid_responses), Some(call_errors));
 }
 
+pub fn internal_job_stop(job_id: u128, model_id: u128) {
+    internal_update_job_status(job_id, JOB_STATUS_STOPPED.to_string(), model_id, None, None, None, None);
+
+    // Remove it from the queue
+    STOP_JOB.with(|stop_jobs| {
+        stop_jobs.borrow_mut().remove(&job_id);
+    });
+}
+
+pub fn job_should_be_stopped(job_id: u128) -> bool {
+    return STOP_JOB.with(|stop_jobs| {
+        let stop_jobs = stop_jobs.borrow();
+        return stop_jobs.contains(&job_id);
+    });
+}
+
 // JOB QUEUE
 
 /// Inits job queue
@@ -319,6 +342,7 @@ pub fn get_next_unfinished_job() -> Option<Job> {
                 Some(_job) => {
                     if _job.status == JOB_STATUS_PENDING
                         || _job.status == JOB_STATUS_IN_PROGRESS {
+                            // Job status stopped should be handled 
                             return Some(_job);
                         }
                 },
@@ -332,13 +356,15 @@ pub fn get_next_unfinished_job() -> Option<Job> {
     });
 }
 
-pub fn increment_last_processed_job_id() -> u128 {
+pub fn set_last_processed_job_id(job_id: u128) {
     return LAST_PROCESSED_JOB_ID.with(| id | {
         let current_id = *id.borrow().get();
 
-        id.borrow_mut().set(current_id + 1).unwrap();
-
-        current_id + 1
+        if current_id > job_id {
+            ic_cdk::println!("Trying to set a job_id = {} when current last_processed_job_id = {}", job_id, current_id);
+            return;
+        }
+        id.borrow_mut().set(job_id).unwrap();
     });
 }
 
@@ -375,6 +401,8 @@ pub async fn process_job_queue() {
         return;
     }
 
+    ic_cdk::println!("Processing job {}", job.id);
+
     let is_evaluation_finished = match job.job_type {
         JobType::LLMFairness { model_evaluation_id } => {
             crate::llm_fairness::llm_metrics_process_next_query(job.model_id, model_evaluation_id, &job).await
@@ -391,8 +419,8 @@ pub async fn process_job_queue() {
     match is_evaluation_finished {
         Ok(job_finished) => {
             if job_finished {
-                let last_processed_job_id = increment_last_processed_job_id();
-                ic_cdk::println!("Next job to be processed: {}", last_processed_job_id + 1);
+                set_last_processed_job_id(job.id);
+                ic_cdk::println!("Next job to be processed: {}", job.id + 1);
             }
 
             // If there is still work to do, we keep processing the queue

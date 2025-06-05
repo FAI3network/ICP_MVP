@@ -6,7 +6,7 @@ use crate::inference_providers::lib::HuggingFaceRequestParameters;
 use crate::job_management::{
     create_job_with_job_type, bootstrap_job_queue,
     internal_job_complete, internal_job_fail, internal_job_in_progress,
-    JOB_STATUS_COMPLETED, get_job,
+    JOB_STATUS_COMPLETED, get_job, internal_job_stop, job_should_be_stopped,
 };
 use crate::metrics_calculation::{
     accuracy, all_metrics, calculate_group_counts, calculate_overall_confusion_matrix,
@@ -455,11 +455,6 @@ async fn run_metrics_calculation(
     
     // Process just the query at the specified index
     let result = &test_records[queries];
-    
-    // Check if job was stopped before making the call
-    // if check_job_stopped(job_id) {
-    //     return Err("Job stopped by user".to_string());
-    // }
 
     // data_point_ids are indices for this type of data
     let data_point_id = queries as u128;
@@ -792,7 +787,6 @@ pub fn calculate_counter_factual_metrics(
 /// Returns Err only if there is a general configuration error that requires the queue to be stopped.
 pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation_id: u128, job: &Job) -> Result<bool, String> {    
     ic_cdk::println!("Loading LLMFairness evaluation data: {} of model {}", model_evaluation_id, llm_model_id);
-
     let model = get_model_from_memory(llm_model_id);
     
     let model = model.unwrap();
@@ -826,6 +820,30 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
     if model_evaluation.finished || model_evaluation.canceled {
         ic_cdk::println!("Model evaluation already finished. Exiting...");
         return Ok(true); // Nothing more to do
+    }
+
+    if job_should_be_stopped(job.id) {
+        ic_cdk::eprintln!("Job has been stopped while running. Marking LLMFairnessData as finished and cancelled.");
+        internal_job_stop(job.id, job.model_id);
+        
+        MODELS.with(|models| {
+            let mut models = models.borrow_mut();
+            let mut model = models.get(&llm_model_id).expect("Model not found");
+            let mut model_data = get_llm_model_data(&model);
+
+            model_data.evaluations = model_data.evaluations.into_iter().map( |mut e| {
+                if e.model_evaluation_id == model_evaluation_id {
+                    e.canceled = true;
+                    e.finished = true;
+                }
+                e
+            }).collect();
+
+            model.model_type = ModelType::LLM(model_data);
+            models.insert(llm_model_id, model);
+        });
+        
+        return Ok(true);
     }
 
     ic_cdk::println!("Executing query {}/{}", model_evaluation.queries, model_evaluation.max_queries);
@@ -1049,7 +1067,7 @@ pub async fn llm_metrics_process_next_query(llm_model_id: u128, model_evaluation
                     
                     model.model_type = ModelType::LLM(model_data);
                     models.insert(llm_model_id, model);
-
+                    
                     return false;
                 });
 
@@ -1342,7 +1360,7 @@ pub fn process_average_llm_metrics_from_job(avg_job: &Job, job_dependencies: Vec
         };
 
         if job.status != JOB_STATUS_COMPLETED {
-            let error = format!("Job with id = {} has status = {}, exected status = {}", job_id, &job.status, JOB_STATUS_COMPLETED);
+            let error = format!("Job with id = {} has status = {}, expected status = {}", job_id, &job.status, JOB_STATUS_COMPLETED);
             ic_cdk::eprintln!("{}", &error);
             internal_job_fail(avg_job.id, llm_model_id, Some(error));
             return Ok(true);
@@ -1467,7 +1485,6 @@ pub async fn calculate_all_llm_metrics(
 
         match result {
             Err(err_str) => {
-                // TODO: should we cancel previous jobs?
                 return Err(err_str)
             },
             Ok(job_id) => jobs.push(job_id),
@@ -1475,8 +1492,6 @@ pub async fn calculate_all_llm_metrics(
     }
 
     let average_llm_metrics_job_id = average_llm_metrics_as_job(llm_model_id, jobs.clone())?;
-
-    // TODO: should we cancel previous jobs if this one fails??
 
     jobs.push(average_llm_metrics_job_id);
 

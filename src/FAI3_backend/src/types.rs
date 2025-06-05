@@ -272,8 +272,6 @@ impl std::fmt::Display for AverageLLMFairnessMetrics {
     }
 }
 
-// TODO: implement display
-
 impl AverageLLMFairnessMetrics {
     // New function initializing with last_computed_evaluation_id as None
     pub fn new(model_id: u128) -> Self {
