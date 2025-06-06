@@ -47,7 +47,7 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
 
             return (
               <FormItem className="flex flex-col">
-                <FormLabel>Max Queries</FormLabel>
+                <FormLabel>Datasets</FormLabel>
                 <FormControl>
                   <div className="flex flex-row items-center gap-2">
                     <Select
@@ -74,7 +74,7 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
                     )}
                   </div>
                 </FormControl>
-                <FormDescription>Maximum number of queries to run.</FormDescription>
+                <FormDescription>Select datasets to run test on</FormDescription>
                 <FormMessage />
               </FormItem>
             )
