@@ -146,7 +146,7 @@ export default function Navbar() {
                             <PopoverTrigger className="flex flex-row items-center justify-center p-2 text-sm gap-1">
                               <div className="relative group">
                                 <div className="flex flex-row items-center justify-center p-2 text-sm gap-1">
-                                  {workerProcesses.length} <CircularProgress className="size-4" />
+                                  {Object.keys(jobs).length} <CircularProgress className="size-4" />
                                 </div>
                               </div>
                             </PopoverTrigger>

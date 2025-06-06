@@ -3,12 +3,10 @@ use crate::errors::GenericError;
 use crate::get_model_from_memory;
 use crate::hugging_face::call_hugging_face;
 use crate::job_management::{
-    check_job_stopped, job_complete, job_fail, job_in_progress,
+    bootstrap_job_queue, check_job_stopped, create_job_with_job_type, internal_job_stop, job_complete, job_fail, job_in_progress, job_should_be_stopped
 };
 use crate::types::{
-    get_llm_model_data, ContextAssociationTestAPIResult, ContextAssociationTestDataPoint,
-    ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult,
-    ContextAssociationTestType, LLMModelData, ModelType,
+    get_llm_model_data, ContextAssociationTestAPIResult, ContextAssociationTestDataPoint, ContextAssociationTestMetrics, ContextAssociationTestMetricsBag, ContextAssociationTestResult, ContextAssociationTestType, Job, JobType, LLMModelData, ModelType
 };
 use crate::utils::{clean_llm_response, is_owner, seeded_vector_shuffle};
 use crate::{check_cycles_before_action, MODELS, NEXT_LLM_DATA_POINT_ID, NEXT_CONTEXT_ASSOCIATION_TEST_ID};
@@ -757,21 +755,125 @@ pub async fn context_association_test(
     shuffle_questions: bool,
     max_errors: u32,
     job_id: u128,
-) -> Result<ContextAssociationTestAPIResult, GenericError> {
+) -> Result<u128, String> {
     only_admin();
     check_cycles_before_action();
     let caller = ic_cdk::api::caller();
 
-    // Needs to be done this way because Rust doesn't support async closures yet
-    let model_data = MODELS
-        .with(|models| {
-            let models = models.borrow_mut();
-            models.get(&llm_model_id).map(|model| {
-                is_owner(&model, caller);
-                get_llm_model_data(&model)
-            })
-        })
-        .ok_or_else(|| GenericError::new(GenericError::NOT_FOUND, "Model not found"))?;
+    let created_job = MODELS.with(|models| {
+        let mut models = models.borrow_mut();
+        let mut model = models.get(&llm_model_id).expect("Model not found");
+
+        is_owner(&model, caller);
+
+        let mut model_data = get_llm_model_data(&model);
+
+        let job_id = NEXT_CONTEXT_ASSOCIATION_TEST_ID.with(|id| {
+            let mut next_data_point_id = id.borrow_mut();
+            let current_id = *next_data_point_id.get();
+
+            let job_id = create_job_with_job_type(llm_model_id, JobType::ContextAssociationTest { metrics_bag_id: current_id }, max_queries);
+
+            model_data.cat_metrics_history.push(ContextAssociationTestMetricsBag {
+                context_association_test_id: current_id,
+                general: Default::default(),
+                intrasentence: Default::default(),
+                intersentence: Default::default(),
+                gender: Default::default(),
+                race: Default::default(),
+                profession: Default::default(),
+                religion: Default::default(),
+                error_count: 0,
+                error_rate: 0.0,
+                total_queries: 0,
+                intersentence_prompt_template: String::from(CAT_INTERSENTENCE_PROMPT),
+                intrasentence_prompt_template: String::from(CAT_INTRASENTENCE_PROMPT),
+                seed,
+                timestamp: ic_cdk::api::time(),
+                icat_score_intra: Default::default(),
+                icat_score_inter: Default::default(),
+                icat_score_gender: Default::default(),
+                icat_score_race: Default::default(),
+                icat_score_profession: Default::default(),
+                icat_score_religion: Default::default(),
+                general_lms: Default::default(),
+                general_ss: Default::default(),
+                general_n: Default::default(),
+                icat_score_general: Default::default(),
+                data_points: Vec::new(),
+                finished: false,
+                canceled: false,
+                job_id: None,
+                max_queries,
+                max_errors,
+                shuffle: shuffle_questions,
+            });
+
+            next_data_point_id.set(current_id + 1).unwrap();
+
+            return job_id;
+        });
+        
+
+        model.model_type = ModelType::LLM(model_data);
+        models.insert(llm_model_id, model);
+
+        return job_id;
+    });
+
+    bootstrap_job_queue();
+
+    return Ok(created_job);
+}
+
+pub async fn context_association_test_process(llm_model_id: u128, metrics_bag_id: u128, job: &Job) -> Result<bool, String> {
+    let model = get_model_from_memory(llm_model_id);
+    
+    let model = model.unwrap();
+
+    let model_data = if let ModelType::LLM(model_data) = model.model_type {
+        model_data
+    } else {
+        ic_cdk::eprintln!("Model is not a LLM");
+        return Ok(true);
+    };
+
+    let model_metrics_bag_index = model_data.cat_metrics_history.iter().position(|x| x.context_association_test_id == metrics_bag_id);
+    if model_metrics_bag_index.is_none() {
+        ic_cdk::eprintln!("Metrics bag with id {} not found in model {}", metrics_bag_id, llm_model_id);
+        return Ok(true);
+    }
+    let model_metrics_bag_index = model_metrics_bag_index.unwrap();
+    let model_metrics_bag = model_data.cat_metrics_history.get(model_metrics_bag_index).unwrap();
+
+    if model_metrics_bag.finished || model_metrics_bag.canceled {
+        ic_cdk::eprintln!("Metrics bag with id {} already finished or canceled", metrics_bag_id);
+        return Ok(true);
+    }
+
+    if job_should_be_stopped(job.id) {
+        ic_cdk::eprintln!("Job has been stopped while running. Marking LLMFairnessData as finished and cancelled.");
+        internal_job_stop(job.id, job.model_id);
+        
+        MODELS.with(|models| {
+            let mut models = models.borrow_mut();
+            let mut model = models.get(&llm_model_id).expect("Model not found");
+            let mut model_data = get_llm_model_data(&model);
+
+            model_data.cat_metrics_history = model_data.cat_metrics_history.into_iter().map( |mut m| {
+                if m.context_association_test_id == metrics_bag_id {
+                    m.canceled = true;
+                    m.finished = true;
+                }
+                m
+            }).collect();
+
+            model.model_type = ModelType::LLM(model_data);
+            models.insert(llm_model_id, model);
+        });
+        
+        return Ok(true);
+    }
 
     let cat_json = include_str!("context_association_test_processed.json");
     let parsed_data: Result<CatJson, _> = serde_json::from_str(cat_json).map_err(|e| e.to_string());
@@ -779,11 +881,8 @@ pub async fn context_association_test(
     if let Err(e) = parsed_data {
         ic_cdk::eprintln!("Error parsing JSON data");
         ic_cdk::eprintln!("{}", e.to_string());
-        job_fail(job_id, llm_model_id);
-        return Err(GenericError::new(
-            GenericError::INVALID_RESOURCE_FORMAT,
-            "Error parsing JSON data",
-        ));
+        // job_fail(job_id, llm_model_id);
+        return Ok(true);
     }
 
     let mut general_metrics: ContextAssociationTestMetrics = Default::default();
@@ -794,7 +893,7 @@ pub async fn context_association_test(
     let mut profession_metrics: ContextAssociationTestMetrics = Default::default();
     let mut religion_metrics: ContextAssociationTestMetrics = Default::default();
 
-    job_in_progress(job_id, llm_model_id);
+    // job_in_progress(job_id, llm_model_id);
 
     if let Ok(inner) = parsed_data {
         let mut error_count: u32 = 0;
@@ -813,11 +912,11 @@ pub async fn context_association_test(
             &mut profession_metrics,
             &mut religion_metrics,
             &mut data_points,
-            max_queries / 2,
-            seed,
-            shuffle_questions,
-            max_errors,
-            job_id,
+            model_metrics_bag.max_queries / 2,
+            model_metrics_bag.seed,
+            model_metrics_bag.shuffle,
+            model_metrics_bag.max_errors,
+            job.id,
         )
         .await;
         match res {
@@ -826,11 +925,9 @@ pub async fn context_association_test(
                 total_queries += queries;
             }
             Err(msg) => {
-                job_fail(job_id, llm_model_id);
-                return Err(GenericError::new(
-                    GenericError::EXTERNAL_RESOURCE_GENERIC_ERROR,
-                    msg,
-                ));
+                // job_fail(job_id, llm_model_id);
+                ic_cdk::eprintln!("Error processing intrasentence data: {}", msg);
+                return Ok(true);
             }
         }
 
@@ -845,11 +942,11 @@ pub async fn context_association_test(
             &mut profession_metrics,
             &mut religion_metrics,
             &mut data_points,
-            max_queries / 2,
-            seed,
-            shuffle_questions,
-            max_errors - error_count,
-            job_id,
+            model_metrics_bag.max_queries / 2,
+            model_metrics_bag.seed,
+            model_metrics_bag.shuffle,
+            model_metrics_bag.max_errors - error_count,
+            job.id,
         )
         .await;
         match res {
@@ -858,11 +955,9 @@ pub async fn context_association_test(
                 total_queries += queries;
             }
             Err(msg) => {
-                job_fail(job_id, llm_model_id);
-                return Err(GenericError::new(
-                    GenericError::EXTERNAL_RESOURCE_GENERIC_ERROR,
-                    msg,
-                ));
+                // job_fail(job_id, llm_model_id);
+                ic_cdk::eprintln!("Error processing intersentence data: {}", msg);
+                return Ok(true);
             }
         }
 
@@ -872,11 +967,9 @@ pub async fn context_association_test(
 
         if error_rate >= MAX_ERROR_RATE {
             let error_message = String::from(format!("Error rate ({}) is higher than the max allowed threshold ({}). This usually means that the endpoint is down or there is a several network error. Check https://status.huggingface.co/.", error_rate, MAX_ERROR_RATE));
-            job_fail(job_id, llm_model_id);
-            return Err(GenericError::new(
-                GenericError::HUGGING_FACE_ERROR_RATE_REACHED,
-                error_message,
-            ));
+            // job_fail(job_id, llm_model_id);
+            ic_cdk::eprintln!("{}", error_message);
+            return Ok(true);
         };
 
         let result = NEXT_CONTEXT_ASSOCIATION_TEST_ID.with(|id| {
@@ -896,7 +989,7 @@ pub async fn context_association_test(
                 total_queries,
                 intersentence_prompt_template: String::from(CAT_INTERSENTENCE_PROMPT),
                 intrasentence_prompt_template: String::from(CAT_INTRASENTENCE_PROMPT),
-                seed,
+                seed: model_metrics_bag.seed,
                 timestamp: ic_cdk::api::time(),
                 icat_score_intra: intra_metrics.icat_score(),
                 icat_score_inter: inter_metrics.icat_score(),
@@ -912,6 +1005,9 @@ pub async fn context_association_test(
                 finished: true,
                 canceled: false,
                 job_id: None,
+                max_queries: model_metrics_bag.max_queries,
+                max_errors: model_metrics_bag.max_errors,
+                shuffle: model_metrics_bag.shuffle,
             };
 
             let current_id = *next_data_point_id.get();
@@ -947,14 +1043,12 @@ pub async fn context_association_test(
             icat_score_inter: result.icat_score_inter,
         };
 
-        job_complete(job_id, llm_model_id);
-        return Ok(return_result);
+        // job_complete(job_id, llm_model_id);
+        return Ok(true);
     } else {
-        job_fail(job_id, llm_model_id);
-        return Err(GenericError::new(
-            GenericError::INVALID_RESOURCE_FORMAT,
-            "Error parsing JSON data",
-        ));
+        // job_fail(job_id, llm_model_id);
+        ic_cdk::eprintln!("Error parsing JSON data");
+        return Ok(true);
     }
 }
 
