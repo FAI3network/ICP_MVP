@@ -14,6 +14,7 @@ export default function Navbar() {
   const { authClient, address, webapp, connect, disconnect, connecting } = useAuthClient();
   const { workerProcesses } = useDataContext();
   const [jobs, setJobs] = useState<{ [key: number]: Job } | null>(null);
+  const [stopQueue, setStopQueue] = useState<number[]>([]);
 
   const copyAddress = async () => {
     await navigator.clipboard.writeText(address);
@@ -49,7 +50,7 @@ export default function Navbar() {
 
           setJobs((prevJobs: any) => ({ ...prevJobs, [Number(process.jobId)]: job[0] }));
 
-          if (job[0].status === "Completed" || job[0].status === "Failed") {
+          if (job[0].status === "Completed" || job[0].status === "Failed" || job[0].status === "Stopped") {
             clearTimeout(timeoutId);
             setTimeout(() => {
               removeJob(Number(process.jobId));
@@ -89,6 +90,8 @@ export default function Navbar() {
 
   const stopJob = async (jobId: number) => {
     if (!webapp) return;
+
+    setStopQueue((prevQueue) => [...prevQueue, jobId]);
 
     try {
       await webapp.stop_job(BigInt(jobId));
@@ -164,13 +167,19 @@ export default function Navbar() {
                                           </span>
                                         </div>
                                       </div>
-                                      <Button
-                                        onClick={() => stopJob(Number(job.id))}
-                                        className="h-6 px-2 text-[10px]"
-                                        variant="destructive"
-                                      >
-                                        Stop
-                                      </Button>
+                                      {
+                                        stopQueue.includes(Number(job.id)) ? (
+                                          <CircularProgress className="size-4" />
+                                        ) : (
+                                          <Button
+                                            onClick={() => stopJob(Number(job.id))}
+                                            className="h-6 px-2 text-[10px]"
+                                            variant="destructive"
+                                          >
+                                            Stop
+                                          </Button>
+                                        )
+                                      }
                                     </li>
                                   ))}
                                 </ul>

@@ -79,27 +79,24 @@ export function useWorker() {
               console.log("Dataset:", dataset);
 
               for (const item of dataset) {
-                const newJobId = await webapp?.create_job(BigInt(payload.modelId));
-
-                if (!newJobId) {
-                  throw new Error("Failed to create job.");
-                }
-
-                console.log("New job ID:", newJobId);
-                setWorkerProcesses([...workerProcesses, {
-                  type: workerType,
-                  jobId: newJobId,
-                }]);
-
                 try {
                   result = await webapp?.calculate_llm_metrics(
                     BigInt(modelId),
                     item,
                     max_queries,
                     seed,
-                    100,
-                    newJobId
+                    100
                   );
+
+                  console.log("Result for dataset item:", item, result);
+
+                  const jobId = (result as { Ok: string })?.Ok;
+
+                  setWorkerProcesses([...workerProcesses, {
+                    type: workerType,
+                    jobId: jobId,
+                  }]);
+
                 }
                 catch (error) {
                   console.error("Error in calculate_llm_metrics:", error);
