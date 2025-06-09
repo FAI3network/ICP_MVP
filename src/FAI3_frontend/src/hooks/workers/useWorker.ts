@@ -52,26 +52,23 @@ export function useWorker() {
           let result;
           switch (payload.method) {
             case "context_association_test":
-              const newJobId = await webapp?.create_job(BigInt(payload.modelId));
-
-              if (!newJobId) {
-                throw new Error("Failed to create job.");
-              }
-
-              console.log("New job ID:", newJobId);
-              setWorkerProcesses([...workerProcesses, {
-                type: workerType,
-                jobId: newJobId,
-              }]);
-
               result = await webapp?.context_association_test(
                 BigInt(payload.modelId),
                 payload.max_queries,
                 payload.seed,
                 payload.shuffle,
-                100,
-                newJobId
+                100
               );
+
+              console.log("Result for context_association_test:", result);
+
+              const jobId = (result as { Ok: string })?.Ok;
+
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: jobId,
+              }]);
+
               break;
             case "fairness_test":
               const { modelId, max_queries, seed, dataset } = payload;
@@ -159,7 +156,7 @@ export function useWorker() {
         setLoading(false);
         if (payload.success) {
           setResult(payload.data);
-          toasts.successToast(`${workerType} completed successfully.`);
+          // toasts.successToast(`${workerType} completed successfully.`);
         } else {
           setError(payload.error);
           toasts.errrorToast(`Error in ${workerType}: ${payload.error}`);

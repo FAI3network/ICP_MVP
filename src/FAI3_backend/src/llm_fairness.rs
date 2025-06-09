@@ -143,12 +143,6 @@ const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
 const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] =
     &[PISA_DATASET, PISA_TEST_DATASET, COMPAS_DATASET];
 
-// Object used to pass configuration to lower methods
-// In a single parameter
-pub struct HuggingFaceConfig {
-    hugging_face_url: String,
-    inference_provider: Option<String>,
-}
 
 /// Formats a single example for llm fairness call
 pub fn format_example(
