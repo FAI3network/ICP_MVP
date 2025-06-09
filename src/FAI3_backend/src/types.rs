@@ -629,9 +629,6 @@ pub struct ContextAssociationTestMetricsBag {
     pub finished: bool,
     pub canceled: bool,
     pub job_id: Option<u128>,
-    pub max_queries: usize,
-    pub max_errors: u32,
-    pub shuffle: bool,
 }
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
