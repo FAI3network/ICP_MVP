@@ -116,18 +116,6 @@ pub fn update_job_status(job_id: u128, status: String, model_id: u128) {
     });
 }
 
-pub fn job_fail(job_id: u128, model_id: u128) {
-    update_job_status(job_id, JOB_STATUS_FAILED.to_string(), model_id);
-}
-
-pub fn job_complete(job_id: u128, model_id: u128) {
-    update_job_status(job_id, JOB_STATUS_COMPLETED.to_string(), model_id);
-}
-
-pub fn job_in_progress(job_id: u128, model_id: u128) {
-    update_job_status(job_id, JOB_STATUS_IN_PROGRESS.to_string(), model_id);
-}
-
 #[ic_cdk::query]
 pub fn get_job_status(job_id: u128) -> Option<String> {
     JOBS.with(|jobs| {
@@ -412,6 +400,9 @@ pub async fn process_job_queue() {
         },
         JobType::ContextAssociationTest { metrics_bag_id } => {
             crate::context_association_test::context_association_test_process_next_query(job.model_id, metrics_bag_id, &job).await
+        },
+        JobType::LanguageEvaluation { language_model_evaluation_id } => {
+            crate::llm_language_evaluations::process_next_query(job.model_id, language_model_evaluation_id, &job).await
         },
         _ => {
             ic_cdk::println!("Job type not supported yet. Ignoring it.");

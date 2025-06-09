@@ -306,6 +306,7 @@ type LanguageEvaluationResult = record {
     metrics: LanguageEvaluationMetrics;
     metrics_per_language: vec record {text; LanguageEvaluationMetrics};
     max_queries: nat64;
+    seed: nat32;
     finished: bool;
     canceled: bool;
     job_id: opt nat;
@@ -392,6 +393,6 @@ service : () -> {
     "set_config": (text, text) -> ();
     "get_config": (text) -> (variant { Ok: text; Err: GenericError }) query;
 
-    "llm_evaluate_languages": (model_id : nat, languages : vec text, max_queries : nat64, seed : nat32, job_id : nat) -> (variant { Ok : LanguageEvaluationResult; Err : text });
+    "llm_evaluate_languages": (model_id : nat, languages : vec text, max_queries : nat64, seed : nat32) -> (variant { Ok : nat; Err : text });
     get_language_evaluation_counts : () -> (LanguageEvaluationCounts) query;
 }
