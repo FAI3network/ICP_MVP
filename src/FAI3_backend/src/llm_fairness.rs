@@ -16,7 +16,7 @@ use crate::types::{
     get_llm_model_data, AverageLLMFairnessMetrics, AverageMetrics,
     CounterFactualModelEvaluationResult, DataPoint, KeyValuePair, LLMDataPoint,
     LLMDataPointCounterFactual, LLMModelData, Metrics, ModelEvaluationResult,
-    ModelType, PrivilegedMap, JobType, Job,
+    ModelType, PrivilegedMap, JobType, Job, HuggingFaceConfig,
 };
 use crate::utils::{is_owner, seeded_vector_shuffle, select_random_element};
 use crate::{
