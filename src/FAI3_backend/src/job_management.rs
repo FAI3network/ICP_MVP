@@ -410,9 +410,6 @@ pub async fn process_job_queue() {
         JobType::AverageFairness { ref job_dependencies } => {
             crate::llm_fairness::process_average_llm_metrics_from_job(&job, job_dependencies.clone())
         },
-        JobType::ContextAssociationTest { metrics_bag_id } => {
-            crate::context_association_test::context_association_test_process(job.model_id, metrics_bag_id, &job).await
-        },
         _ => {
             ic_cdk::println!("Job type not supported yet. Ignoring it.");
             Ok(true)
