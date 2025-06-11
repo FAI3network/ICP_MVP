@@ -62,11 +62,11 @@ export function useWorker() {
 
               console.log("Result for context_association_test:", result);
 
-              const jobId = (result as { Ok: string })?.Ok;
+              const catJobId = (result as { Ok: string })?.Ok;
 
               setWorkerProcesses([...workerProcesses, {
                 type: workerType,
-                jobId: jobId,
+                jobId: catJobId,
               }]);
 
               break;
@@ -115,23 +115,25 @@ export function useWorker() {
               break;
             case "kaleidoscope_test":
               const { languages } = payload;
-              const newJobIdKaleidoscope = await webapp?.create_job(BigInt(payload.modelId));
-              if (!newJobIdKaleidoscope) {
-                throw new Error("Failed to create job for Kaleidoscope test.");
-              }
-              console.log("New job ID for Kaleidoscope:", newJobIdKaleidoscope);
-              setWorkerProcesses([...workerProcesses, {
-                type: workerType,
-                jobId: newJobIdKaleidoscope,
-              }]);
 
               result = await webapp?.llm_evaluate_languages(
                 BigInt(payload.modelId),
                 languages,
                 payload.max_queries,
                 payload.seed,
-                newJobIdKaleidoscope
+
               );
+
+              console.log("Result for context_association_test:", result);
+
+              const jobId = (result as { Ok: string })?.Ok;
+
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: jobId,
+              }]);
+
+
               break;
           }
 
