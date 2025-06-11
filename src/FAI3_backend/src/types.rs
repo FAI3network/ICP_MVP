@@ -503,6 +503,9 @@ impl Model {
         model_data.evaluations = model_data
             .evaluations
             .into_iter()
+            .filter(| evaluation: &ModelEvaluationResult | {
+                return evaluation.finished && !evaluation.canceled;
+            })
             .map(|mut evaluation: ModelEvaluationResult| {
                 evaluation.data_points = None;
                 evaluation.llm_data_points = None;
@@ -513,6 +516,9 @@ impl Model {
         model_data.language_evaluations = model_data
             .language_evaluations
             .into_iter()
+            .filter(| lang_evaluation: &LanguageEvaluationResult | {
+                return lang_evaluation.finished && !lang_evaluation.canceled;
+            })
             .map(|mut levaluation: LanguageEvaluationResult| {
                 levaluation.data_points = Vec::new();
                 levaluation
@@ -695,6 +701,7 @@ pub struct LanguageEvaluationResult {
     pub metrics: LanguageEvaluationMetrics,
     pub metrics_per_language: Vec<(String, LanguageEvaluationMetrics)>,
     pub max_queries: usize,
+    pub seed: u32,
     pub finished: bool,
     pub canceled: bool,
     pub job_id: Option<u128>,
@@ -710,6 +717,21 @@ pub struct LanguageEvaluationMetrics {
     pub invalid_responses: u32,
     pub correct_responses: u32,
     pub incorrect_responses: u32,
+}
+
+impl Default for LanguageEvaluationMetrics {
+    fn default() -> Self {
+        Self {
+            overall_accuracy: None,
+            accuracy_on_valid_responses: None,
+            format_error_rate: None,
+            n: 0,
+            error_count: 0,
+            invalid_responses: 0,
+            correct_responses: 0,
+            incorrect_responses: 0,
+        }
+    }
 }
 
 impl LanguageEvaluationMetrics {
