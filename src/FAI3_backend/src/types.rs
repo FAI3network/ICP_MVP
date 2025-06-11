@@ -503,6 +503,9 @@ impl Model {
         model_data.evaluations = model_data
             .evaluations
             .into_iter()
+            .filter(| evaluation: &ModelEvaluationResult | {
+                return evaluation.finished && !evaluation.canceled;
+            })
             .map(|mut evaluation: ModelEvaluationResult| {
                 evaluation.data_points = None;
                 evaluation.llm_data_points = None;
@@ -513,6 +516,9 @@ impl Model {
         model_data.language_evaluations = model_data
             .language_evaluations
             .into_iter()
+            .filter(| lang_evaluation: &LanguageEvaluationResult | {
+                return lang_evaluation.finished && !lang_evaluation.canceled;
+            })
             .map(|mut levaluation: LanguageEvaluationResult| {
                 levaluation.data_points = Vec::new();
                 levaluation
