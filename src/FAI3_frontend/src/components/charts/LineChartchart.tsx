@@ -64,12 +64,12 @@ export default function LineChartchart({
 
       if (!variableNames.includes(varName)) {
         variableNames.push(varName);
-        console.log("Variable Name:", varName, "Value:", result[varName]);
+        // console.log("Variable Name:", varName, "Value:", result[varName]);
       }
     }
     
     dataset.push(result);
-    console.log("Dataset Entry:", result);
+    // console.log("Dataset Entry:", result);
   }
 
   return (
