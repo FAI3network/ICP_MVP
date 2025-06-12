@@ -1,15 +1,19 @@
 use crate::errors::GenericError;
 use crate::hugging_face::call_hugging_face;
 use crate::inference_providers::lib::HuggingFaceRequestParameters;
-use crate::job_management::{check_job_stopped, job_complete, job_fail, job_in_progress};
+use crate::job_management::{internal_job_complete, internal_job_fail, internal_job_in_progress, create_job_with_job_type, bootstrap_job_queue, job_should_be_stopped, internal_job_stop};
 use crate::types::{
-    get_llm_model_data, LLMModelData, LanguageEvaluationDataPoint, LanguageEvaluationMetrics,
-    LanguageEvaluationResult, ModelType,
+    get_llm_model_data, LanguageEvaluationDataPoint, LanguageEvaluationMetrics,
+    LanguageEvaluationResult, ModelType, Job, JobType, HuggingFaceConfig,
 };
 use crate::utils::{is_owner, seeded_vector_shuffle};
 use crate::MODELS;
 use crate::{
     check_cycles_before_action, get_model_from_memory, only_admin, NEXT_LLM_LANGUAGE_EVALUATION_ID,
+};
+use crate::config_management::{
+    HUGGING_FACE_API_KEY_CONFIG_KEY,
+    internal_get_config,
 };
 use candid::CandidType;
 use ic_cdk_macros::*;
@@ -57,22 +61,14 @@ pub struct LanguageEvaluationAnswer {
 }
 
 async fn run_evaluate_languages(
-    model_data: &LLMModelData,
-    languages: &Vec<String>,
-    seed: u32,
-    max_queries: usize,
-    job_id: u128,
-) -> Result<LanguageEvaluationResult, String> {
-    let mut data_points: Vec<LanguageEvaluationDataPoint> = Vec::new();
-
-    let mut metrics = HashMap::<String, LanguageEvaluationMetrics>::new();
-    let mut overall_metrics = LanguageEvaluationMetrics::new();
-
-    // Create a metrics object for every separated language
-    for lang in languages {
-        metrics.insert(lang.clone(), LanguageEvaluationMetrics::new());
-    }
-
+    hf_data: &HuggingFaceConfig,
+    language_evaluation: &mut LanguageEvaluationResult,
+    job: &Job,
+) -> Result<(), String> {
+    let overall_metrics = &mut language_evaluation.metrics;
+    let seed = language_evaluation.seed;
+    let max_queries = language_evaluation.max_queries;
+    let current_query = job.progress.completed;
     let hf_parameters = HuggingFaceRequestParameters {
         max_new_tokens: None,
         stop: None,
@@ -84,212 +80,159 @@ async fn run_evaluate_languages(
         do_sample: Some(false),
     };
 
-    // The number of max_queries is divided among the number of languages
-    // Using integer division
-    let original_max_queries = max_queries;
-    let max_queries = max_queries / languages.len();
-    if original_max_queries > 0 && max_queries == 0 {
-        return Err(
-            "Wrong max_queries value. It should be at least the number of languages, or zero."
-                .to_string(),
-        );
-    }
+    let mut queries: usize = 0; // query counter
+    let mut rdr = csv::ReaderBuilder::new().from_reader(KALEIDOSKOPE_CSV.as_bytes());
 
-    for lang in languages {
-        let mut queries: usize = 0;
-        ic_cdk::println!("Processing `{}` language", lang);
-        let mut rdr = csv::ReaderBuilder::new().from_reader(KALEIDOSKOPE_CSV.as_bytes());
+    for result in rdr.deserialize::<HashMap<String, String>>() {
+        let result = result.map_err(|e| e.to_string())?;
 
-        for result in rdr.deserialize::<HashMap<String, String>>() {
-            let should_stop = check_job_stopped(job_id);
-
-            if should_stop {
-                ic_cdk::println!("Job stopped by user");
-                return Err("Job stopped by user".to_string());
-            }
-
-            let result = result.map_err(|e| e.to_string())?;
-
-            let language: &String = result
-                .get("language")
-                .expect("It should be able to get the language field.");
-
-            if language != lang {
-                // Only process records for current language
-                continue;
-            }
-
-            ic_cdk::println!(
-                "Executing query {}/{} of language {}",
-                queries,
-                max_queries,
-                language
-            );
-
-            let question: &String = result
-                .get("question")
-                .expect("It should be able to get the question field.");
-            let answer: usize = result
-                .get("answer")
-                .and_then(|ans| ans.parse::<usize>().ok())
-                .expect("Answer field should be a valid usize index");
-            let options: Vec<String> = result
-                .get("options")
-                .map(|opt_str| {
-                    ic_cdk::println!("{}", &opt_str);
-                    // Split by space and clean up quotes from each element
-                    opt_str
-                        .trim_matches(|c| c == '[' || c == ']')
-                        .split('\'')
-                        .filter(|s| !s.trim().is_empty() && s.trim() != " ")
-                        .map(|s| s.trim().to_string())
-                        .collect()
-                })
-                .expect("It should be able to parse the options field.");
-            let text_answer: String = options
-                .get(answer)
-                .expect("Answer should exist in the options vector")
-                .to_string();
-            ic_cdk::println!("Valid answer: {}", text_answer);
-
-            let lang_metrics: &mut LanguageEvaluationMetrics = metrics
-                .get_mut(language)
-                .expect("Value for language should exist");
-
-            let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
-
-            let res = call_hugging_face(
-                prompt.clone(),
-                model_data.hugging_face_url.clone(),
-                seed,
-                Some(hf_parameters.clone()),
-                &model_data.inference_provider,
-            )
-            .await;
-
-            let trimmed_response = match res {
-                Ok(response) => crate::utils::clean_llm_response(&response),
-                Err(e) => {
-                    ic_cdk::println!("Error calling Hugging Face API: {}", e);
-
-                    overall_metrics.add_error();
-                    lang_metrics.add_error();
-
-                    data_points.push(LanguageEvaluationDataPoint {
-                        prompt: prompt.clone(),
-                        response: None,
-                        valid: false,
-                        error: true,
-                        correct_answer: text_answer.clone(),
-                    });
-
-                    queries += 1;
-                    if max_queries > 0 && queries >= max_queries {
-                        break;
-                    }
-
-                    continue; // Skip this iteration and continue with the next question
-                }
-            };
-
-            ic_cdk::println!("Cleaned response: {}", &trimmed_response);
-
-            let evaluation_answer =
-                match serde_json::from_str::<LanguageEvaluationAnswer>(&trimmed_response) {
-                    Ok(json) => {
-                        ic_cdk::println!("Parsed JSON response: {:?}", &json);
-                        json
-                    }
-                    Err(e) => {
-                        ic_cdk::println!("Failed to parse JSON: {}. Skipping to next row.", e);
-                        overall_metrics.add_invalid();
-                        lang_metrics.add_invalid();
-
-                        data_points.push(LanguageEvaluationDataPoint {
-                            prompt: prompt.clone(),
-                            response: None,
-                            valid: false,
-                            error: false,
-                            correct_answer: text_answer.clone(),
-                        });
-
-                        queries += 1;
-                        if max_queries > 0 && queries >= max_queries {
-                            break;
-                        }
-                        continue;
-                    }
-                };
-
-            let llm_answer = evaluation_answer.choice.trim();
-
-            data_points.push(LanguageEvaluationDataPoint {
-                prompt: prompt.clone(),
-                response: Some(llm_answer.to_string()),
-                valid: false,
-                error: false,
-                correct_answer: text_answer.clone(),
-            });
-
-            if llm_answer.to_lowercase() == text_answer.trim().to_lowercase() {
-                overall_metrics.add_correct();
-                lang_metrics.add_correct();
-            } else {
-                // Check if it belongs to any of the options, otherwise it's classified as invalid
-                let mut belongs_to_an_option = false;
-                for option in &options {
-                    if llm_answer.to_lowercase() == option.trim().to_lowercase() {
-                        belongs_to_an_option = true;
-                        break;
-                    }
-                }
-                if belongs_to_an_option {
-                    overall_metrics.add_incorrect();
-                    lang_metrics.add_incorrect();
-                } else {
-                    overall_metrics.add_invalid();
-                    lang_metrics.add_invalid();
-                }
-            }
-
+        if queries < current_query {
             queries += 1;
-            if max_queries > 0 && queries >= max_queries {
-                break;
-            }
+            continue;
         }
-    }
 
-    overall_metrics.calculate_rates();
-    for lang_metrics in metrics.values_mut() {
-        lang_metrics.calculate_rates();
-    }
+        let language: &String = result
+            .get("language")
+            .expect("It should be able to get the language field.");
 
-    // Done in this way so the result order is deterministic
-    let mut metrics_per_language = Vec::<(String, LanguageEvaluationMetrics)>::new();
-    for lang in languages {
-        metrics_per_language.push((lang.clone(), metrics.get(lang).unwrap().clone()));
-    }
+        // ignore languages that were not scheduled
+        if !language_evaluation.languages.contains(&language) {
+            continue;
+        }
 
-    let result = NEXT_LLM_LANGUAGE_EVALUATION_ID.with(|id| {
-        let current_id = *id.borrow().get();
+        ic_cdk::println!(
+            "Executing query {}/{} with language {}",
+            current_query,
+            max_queries,
+            language
+        );
 
-        let evaluation = LanguageEvaluationResult {
-            language_model_evaluation_id: current_id,
-            timestamp: ic_cdk::api::time(),
-            languages: languages.clone(),
-            prompt_templates: vec![("overall".to_string(), SYSTEM_PROMPT.to_string())],
-            data_points,
-            metrics: overall_metrics,
-            metrics_per_language,
-            max_queries: original_max_queries,
+        let question: &String = result
+            .get("question")
+            .expect("It should be able to get the question field.");
+        
+        let answer: usize = result
+            .get("answer")
+            .and_then(|ans| ans.parse::<usize>().ok())
+            .expect("Answer field should be a valid usize index");
+        
+        let options: Vec<String> = result
+            .get("options")
+            .map(|opt_str| {
+                ic_cdk::println!("{}", &opt_str);
+                // Split by space and clean up quotes from each element
+                opt_str
+                    .trim_matches(|c| c == '[' || c == ']')
+                    .split('\'')
+                    .filter(|s| !s.trim().is_empty() && s.trim() != " ")
+                    .map(|s| s.trim().to_string())
+                    .collect()
+            })
+            .expect("It should be able to parse the options field.");
+        
+        let text_answer: String = options
+            .get(answer)
+            .expect("Answer should exist in the options vector")
+            .to_string();
+        
+        ic_cdk::println!("Valid answer: {}", text_answer);
+
+        let lang_metrics: &mut LanguageEvaluationMetrics = &mut language_evaluation.metrics_per_language
+            .iter_mut()
+            .find(|lang_tuple| lang_tuple.0 == *language)
+            .expect(format!("Value for language {} should exist", &language).as_str())
+            .1;
+
+        let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
+
+        let res = call_hugging_face(
+            prompt.clone(),
+            hf_data.hugging_face_url.clone(),
+            seed,
+            Some(hf_parameters.clone()),
+            &hf_data.inference_provider,
+        ).await;
+
+        let trimmed_response = match res {
+            Ok(response) => crate::utils::clean_llm_response(&response),
+            Err(e) => {
+                ic_cdk::println!("Error calling Hugging Face API: {}", e);
+
+                overall_metrics.add_error();
+                lang_metrics.add_error();
+
+                language_evaluation.data_points.push(LanguageEvaluationDataPoint {
+                    prompt: prompt.clone(),
+                    response: None,
+                    valid: false,
+                    error: true,
+                    correct_answer: text_answer.clone(),
+                });
+
+                return Ok(());
+            }
         };
 
-        id.borrow_mut().set(current_id + 1).unwrap();
+        ic_cdk::println!("Cleaned response: {}", &trimmed_response);
 
-        evaluation
-    });
+        let evaluation_answer =  match serde_json::from_str::<LanguageEvaluationAnswer>(&trimmed_response) {
+            Ok(json) => {
+                ic_cdk::println!("Parsed JSON response: {:?}", &json);
+                json
+            }
+            Err(e) => {
+                ic_cdk::println!("Failed to parse JSON: {}. Skipping to next row.", e);
+                overall_metrics.add_invalid();
+                lang_metrics.add_invalid();
 
-    return Ok(result);
+                language_evaluation.data_points.push(LanguageEvaluationDataPoint {
+                    prompt: prompt.clone(),
+                    response: None,
+                    valid: false,
+                    error: false,
+                    correct_answer: text_answer.clone(),
+                });
+
+                return Ok(());
+            }
+        };
+
+        let llm_answer = evaluation_answer.choice.trim();
+
+        language_evaluation.data_points.push(LanguageEvaluationDataPoint {
+            prompt: prompt.clone(),
+            response: Some(llm_answer.to_string()),
+            valid: false,
+            error: false,
+            correct_answer: text_answer.clone(),
+        });
+
+        if llm_answer.to_lowercase() == text_answer.trim().to_lowercase() {
+            overall_metrics.add_correct();
+            lang_metrics.add_correct();
+        } else {
+            // Check if it belongs to any of the options, otherwise it's classified as invalid
+            let mut belongs_to_an_option = false;
+            for option in &options {
+                if llm_answer.to_lowercase() == option.trim().to_lowercase() {
+                    belongs_to_an_option = true;
+                    break;
+                }
+            }
+            if belongs_to_an_option {
+                overall_metrics.add_incorrect();
+                lang_metrics.add_incorrect();
+            } else {
+                overall_metrics.add_invalid();
+                lang_metrics.add_invalid();
+            }
+        }
+
+        
+        return Ok(());
+    }
+
+    return Ok(());
 }
 
 /// Evaluates languages for a LLM. It returns the LanguageEvaluationResult,
@@ -300,15 +243,11 @@ pub async fn llm_evaluate_languages(
     languages: Vec<String>,
     max_queries: usize,
     seed: u32,
-    job_id: u128,
-) -> Result<LanguageEvaluationResult, GenericError> {
+) -> Result<u128, GenericError> {
     only_admin();
     check_cycles_before_action();
 
-    job_in_progress(job_id, model_id);
-
     if languages.len() == 0 {
-        job_fail(job_id, model_id);
         return Err(GenericError::new(
             GenericError::INVALID_ARGUMENT,
             "You should select at least one language.",
@@ -322,7 +261,6 @@ pub async fn llm_evaluate_languages(
     .collect();
     let all_valid = languages.iter().all(|x| valid_values.contains(x.as_str()));
     if !all_valid {
-        job_fail(job_id, model_id);
         return Err(GenericError::new(
             GenericError::INVALID_ARGUMENT,
             "An invalid language was selected.",
@@ -331,60 +269,227 @@ pub async fn llm_evaluate_languages(
 
     let caller = ic_cdk::api::caller();
 
-    ic_cdk::println!("Calling llm_evaluate_languages for model {}", model_id);
-
     let model = get_model_from_memory(model_id);
     if let Err(err) = model {
-        job_fail(job_id, model_id);
         return Err(err);
     }
     let model = model.unwrap();
     is_owner(&model, caller);
 
-    if let ModelType::LLM(model_type_data) = model.model_type {
-        let result =
-            run_evaluate_languages(&model_type_data, &languages, seed, max_queries, job_id).await;
+    if let ModelType::LLM(_) = model.model_type {
+        let created_job = MODELS.with(|models| {
+            let mut models = models.borrow_mut();
+            let mut model = models.get(&model_id).expect("Model not found");
 
-        ic_cdk::println!("Language evaluation finished successfully");
+            let mut model_data = get_llm_model_data(&model);
 
-        return match result {
-            Ok(language_evaluation_result) => {
-                MODELS.with(|models| {
-                    let mut models = models.borrow_mut();
-                    let mut model = models.get(&model_id).expect("Model not found");
+            let job_id = NEXT_LLM_LANGUAGE_EVALUATION_ID.with(|id| {
+                let mut next_data_point_id = id.borrow_mut();
 
-                    let mut model_data = get_llm_model_data(&model);
+                let job_queries_target = if max_queries == 0 {
+                    let counts = get_language_evaluation_counts();
+                    let mut sum = 0;
+                    for lang in &languages {
+                        sum += counts.per_language.get(lang)
+                            .expect(format!("Language {} should exist in counts per language", lang).as_str());
+                    }
+                    sum
+                } else {
+                    max_queries
+                };
 
-                    model_data
-                        .language_evaluations
-                        .push(language_evaluation_result.clone());
+                let job_id = create_job_with_job_type(model_id, JobType::LanguageEvaluation {
+                    language_model_evaluation_id: *next_data_point_id.get(),
+                }, job_queries_target);
 
-                    model.model_type = ModelType::LLM(model_data);
-                    models.insert(model_id, model);
+                let mut metrics_per_language: Vec<(String, LanguageEvaluationMetrics)>  = vec![];
+
+                for lang in &languages {
+                    metrics_per_language.push((lang.clone(), Default::default()));
+                }
+
+                model_data.language_evaluations.push(LanguageEvaluationResult {
+                    language_model_evaluation_id: *next_data_point_id.get(),
+                    timestamp: ic_cdk::api::time(),
+                    languages: languages.clone(),
+                    prompt_templates: vec![("overall".to_string(), SYSTEM_PROMPT.to_string())],
+                    data_points: Vec::new(),
+                    metrics: Default::default(),
+                    metrics_per_language,
+                    max_queries,
+                    seed,
+                    finished: false,
+                    canceled: false,
+                    job_id: Some(job_id),        
                 });
 
-                ic_cdk::println!("Language evaluation saved successfully");
+                let current_id = *next_data_point_id.get();
+                next_data_point_id.set(current_id + 1).unwrap();
 
-                job_complete(job_id, model_id);
+                return job_id;
+            });
 
-                Ok(language_evaluation_result)
-            }
-            Err(err_message) => {
-                job_fail(job_id, model_id);
+            model.model_type = ModelType::LLM(model_data);
+            models.insert(model_id, model);
+            
+            return job_id;
+        });
 
-                Err(GenericError::new(
-                    GenericError::GENERIC_SYSTEM_FAILURE,
-                    err_message,
-                ))
-            }
-        };
+        bootstrap_job_queue();
+
+        return Ok(created_job);
+            
     } else {
-        job_fail(job_id, model_id);
         return Err(GenericError::new(
             GenericError::INVALID_MODEL_TYPE,
             "Model should be a LLM",
         ));
     }
+}
+
+pub async fn process_next_query(llm_model_id: u128, language_model_evaluation_id: u128, job: &Job) -> Result<bool, String> {
+    ic_cdk::println!("Processing llm language evaluation query");
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err.to_string());
+    }
+    let model = model.unwrap();
+
+    let mut model_data = get_llm_model_data(&model);
+
+    let hf_data = HuggingFaceConfig {
+        hugging_face_url: model_data.hugging_face_url.clone(),
+        inference_provider: model_data.inference_provider.clone(),
+    };
+
+    // Get evaluation from this model
+    let language_evaluation_index = model_data.language_evaluations.iter().position(|evaluation| 
+        evaluation.language_model_evaluation_id == language_model_evaluation_id
+    );
+
+    if language_evaluation_index.is_none() {
+        let error = "Invalid index for language evaluation";
+        ic_cdk::eprintln!("Error: {}", error);
+        internal_job_fail(job.id, llm_model_id, Some(error.to_string()));
+        return Ok(true);
+    }
+    let language_evaluation_index = language_evaluation_index.unwrap();
+    
+    let mut language_evaluation = model_data.language_evaluations
+        .iter_mut()
+        .find(|e| e.language_model_evaluation_id == language_model_evaluation_id)
+        .expect("Language evaluation should exist");
+
+    // Check if the job is already finished
+    if language_evaluation.finished || language_evaluation.canceled {
+        ic_cdk::println!("Language evaluation already finished. Exiting...");
+        return Ok(true); // Nothing more to do
+    }
+
+    if job_should_be_stopped(job.id) {
+        ic_cdk::eprintln!("Job has been stopped while running. Marking LanguageEvaluationResult as finished and cancelled.");
+        internal_job_stop(job.id, job.model_id);
+        
+        MODELS.with(|models| {
+            let mut models = models.borrow_mut();
+            let mut model = models.get(&llm_model_id).expect("Model not found");
+            let mut model_data = get_llm_model_data(&model);
+
+            model_data.language_evaluations[language_evaluation_index].canceled = true;
+            model_data.language_evaluations[language_evaluation_index].finished = true;
+            
+            model.model_type = ModelType::LLM(model_data);
+            models.insert(llm_model_id, model);
+        });
+        
+        return Ok(true);
+    }
+
+    // Get API key for Hugging Face
+    let _api_key = internal_get_config(HUGGING_FACE_API_KEY_CONFIG_KEY.to_string())?;
+
+    // checks if the run has finished and set it as complete
+    if job.progress.completed >= job.progress.target {
+        // Job is complete
+        MODELS.with(|models| {
+            let mut models = models.borrow_mut();
+            let mut model = models.get(&llm_model_id).expect("Model not found");
+            let mut model_data = get_llm_model_data(&model);
+
+            let evaluation = &mut model_data.language_evaluations[language_evaluation_index];
+            evaluation.finished = true;
+
+            // calculating metrics
+            evaluation.metrics.calculate_rates();
+            
+            for (_, lang_metrics) in &mut evaluation.metrics_per_language {
+                let metrics: &mut LanguageEvaluationMetrics = lang_metrics;
+                metrics.calculate_rates();
+            }
+
+            model.model_type = ModelType::LLM(model_data);
+            models.insert(llm_model_id, model);
+        });
+
+        internal_job_complete(job.id, llm_model_id);
+
+        ic_cdk::println!("Job {} is complete.", job.id);
+        
+        return Ok(true);
+    }
+    
+
+    let result =
+        run_evaluate_languages(&hf_data, &mut language_evaluation, &job).await;
+
+    match result {
+        Err(err_str) => {
+            // A grave error happened. Setting the job as failed
+            ic_cdk::eprintln!("An error happened: '{}'. Stopping job.", &err_str);
+            internal_job_fail(job.id, llm_model_id, Some(err_str));
+
+            // setting evaluation as canceled and finished
+            MODELS.with(|models| {
+                let mut models = models.borrow_mut();
+                let mut model = models.get(&llm_model_id).expect("Model not found");
+                let mut model_data = get_llm_model_data(&model);
+
+                let evaluation = &mut model_data.language_evaluations[language_evaluation_index];
+                evaluation.finished = true;
+                evaluation.canceled = true;
+
+                model.model_type = ModelType::LLM(model_data);
+                models.insert(llm_model_id, model);
+            });
+
+            return Ok(true);
+        },
+        Ok(()) => {
+            let invalid_responses = language_evaluation.metrics.invalid_responses;
+            let errors = language_evaluation.metrics.error_count;
+            
+            // saving modified data
+           MODELS.with(|models| {
+                let mut models = models.borrow_mut();
+                let mut model = models.get(&llm_model_id).expect("Model not found");
+                let mut model_data = get_llm_model_data(&model);
+
+               model_data.language_evaluations[language_evaluation_index] = language_evaluation.clone();
+
+                model.model_type = ModelType::LLM(model_data);
+                models.insert(llm_model_id, model);
+           });
+
+            ic_cdk::println!("Saving progress: {}", job.progress.completed + 1);
+            
+            internal_job_in_progress(job.id, llm_model_id,
+                                     job.progress.completed + 1,
+                                     invalid_responses as usize,
+                                     errors as usize);
+
+            return Ok(false);
+        },
+    };
 }
 
 #[query]

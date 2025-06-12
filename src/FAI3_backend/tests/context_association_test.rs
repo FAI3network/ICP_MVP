@@ -1,5 +1,5 @@
 use candid::{Principal, decode_one, encode_args};
-use FAI3_backend::types::{ContextAssociationTestAPIResult, ContextAssociationTestType, ContextAssociationTestResult, get_llm_model_data};
+use FAI3_backend::types::{ContextAssociationTestType, ContextAssociationTestResult, get_llm_model_data};
 use FAI3_backend::errors::GenericError;
 use pocket_ic::PocketIc;
 mod common;

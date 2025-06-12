@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use FAI3_backend::errors::GenericError;
 use FAI3_backend::llm_fairness::{build_prompts, PISA_PROMPT};
 use FAI3_backend::types::{
-    get_llm_model_data, AverageLLMFairnessMetrics, LLMDataPoint, LLMMetricsAPIResult,
+    get_llm_model_data, AverageLLMFairnessMetrics, LLMDataPoint,
     ModelEvaluationResult,
 };
 mod common;

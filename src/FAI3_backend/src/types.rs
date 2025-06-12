@@ -8,6 +8,18 @@ use std::collections::HashMap;
 
 pub type PrivilegedMap = HashMap<String, u128>;
 
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq, Default)]
+pub struct JobProgress {
+    /// Number of completed iterations of progress.
+    pub completed: usize,
+    /// Number of target iterations to be reached.
+    /// This is usually the same as queries, although some queries can be ignored for
+    /// this count, like counter factual queries.
+    pub target: usize,
+    pub invalid_responses: usize,
+    pub call_errors: usize,
+}
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct Job {
     pub id: u128,
@@ -15,6 +27,9 @@ pub struct Job {
     pub owner: Principal,
     pub status: String,
     pub timestamp: u64,
+    pub job_type: JobType,
+    pub status_detail: Option<String>,
+    pub progress: JobProgress,
 }
 
 impl Storable for Job {
@@ -35,12 +50,37 @@ impl Storable for Job {
                     owner: Principal::anonymous(),
                     status: "error_decoding".to_string(),
                     timestamp: 0,
+                    job_type: JobType::Unassigned,
+                    status_detail: None,
+                    progress: JobProgress {
+                        completed: 0,
+                        target: 0,
+                        invalid_responses: 0,
+                        call_errors: 0,
+                    }
                 }
             }
         }
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
+pub enum JobType {
+    LLMFairness {
+        model_evaluation_id: u128,
+    },
+    ContextAssociationTest {
+        metrics_bag_id: u128,
+    },
+    LanguageEvaluation {
+        language_model_evaluation_id: u128,
+    },
+    AverageFairness {
+        job_dependencies: Vec<u128>,
+    },
+    Unassigned, // used for now for jobs without type
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -115,6 +155,12 @@ pub struct KeyValuePair {
     pub value: u128,
 }
 
+impl KeyValuePair {
+    pub fn to_hashmap(pairs: Vec<KeyValuePair>) -> std::collections::HashMap<String, u128> {
+        pairs.into_iter().map(|pair| (pair.key, pair.value)).collect()
+    }
+}
+
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct CounterFactualModelEvaluationResult {
     pub change_rate_overall: f32,
@@ -142,6 +188,9 @@ pub struct ModelEvaluationResult {
     pub llm_data_points: Option<Vec<LLMDataPoint>>,
     pub prompt_template: Option<String>,
     pub counter_factual: Option<CounterFactualModelEvaluationResult>,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>, 
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -191,6 +240,36 @@ pub struct AverageLLMFairnessMetrics {
     pub counter_factual_overall_change_rate: f32,
     // evaluation ids used to calculate this metrics
     pub model_evaluation_ids: Vec<u128>,
+}
+
+impl std::fmt::Display for AverageLLMFairnessMetrics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "AverageLLMFairnessMetrics {{ \
+             model_id: {}, \
+             statistical_parity_difference: {:.4}, \
+             disparate_impact: {:.4}, \
+             average_odds_difference: {:.4}, \
+             equal_opportunity_difference: {:.4}, \
+             accuracy: {:.4}, \
+             precision: {:.4}, \
+             recall: {:.4}, \
+             counter_factual_overall_change_rate: {:.4}, \
+             model_evaluation_ids: {:?} \
+             }}",
+            self.model_id,
+            self.statistical_parity_difference,
+            self.disparate_impact,
+            self.average_odds_difference,
+            self.equal_opportunity_difference,
+            self.accuracy,
+            self.precision,
+            self.recall,
+            self.counter_factual_overall_change_rate,
+            self.model_evaluation_ids
+        )
+    }
 }
 
 impl AverageLLMFairnessMetrics {
@@ -415,7 +494,17 @@ impl Model {
         // Error code: IC0504
         let mut model_data = get_llm_model_data(&self);
 
-        model_data.cat_metrics_history = vec![];
+        model_data.cat_metrics_history = model_data
+            .cat_metrics_history
+            .into_iter()
+            .filter(|cat_metrics| {
+                return cat_metrics.finished && !cat_metrics.canceled;
+            })
+            .map(|mut cat_metrics| {
+                cat_metrics.data_points = vec![];
+                cat_metrics
+            })
+            .collect();    
         if let Some(mut cat) = model_data.cat_metrics {
             cat.data_points = vec![];
             model_data.cat_metrics = Some(cat);
@@ -424,6 +513,9 @@ impl Model {
         model_data.evaluations = model_data
             .evaluations
             .into_iter()
+            .filter(| evaluation: &ModelEvaluationResult | {
+                return evaluation.finished && !evaluation.canceled;
+            })
             .map(|mut evaluation: ModelEvaluationResult| {
                 evaluation.data_points = None;
                 evaluation.llm_data_points = None;
@@ -434,6 +526,9 @@ impl Model {
         model_data.language_evaluations = model_data
             .language_evaluations
             .into_iter()
+            .filter(| lang_evaluation: &LanguageEvaluationResult | {
+                return lang_evaluation.finished && !lang_evaluation.canceled;
+            })
             .map(|mut levaluation: LanguageEvaluationResult| {
                 levaluation.data_points = Vec::new();
                 levaluation
@@ -520,6 +615,7 @@ pub struct ContextAssociationTestMetrics {
 
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestMetricsBag {
+    pub context_association_test_id: u128,
     pub general: ContextAssociationTestMetrics,
     pub intersentence: ContextAssociationTestMetrics,
     pub intrasentence: ContextAssociationTestMetrics,
@@ -530,10 +626,13 @@ pub struct ContextAssociationTestMetricsBag {
     pub error_count: u32,
     pub error_rate: f32,
     pub total_queries: u32,
+    pub max_queries: usize,
     pub timestamp: u64,
     pub intrasentence_prompt_template: String,
     pub intersentence_prompt_template: String,
     pub seed: u32,
+    pub shuffle_questions: bool,
+    pub max_errors: u32,
     // precalculated fields
     pub icat_score_intra: f32,
     pub icat_score_inter: f32,
@@ -546,6 +645,9 @@ pub struct ContextAssociationTestMetricsBag {
     pub general_n: u32,
     pub icat_score_general: f32,
     pub data_points: Vec<ContextAssociationTestDataPoint>,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>,
 }
 
 #[derive(Serialize, CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -589,31 +691,6 @@ impl Storable for LLMModelData {
     const BOUND: Bound = Bound::Unbounded;
 }
 
-#[derive(Serialize, Debug, CandidType, CandidDeserialize, Clone, PartialEq)]
-pub struct ContextAssociationTestAPIResult {
-    pub error_count: u32,
-    pub general_ss: f32,
-    pub general_n: u32,
-    pub general_lms: f32,
-    pub general: ContextAssociationTestMetrics,
-    pub icat_score_general: f32,
-    pub icat_score_gender: f32,
-    pub icat_score_religion: f32,
-    pub icat_score_profession: f32,
-    pub icat_score_race: f32,
-    pub icat_score_intra: f32,
-    pub icat_score_inter: f32,
-}
-
-#[derive(Debug, CandidType, CandidDeserialize, Clone)]
-pub struct LLMMetricsAPIResult {
-    pub metrics: Metrics,
-    pub queries: usize,
-    pub invalid_responses: u32,
-    pub call_errors: u32,
-    pub counter_factual: Option<CounterFactualModelEvaluationResult>,
-}
-
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
 pub struct LanguageEvaluationDataPoint {
     pub prompt: String,
@@ -634,6 +711,10 @@ pub struct LanguageEvaluationResult {
     pub metrics: LanguageEvaluationMetrics,
     pub metrics_per_language: Vec<(String, LanguageEvaluationMetrics)>,
     pub max_queries: usize,
+    pub seed: u32,
+    pub finished: bool,
+    pub canceled: bool,
+    pub job_id: Option<u128>,
 }
 
 #[derive(CandidType, CandidDeserialize, Clone, Debug, PartialEq)]
@@ -646,6 +727,21 @@ pub struct LanguageEvaluationMetrics {
     pub invalid_responses: u32,
     pub correct_responses: u32,
     pub incorrect_responses: u32,
+}
+
+impl Default for LanguageEvaluationMetrics {
+    fn default() -> Self {
+        Self {
+            overall_accuracy: None,
+            accuracy_on_valid_responses: None,
+            format_error_rate: None,
+            n: 0,
+            error_count: 0,
+            invalid_responses: 0,
+            correct_responses: 0,
+            incorrect_responses: 0,
+        }
+    }
 }
 
 impl LanguageEvaluationMetrics {
@@ -712,4 +808,11 @@ impl LanguageEvaluationMetrics {
             }
         }
     }
+}
+
+// Object used to pass configuration to lower methods
+// In a single parameter
+pub struct HuggingFaceConfig {
+    pub hugging_face_url: String,
+    pub inference_provider: Option<String>,
 }
