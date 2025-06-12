@@ -232,7 +232,7 @@ export default function LLMDetails({ model, metrics, fetchModel }: any) {
             </div>
           )}
           {metrics.length > 0 && <FairnessCharts metrics={metrics} />}
-          {/* {languageEvaluationData.length > 0 && <KaleidoscopeChart metrics={languageEvaluationData} />} */}
+          {languageEvaluationData.length > 0 && <KaleidoscopeChart metrics={languageEvaluationData} />}
           {catMetricsHistory.length == 0 && metrics.length == 0 && <div className="w-full text-center">No metrics available</div>}
         </section>
       )}
