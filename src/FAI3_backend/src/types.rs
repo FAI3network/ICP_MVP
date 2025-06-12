@@ -494,7 +494,17 @@ impl Model {
         // Error code: IC0504
         let mut model_data = get_llm_model_data(&self);
 
-        model_data.cat_metrics_history = vec![];
+        model_data.cat_metrics_history = model_data
+            .cat_metrics_history
+            .into_iter()
+            .filter(|cat_metrics| {
+                return cat_metrics.finished && !cat_metrics.canceled;
+            })
+            .map(|mut cat_metrics| {
+                cat_metrics.data_points = vec![];
+                cat_metrics
+            })
+            .collect();    
         if let Some(mut cat) = model_data.cat_metrics {
             cat.data_points = vec![];
             model_data.cat_metrics = Some(cat);
