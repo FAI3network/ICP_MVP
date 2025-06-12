@@ -48,19 +48,23 @@ export default function Model() {
       // Ensure metric is treated as Metrics type
       const metricsData = metric as Metrics;
 
+      console.log(metricsData);
+
       metricsList.push({
         timestamp: metricsData.timestamp,
-        SPD: metricsData.statistical_parity_difference[0],
-        DI: metricsData.disparate_impact[0],
-        AOD: metricsData.average_odds_difference[0],
-        EOD: metricsData.equal_opportunity_difference[0],
+        SPD: metricsData.statistical_parity_difference[0] || 0,
+        DI: metricsData.disparate_impact[0] || 0,
+        AOD: metricsData.average_odds_difference[0] || 0,
+        EOD: metricsData.equal_opportunity_difference[0] || 0,
         average: {
-          SPD: metricsData.average_metrics.statistical_parity_difference[0],
-          DI: metricsData.average_metrics.disparate_impact[0],
-          AOD: metricsData.average_metrics.average_odds_difference[0],
-          EOD: metricsData.average_metrics.equal_opportunity_difference[0],
+          SPD: metricsData.average_metrics.statistical_parity_difference[0] || 0,
+          DI: metricsData.average_metrics.disparate_impact[0] || 0,
+          AOD: metricsData.average_metrics.average_odds_difference[0] || 0,
+          EOD: metricsData.average_metrics.equal_opportunity_difference[0] || 0,
         },
       });
+
+      console.log("Metrics List:", metricsList);
     }
 
     setMetrics(metricsList);

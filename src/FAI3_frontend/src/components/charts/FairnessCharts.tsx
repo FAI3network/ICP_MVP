@@ -23,6 +23,8 @@ export default function FairnessCharts({ metrics, key }: { metrics: any; key?: s
             unfairRange={chartConfig.SPD.unfairRange}
             maxVal={metrics.reduce((max: any, p: any) => (p.average.SPD > max ? p.average.SPD : max), metrics[0]?.average.SPD)}
             minVal={metrics.reduce((min: any, p: any) => (p.average.SPD < min ? p.average.SPD : min), metrics[0]?.average.SPD)}
+            map={false}
+            iterable={false}
           />
         </CardContent>
         <CardFooter className="flex flex-col text-sm">
@@ -44,6 +46,8 @@ export default function FairnessCharts({ metrics, key }: { metrics: any; key?: s
             unfairRange={chartConfig.DI.unfairRange}
             maxVal={metrics.reduce((max: any, p: any) => (p.average.DI > max ? p.average.DI : max), metrics[0]?.average.DI)}
             minVal={metrics.reduce((min: any, p: any) => (p.average.DI < min ? p.average.DI : min), metrics[0]?.average.DI)}
+            map={false}
+            iterable={false}
           />
         </CardContent>
         <CardFooter className="flex flex-col text-sm">
@@ -65,6 +69,8 @@ export default function FairnessCharts({ metrics, key }: { metrics: any; key?: s
             unfairRange={chartConfig.AOD.unfairRange}
             maxVal={metrics.reduce((max: any, p: any) => (p.average.AOD > max ? p.average.AOD : max), metrics[0]?.average.AOD)}
             minVal={metrics.reduce((min: any, p: any) => (p.average.AOD < min ? p.average.AOD : min), metrics[0]?.average.AOD)}
+            map={false}
+            iterable={false}
           />
         </CardContent>
         <CardFooter className="flex flex-col text-sm">
@@ -86,6 +92,8 @@ export default function FairnessCharts({ metrics, key }: { metrics: any; key?: s
             unfairRange={chartConfig.EOD.unfairRange}
             maxVal={metrics.reduce((max: any, p: any) => (p.average.EOD > max ? p.average.EOD : max), metrics[0]?.average.EOD)}
             minVal={metrics.reduce((min: any, p: any) => (p.average.EOD < min ? p.average.EOD : min), metrics[0]?.average.EOD)}
+            map={false}
+            iterable={false}
           />
         </CardContent>
         <CardFooter className="flex flex-col text-sm ">

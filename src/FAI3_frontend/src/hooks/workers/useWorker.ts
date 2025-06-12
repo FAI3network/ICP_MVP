@@ -52,26 +52,23 @@ export function useWorker() {
           let result;
           switch (payload.method) {
             case "context_association_test":
-              const newJobId = await webapp?.create_job(BigInt(payload.modelId));
-
-              if (!newJobId) {
-                throw new Error("Failed to create job.");
-              }
-
-              console.log("New job ID:", newJobId);
-              setWorkerProcesses([...workerProcesses, {
-                type: workerType,
-                jobId: newJobId,
-              }]);
-
               result = await webapp?.context_association_test(
                 BigInt(payload.modelId),
                 payload.max_queries,
                 payload.seed,
                 payload.shuffle,
-                100,
-                newJobId
+                100
               );
+
+              console.log("Result for context_association_test:", result);
+
+              const catJobId = (result as { Ok: string })?.Ok;
+
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: catJobId,
+              }]);
+
               break;
             case "fairness_test":
               const { modelId, max_queries, seed, dataset } = payload;
@@ -79,27 +76,24 @@ export function useWorker() {
               console.log("Dataset:", dataset);
 
               for (const item of dataset) {
-                const newJobId = await webapp?.create_job(BigInt(payload.modelId));
-
-                if (!newJobId) {
-                  throw new Error("Failed to create job.");
-                }
-
-                console.log("New job ID:", newJobId);
-                setWorkerProcesses([...workerProcesses, {
-                  type: workerType,
-                  jobId: newJobId,
-                }]);
-
                 try {
                   result = await webapp?.calculate_llm_metrics(
                     BigInt(modelId),
                     item,
                     max_queries,
                     seed,
-                    100,
-                    newJobId
+                    100
                   );
+
+                  console.log("Result for dataset item:", item, result);
+
+                  const jobId = (result as { Ok: string })?.Ok;
+
+                  setWorkerProcesses([...workerProcesses, {
+                    type: workerType,
+                    jobId: jobId,
+                  }]);
+
                 }
                 catch (error) {
                   console.error("Error in calculate_llm_metrics:", error);
@@ -121,23 +115,25 @@ export function useWorker() {
               break;
             case "kaleidoscope_test":
               const { languages } = payload;
-              const newJobIdKaleidoscope = await webapp?.create_job(BigInt(payload.modelId));
-              if (!newJobIdKaleidoscope) {
-                throw new Error("Failed to create job for Kaleidoscope test.");
-              }
-              console.log("New job ID for Kaleidoscope:", newJobIdKaleidoscope);
-              setWorkerProcesses([...workerProcesses, {
-                type: workerType,
-                jobId: newJobIdKaleidoscope,
-              }]);
 
               result = await webapp?.llm_evaluate_languages(
                 BigInt(payload.modelId),
                 languages,
                 payload.max_queries,
                 payload.seed,
-                newJobIdKaleidoscope
+
               );
+
+              console.log("Result for context_association_test:", result);
+
+              const jobId = (result as { Ok: string })?.Ok;
+
+              setWorkerProcesses([...workerProcesses, {
+                type: workerType,
+                jobId: jobId,
+              }]);
+
+
               break;
           }
 
@@ -162,7 +158,7 @@ export function useWorker() {
         setLoading(false);
         if (payload.success) {
           setResult(payload.data);
-          toasts.successToast(`${workerType} completed successfully.`);
+          // toasts.successToast(`${workerType} completed successfully.`);
         } else {
           setError(payload.error);
           toasts.errrorToast(`Error in ${workerType}: ${payload.error}`);
