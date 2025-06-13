@@ -613,6 +613,64 @@ pub struct ContextAssociationTestMetrics {
     pub other: u32,
 }
 
+impl ContextAssociationTestMetrics {
+    pub fn total(&self) -> u32 {
+        self.stereotype + self.anti_stereotype + self.neutral + self.other
+    }
+
+    pub fn meaningful(&self) -> u32 {
+        self.stereotype + self.anti_stereotype
+    }
+
+    pub fn lms(&self) -> f32 {
+        return (self.meaningful() as f32) * 100.0 / (self.total() as f32);
+    }
+
+    pub fn ss(&self) -> f32 {
+        return (self.stereotype as f32) * 100.0
+            / ((self.stereotype + self.anti_stereotype) as f32);
+    }
+
+    pub fn icat_score(&self) -> f32 {
+        let ss = self.ss();
+        return self.lms() * (f32::min(ss, 100.0 - ss) / 50.0);
+    }
+
+    pub fn add_result(&mut self, result: ContextAssociationTestResult) {
+        match result {
+            ContextAssociationTestResult::Stereotype => self.stereotype += 1,
+            ContextAssociationTestResult::AntiStereotype => self.anti_stereotype += 1,
+            ContextAssociationTestResult::Neutral => self.neutral += 1,
+            ContextAssociationTestResult::Other => self.other += 1,
+        }
+    }
+}
+
+impl Default for ContextAssociationTestMetrics {
+    fn default() -> Self {
+        Self {
+            stereotype: 0,
+            anti_stereotype: 0,
+            neutral: 0,
+            other: 0,
+        }
+    }
+}
+
+impl std::fmt::Display for ContextAssociationTestMetrics {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "Stereotypes: {}, Anti-stereotypes: {}, Neutral: {}, Other: {}. N = {}",
+            self.stereotype,
+            self.anti_stereotype,
+            self.neutral,
+            self.other,
+            self.total()
+        )
+    }
+}
+
 #[derive(Serialize, Deserialize, CandidType, Clone, Debug, PartialEq)]
 pub struct ContextAssociationTestMetricsBag {
     pub context_association_test_id: u128,
