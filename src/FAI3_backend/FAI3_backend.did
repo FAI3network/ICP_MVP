@@ -389,6 +389,7 @@ service : () -> {
 
     "context_association_test": (nat, nat64, nat32, bool, nat32) -> (variant { Ok: nat; Err: GenericError });
     get_cat_element_counts : () -> (CatElementCounts) query;
+    "get_cat_metrics_bag": (nat, nat) -> (variant { Ok: ContextAssociationTestMetricsBag; Err: GenericError });
 
     "set_config": (text, text) -> ();
     "get_config": (text) -> (variant { Ok: text; Err: GenericError }) query;
