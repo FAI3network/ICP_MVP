@@ -5,13 +5,15 @@ use FAI3_backend::errors::GenericError;
 use FAI3_backend::llm_fairness::{build_prompts, PISA_PROMPT};
 use FAI3_backend::types::{
     get_llm_model_data, AverageLLMFairnessMetrics, LLMDataPoint,
-    ModelEvaluationResult,
+    ModelEvaluationResult, JobType,
 };
 mod common;
 use common::{
     add_hf_api_key, create_llm_model, create_pic, get_model,
-    mock_correct_hugging_face_response_body, mock_http_response, wait_for_http_request,
+    mock_correct_hugging_face_response_body, mock_http_response, wait_for_http_request, wait_for_job_to_finish,
 };
+use std::time::Duration;
+use FAI3_backend::job_management::JOB_STATUS_COMPLETED;
 
 const PISA_TRAIN_CSV: &str = include_str!("./../src/data/pisa2009_train_processed.csv");
 const PISA_TEST_CSV: &str = include_str!("./../src/data/pisa2009_test_processed.csv");
@@ -78,7 +80,7 @@ fn get_row_data(
             i,
             PISA_PROMPT.to_string(),
             &results[i],
-            "pisa",
+            "Student",
         )
         .expect("build_prompts should execute successfully");
 
@@ -95,7 +97,7 @@ fn llm_fairness_with_variable_queries_test(
     dataset: &str,
     returned_texts: Vec<&str>,
     counter_factual_returned_text: Option<Vec<&str>>,
-) -> (LLMMetricsAPIResult, u128) {
+) -> (ModelEvaluationResult, u128) {
     // Setting the model name and creating the model
     let model_name = String::from("Test Model");
     let model_id: u128 = create_llm_model(&pic, canister_id, model_name.clone());
@@ -106,7 +108,8 @@ fn llm_fairness_with_variable_queries_test(
     // Preparing the request with the dynamic number of max_queries based on returned_texts length
     let max_queries: usize = returned_texts.len(); // Now this is dynamic
     let seed: u32 = 1;
-    let encoded_args = encode_args((model_id, dataset, max_queries, seed)).unwrap();
+    let max_errors: u32 = 0;
+    let encoded_args = encode_args((model_id, dataset, max_queries, seed, max_errors)).unwrap();
 
     // Submitting the computational request
     let call_id = pic
@@ -118,10 +121,18 @@ fn llm_fairness_with_variable_queries_test(
         )
         .expect("calculate_llm_metrics call should succeed");
 
+    // Awaiting and decoding the response
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Result<u128, String> =
+        decode_one(&reply).expect("Failed to decode context association test reply");
+
+    let job_id = decoded_reply.expect("Call should be succesful");
+
     // Mocking HTTP responses based on returned_texts
     let mut text_idx = 0;
     for text in returned_texts {
         for i in 0..2 {
+            pic.advance_time(Duration::from_secs(2));
             // Looping twice for each response simulation
             wait_for_http_request(&pic);
             let canister_http_requests = pic.get_canister_http();
@@ -142,21 +153,51 @@ fn llm_fairness_with_variable_queries_test(
             let mock_canister_http_response =
                 mock_http_response(canister_http_request, mock_hf_response_body);
             pic.mock_canister_http_response(mock_canister_http_response);
+
+            pic.tick();
+            pic.tick();
         }
         text_idx += 1;
     }
+
+     pic.advance_time(Duration::from_secs(2));
 
     // Verifying end condition: no pending HTTP outcalls
     let canister_http_requests = pic.get_canister_http();
     assert_eq!(canister_http_requests.len(), 0);
 
+    // Now we wait until the job finishes
+    let job = wait_for_job_to_finish(&pic, canister_id, job_id)
+        .expect("Job should finish on time");
+
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(job.status, JOB_STATUS_COMPLETED);
+
+    let model_evaluation_id = if let JobType::LLMFairness { model_evaluation_id } = job.job_type {
+        model_evaluation_id
+    } else {
+        panic!("job_type should be of type LLMFairness");
+    };
+
+    let encoded_args = encode_args((model_id, model_evaluation_id)).unwrap();
+
+    let call_id = pic
+        .submit_call(
+            canister_id,
+            Principal::anonymous(),
+            "get_llm_fairness_evaluation",
+            encoded_args,
+        )
+        .expect("calculate_llm_metrics call should succeed");
+
     // Awaiting and decoding the response
     let reply = pic.await_call(call_id).unwrap();
-    let decoded_reply: Result<LLMMetricsAPIResult, String> =
+    let decoded_reply: Result<ModelEvaluationResult, String> =
         decode_one(&reply).expect("Failed to decode context association test reply");
 
     return (
-        decoded_reply.expect("It should be a valid result"),
+        decoded_reply.expect("It should be a valid ModelEvaluationResult"),
         model_id,
     );
 }
@@ -181,30 +222,36 @@ fn assert_counter_factual_data(dp: &LLMDataPoint, cf_prompt: String, valid_answe
 
 // Waits for mocks to be processed.
 // mocked_texts parameters should include the mocks for counter factual fairness
-fn wait_for_mocks(pic: &PocketIc, call_id: RawMessageId, mocked_texts: Vec<&str>) -> Vec<u8> {
+fn wait_for_mocks(pic: &PocketIc, mocked_texts: Vec<&str>) {
     // Mocking HTTP responses based on returned_texts
     for text in mocked_texts {
+        pic.advance_time(Duration::from_secs(2));
+        // Looping twice for each response simulation
         wait_for_http_request(&pic);
         let canister_http_requests = pic.get_canister_http();
         if canister_http_requests.is_empty() {
             break;
         }
-
         let canister_http_request = &canister_http_requests[0];
+
         let mock_hf_response_body = mock_correct_hugging_face_response_body(text);
 
         let mock_canister_http_response =
             mock_http_response(canister_http_request, mock_hf_response_body);
         pic.mock_canister_http_response(mock_canister_http_response);
+
+        pic.tick();
+        pic.tick();
     }
 
-    return pic.await_call(call_id).unwrap();
+    pic.advance_time(Duration::from_secs(2));
 }
 
 #[test]
 fn test_llm_fairness_wrong_json_response() {
     let first_returned_text = "not-a-json";
     let second_returned_text = "not-a-json-2";
+    let responses = [first_returned_text, second_returned_text];
 
     let (pic, canister_id) = create_pic();
 
@@ -218,7 +265,8 @@ fn test_llm_fairness_wrong_json_response() {
     // Calling context_association_test
     let max_queries: usize = 2;
     let seed: u32 = 1;
-    let encoded_args = encode_args((model_id, "pisa", max_queries, seed)).unwrap();
+    let max_errors: u32 = 1000;
+    let encoded_args = encode_args((model_id, "pisa", max_queries, seed, max_errors)).unwrap();
     // Submit an update call to the test canister making a canister http outcall
     // and mock a canister http outcall response.
     let call_id = pic
@@ -230,51 +278,78 @@ fn test_llm_fairness_wrong_json_response() {
         )
         .expect("calculate_llm_metrics call should succeed");
 
+    // Awaiting and decoding the response
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Result<u128, String> =
+        decode_one(&reply).expect("Failed to decode context association test reply");
+
+    let job_id = decoded_reply.expect("Call should be succesful");
+
+    
     // Counter factual testing is not called when there is an error in the first call
 
     // We need a pair of ticks for the test canister method to make the http outcall
     // and for the management canister to start processing the http outcall.
-    wait_for_http_request(&pic);
-    let canister_http_requests = pic.get_canister_http();
-    let canister_http_request = &canister_http_requests[0];
+    for text in responses {       
+        pic.advance_time(Duration::from_secs(2));
+        // Looping twice for each response simulation
+        wait_for_http_request(&pic);
+        let canister_http_requests = pic.get_canister_http();
+        if canister_http_requests.is_empty() {
+            break;
+        }
+        let canister_http_request = &canister_http_requests[0];
 
-    let mock_canister_http_response =
-        mock_http_response(canister_http_request, first_returned_text);
-    pic.mock_canister_http_response(mock_canister_http_response);
+        pic.mock_canister_http_response(mock_http_response(&canister_http_request, text));
 
-    wait_for_http_request(&pic);
+        pic.tick();
+        pic.tick();
+    }
 
-    let canister_http_requests = pic.get_canister_http();
-    let canister_http_request = &canister_http_requests[0];
-
-    let mock_canister_http_response =
-        mock_http_response(canister_http_request, second_returned_text);
-    pic.mock_canister_http_response(mock_canister_http_response);
-
+    pic.advance_time(Duration::from_secs(2));
+    
     // There should be no more pending canister http outcalls.
     let canister_http_requests = pic.get_canister_http();
     assert_eq!(canister_http_requests.len(), 0);
 
+    // Now we wait until the job finishes
+    let job = wait_for_job_to_finish(&pic, canister_id, job_id)
+        .expect("Job should finish on time");
+
     // Now the test canister will receive the http outcall response
     // and reply to the ingress message from the test driver.
+    assert_eq!(job.status, JOB_STATUS_COMPLETED);
+
+    let model_evaluation_id = if let JobType::LLMFairness { model_evaluation_id } = job.job_type {
+        model_evaluation_id
+    } else {
+        panic!("job_type should be of type LLMFairness");
+    };
+
+    let encoded_args = encode_args((model_id, model_evaluation_id)).unwrap();
+
+    let call_id = pic
+        .submit_call(
+            canister_id,
+            Principal::anonymous(),
+            "get_llm_fairness_evaluation",
+            encoded_args,
+        )
+        .expect("calculate_llm_metrics call should succeed");
+
+    // Awaiting and decoding the response
     let reply = pic.await_call(call_id).unwrap();
-    let decoded_reply: Result<LLMMetricsAPIResult, String> =
+    let decoded_reply: Result<ModelEvaluationResult, String> =
         decode_one(&reply).expect("Failed to decode context association test reply");
 
     let llm_fairness_result = decoded_reply.expect("It should be a valid result");
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
-    assert_eq!(llm_fairness_result.call_errors, 2);
+    assert_eq!(llm_fairness_result.errors, 2);
 
     // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -319,7 +394,7 @@ fn test_llm_fairness_wrong_json_response() {
 #[test]
 fn test_llm_fairness_invalid_responses() {
     let (pic, canister_id) = create_pic();
-    let (llm_fairness_result, model_id) = llm_fairness_with_variable_queries_test(
+    let (llm_fairness_result, _) = llm_fairness_with_variable_queries_test(
         &pic,
         canister_id,
         "pisa",
@@ -329,16 +404,9 @@ fn test_llm_fairness_invalid_responses() {
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 2);
-    assert_eq!(llm_fairness_result.call_errors, 0);
+    assert_eq!(llm_fairness_result.errors, 0);
 
-    // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -383,12 +451,12 @@ fn test_llm_fairness_invalid_responses() {
 #[test]
 fn test_llm_fairness_happy_path() {
     let (pic, canister_id) = create_pic();
-    let (llm_fairness_result, model_id) =
+    let (llm_fairness_result, _) =
         llm_fairness_with_variable_queries_test(&pic, canister_id, "pisa", vec!["H", "L"], None);
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
-    assert_eq!(llm_fairness_result.call_errors, 0);
+    assert_eq!(llm_fairness_result.errors, 0);
 
     let counter_factual = llm_fairness_result
         .counter_factual
@@ -396,19 +464,14 @@ fn test_llm_fairness_happy_path() {
 
     assert_eq!(counter_factual.change_rate_overall, 0.0);
     assert_eq!(counter_factual.sensible_attribute, "male");
+
+    // We don't test idx=1 because the first two rows are female, so it can't be calculated for males
     assert_eq!(
-        counter_factual.change_rate_sensible_attributes,
-        vec![0.0, 0.0]
+        counter_factual.change_rate_sensible_attributes[0],
+        0.0
     );
 
-    // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -452,7 +515,7 @@ fn test_llm_fairness_happy_path() {
 #[test]
 fn test_llm_counterfactual_fairness_worst_case() {
     let (pic, canister_id) = create_pic();
-    let (llm_fairness_result, model_id) = llm_fairness_with_variable_queries_test(
+    let (llm_fairness_result, _) = llm_fairness_with_variable_queries_test(
         &pic,
         canister_id,
         "pisa_test",
@@ -462,7 +525,7 @@ fn test_llm_counterfactual_fairness_worst_case() {
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
-    assert_eq!(llm_fairness_result.call_errors, 0);
+    assert_eq!(llm_fairness_result.errors, 0);
 
     let counter_factual = llm_fairness_result
         .counter_factual
@@ -470,19 +533,15 @@ fn test_llm_counterfactual_fairness_worst_case() {
 
     assert_eq!(counter_factual.change_rate_overall, 1.0);
     assert_eq!(counter_factual.sensible_attribute, "male");
+
+    // idx=1 cannot be calculated with the first 2 samples
     assert_eq!(
-        counter_factual.change_rate_sensible_attributes,
-        vec![1.0, 1.0]
+        counter_factual.change_rate_sensible_attributes[0],
+        1.0
     );
 
     // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -502,7 +561,7 @@ fn test_llm_counterfactual_fairness_worst_case() {
 #[test]
 fn test_llm_counterfactual_fairness_50_percent_change() {
     let (pic, canister_id) = create_pic();
-    let (llm_fairness_result, model_id) = llm_fairness_with_variable_queries_test(
+    let (llm_fairness_result, _) = llm_fairness_with_variable_queries_test(
         &pic,
         canister_id,
         "pisa_test",
@@ -512,7 +571,7 @@ fn test_llm_counterfactual_fairness_50_percent_change() {
 
     assert_eq!(llm_fairness_result.queries, 2);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
-    assert_eq!(llm_fairness_result.call_errors, 0);
+    assert_eq!(llm_fairness_result.errors, 0);
 
     let counter_factual = llm_fairness_result
         .counter_factual
@@ -520,19 +579,15 @@ fn test_llm_counterfactual_fairness_50_percent_change() {
 
     assert_eq!(counter_factual.change_rate_overall, 0.5);
     assert_eq!(counter_factual.sensible_attribute, "male");
+
+    // only calculating for women
     assert_eq!(
-        counter_factual.change_rate_sensible_attributes,
-        vec![0.0, 1.0]
+        counter_factual.change_rate_sensible_attributes[0],
+        0.5
     );
 
     // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -556,7 +611,7 @@ fn test_llm_fairness_metrics_with_pisa_test() {
         "H", "L",
     ];
     let (pic, canister_id) = create_pic();
-    let (llm_fairness_result, model_id) = llm_fairness_with_variable_queries_test(
+    let (llm_fairness_result, _) = llm_fairness_with_variable_queries_test(
         &pic,
         canister_id,
         "pisa_test",
@@ -566,7 +621,7 @@ fn test_llm_fairness_metrics_with_pisa_test() {
 
     assert_eq!(llm_fairness_result.queries, 20);
     assert_eq!(llm_fairness_result.invalid_responses, 0);
-    assert_eq!(llm_fairness_result.call_errors, 0);
+    assert_eq!(llm_fairness_result.errors, 0);
 
     assert!(
         llm_fairness_result
@@ -592,7 +647,6 @@ fn test_llm_fairness_metrics_with_pisa_test() {
             - 0.8181818181818182
             < EPSILON
     );
-
     assert!(
         (llm_fairness_result
             .metrics
@@ -622,7 +676,7 @@ fn test_llm_fairness_metrics_with_pisa_test() {
             - (-0.1071428571428571))
             .abs()
             < EPSILON
-    );
+    );    
     assert!(
         (llm_fairness_result
             .metrics
@@ -635,13 +689,7 @@ fn test_llm_fairness_metrics_with_pisa_test() {
     );
 
     // test saved model
-    let model = get_model(&pic, canister_id, model_id);
-    let llm_data = get_llm_model_data(&model);
-    let llm_evaluation = llm_data
-        .evaluations
-        .get(0)
-        .expect("Created model should have one evaluation");
-    let llm_data_points = llm_evaluation
+    let llm_data_points = llm_fairness_result
         .llm_data_points
         .as_ref()
         .expect("llm_data_points should have data");
@@ -675,9 +723,10 @@ fn test_calculate_all_llm_metrics_integration() {
 
     let seed: u32 = 1;
     let max_queries: usize = 16;
+    let max_errors: u32 = 0;
 
     // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, max_queries, seed)).unwrap();
+    let encoded_args = encode_args((model_id, max_queries, seed, max_errors)).unwrap();
     let call_id = pic
         .submit_call(
             canister_id,
@@ -691,21 +740,83 @@ fn test_calculate_all_llm_metrics_integration() {
     // should do a normal query and a counter factual query = 64 calls
 
     // This test assumes pisa dataset will be called first
-    let mocked_texts = vec![
+    let mocked_texts_pisa = vec![
         "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H",
-        "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "1", "1", "0", "0",
+        "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L",
+    ];
+
+    let mocked_texts_compass = vec![
+        "1", "1", "0", "0",
         "1", "1", "0", "0", "1", "1", "0", "0", "1", "1", "0", "0", "1", "1", "0", "0", "1", "1",
         "0", "0", "1", "1", "0", "0", "1", "1", "0", "0",
     ];
 
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Result<Vec<u128>, String> =
+        decode_one(&reply).expect("Failed to decode context association test reply");
+
+    let job_ids = decoded_reply.expect("Call should be succesful");
+
+    assert_eq!(job_ids.len(), 3);
+
     // Await the results and verify
-    let reply = wait_for_mocks(&pic, call_id, mocked_texts);
-    let result: Result<LLMMetricsAPIResult, String> =
-        decode_one(&reply).expect("Failed to decode calculate_all_llm_metrics reply");
-    assert!(
-        result.is_ok(),
-        "Integration test for calculate_all_llm_metrics should succeed"
-    );
+    wait_for_mocks(&pic, mocked_texts_pisa);
+
+    // Now we wait until the job finishes
+    let pisa_job = wait_for_job_to_finish(&pic, canister_id, job_ids[0])
+        .expect("Job should finish on time");
+    
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(pisa_job.status, JOB_STATUS_COMPLETED);
+
+    match pisa_job.job_type {
+        JobType::LLMFairness { model_evaluation_id } => {
+            assert_eq!(model_evaluation_id, 1);
+        },
+        _ => panic!("Job type should be of type LLMFairness"),
+    }
+
+    pic.tick();
+    pic.tick();
+    
+    wait_for_mocks(&pic, mocked_texts_compass);
+
+    // Now we wait until the job finishes
+    let compass_job = wait_for_job_to_finish(&pic, canister_id, job_ids[1])
+        .expect("Job should finish on time");
+    
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(compass_job.status, JOB_STATUS_COMPLETED);
+
+    match compass_job.job_type {
+        JobType::LLMFairness { model_evaluation_id } => {
+            assert_eq!(model_evaluation_id, 2);
+        },
+        _ => panic!("Job type should be of type LLMFairness"),
+    }
+
+    pic.advance_time(Duration::from_secs(2));
+
+    pic.tick();
+    pic.tick();
+
+    // Now we wait until the job finishes
+    let average_metrics_job = wait_for_job_to_finish(&pic, canister_id, job_ids[2])
+        .expect("Job should finish on time");
+    
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(average_metrics_job.status, JOB_STATUS_COMPLETED);
+
+    match average_metrics_job.job_type {
+        JobType::AverageFairness { job_dependencies } => {
+            assert_eq!(job_dependencies[0], 1);
+            assert_eq!(job_dependencies[1], 2);
+        },
+        _ => panic!("Job type should be of type AverageFairness"),
+    }
 }
 
 #[test]
@@ -714,9 +825,10 @@ fn test_calculate_all_llm_metrics_with_non_existing_model() {
     let model_id: u128 = 999; // non-existing model ID
     let seed: u32 = 1;
     let max_queries: usize = 2;
-
+    let max_errors: u32 = 0;
+    
     // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, max_queries, seed)).unwrap();
+    let encoded_args = encode_args((model_id, max_queries, seed, max_errors)).unwrap();
     let call_id = pic
         .submit_call(
             canister_id,
@@ -732,7 +844,7 @@ fn test_calculate_all_llm_metrics_with_non_existing_model() {
 
     // Await the results and verify expected failure
     let reply = pic.await_call(call_id).unwrap();
-    let result: Result<LLMMetricsAPIResult, String> =
+    let result: Result<Vec<u128>, String> =
         decode_one(&reply).expect("Failed to decode calculate_all_llm_metrics reply");
     assert!(result.is_err(), "Should fail for non-existing model");
     let err = result.unwrap_err();
@@ -754,9 +866,11 @@ fn test_llm_fairness_datasets_integration_should_return_a_list_of_strings() {
         .expect("calculate_all_llm_metrics call should not fail.");
 
     let reply = pic.await_call(call_id).unwrap();
-    let datasets: Vec<String> =
+    let dataset_tuples: Vec<(String, usize)> =
         decode_one(&reply).expect("Failed to decode llm_fairness_datasets reply");
 
+    let datasets: Vec<String> = dataset_tuples.into_iter().map( |d| d.0).collect();
+    
     assert_eq!(
         datasets, expected_datasets,
         "Datasets should match the expected datasets."
@@ -772,6 +886,7 @@ fn test_average_llm_metrics_integration_happy_path() {
 
     let seed: u32 = 1;
     let max_queries: usize = 20;
+    let max_errors: u32 = 0;
 
     // It should not have an average metrics saved
     let model = get_model(&pic, canister_id, model_id);
@@ -781,7 +896,7 @@ fn test_average_llm_metrics_integration_happy_path() {
     // dataset pisa
 
     // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, "pisa", max_queries, seed)).unwrap();
+    let encoded_args = encode_args((model_id, "pisa", max_queries, seed, max_errors)).unwrap();
     let call_id = pic
         .submit_call(
             canister_id,
@@ -797,14 +912,25 @@ fn test_average_llm_metrics_integration_happy_path() {
         "H", "H", "L", "L",
     ];
 
-    let reply = wait_for_mocks(&pic, call_id, mocked_texts);
-    let reply: Result<LLMMetricsAPIResult, String> =
-        decode_one(&reply).expect("Failed to decode calculate_llm_metrics reply");
-    reply.expect("It should return a non-error value");
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Result<u128, String> =
+        decode_one(&reply).expect("Failed to decode context association test reply");
 
+    let pisa_job_id = decoded_reply.expect("Call should be succesful");
+
+    wait_for_mocks(&pic, mocked_texts);
+
+    // Now we wait until the job finishes
+    let job = wait_for_job_to_finish(&pic, canister_id, pisa_job_id)
+        .expect("Pisa job should finish on time");
+
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(job.status, JOB_STATUS_COMPLETED);
+    
     // dataset compas
     // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, "compas", max_queries, seed)).unwrap();
+    let encoded_args = encode_args((model_id, "compas", max_queries, seed, max_errors)).unwrap();
     let call_id = pic
         .submit_call(
             canister_id,
@@ -820,15 +946,26 @@ fn test_average_llm_metrics_integration_happy_path() {
         "1", "1", "0", "0",
     ];
 
-    let reply = wait_for_mocks(&pic, call_id.clone(), mocked_texts);
-    let reply: Result<LLMMetricsAPIResult, String> =
-        decode_one(&reply).expect("Failed to decode calculate_llm_metrics reply");
-    reply.expect("It should return a non error value");
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Result<u128, String> =
+        decode_one(&reply).expect("Failed to decode context association test reply");
+
+    let compas_job_id = decoded_reply.expect("Call should be succesful");
+
+    wait_for_mocks(&pic, mocked_texts);
+
+    // Now we wait until the job finishes
+    let job = wait_for_job_to_finish(&pic, canister_id, compas_job_id)
+        .expect("Compas job should finish on time");
+
+    // Now the test canister will receive the http outcall response
+    // and reply to the ingress message from the test driver.
+    assert_eq!(job.status, JOB_STATUS_COMPLETED);
 
     // Calculate average metrics
     let datasets = vec!["pisa".to_string(), "compas".to_string()];
     // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, datasets, max_queries, seed)).unwrap();
+    let encoded_args = encode_args((model_id, datasets)).unwrap();
     let call_id = pic
         .submit_call(
             canister_id,
@@ -842,8 +979,8 @@ fn test_average_llm_metrics_integration_happy_path() {
     let average_metrics_result: Result<AverageLLMFairnessMetrics, GenericError> =
         decode_one(&reply).expect("Failed to decode average_llm_metrics reply");
 
-    let average_metrics_result = average_metrics_result.expect("It should return a non error");
-
+    let average_metrics_result: AverageLLMFairnessMetrics = average_metrics_result.expect("It should return a non error");
+    
     // Simple assertions to check we have received an answer
     assert!(
         average_metrics_result.accuracy >= 0.0,
@@ -995,35 +1132,20 @@ fn test_average_llm_metrics_integration_happy_path() {
 #[test]
 fn test_average_llm_metrics_should_error_when_dataset_was_not_calculated() {
     let (pic, canister_id) = create_pic();
-    let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
-
-    add_hf_api_key(&pic, canister_id, model_id);
 
     let seed: u32 = 1;
     let max_queries: usize = 16;
 
     // dataset for pisa is created, but not for compas
 
-    // Submit an update call to the test canister to calculate all LLM metrics
-    let encoded_args = encode_args((model_id, "pisa", max_queries, seed)).unwrap();
-    let call_id = pic
-        .submit_call(
-            canister_id,
-            Principal::anonymous(),
-            "calculate_llm_metrics",
-            encoded_args,
-        )
-        .expect("calculate_llm_metrics call should succeed");
-
     // Assuming pisa dataset will be called first
     let mocked_texts = vec![
         "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H",
         "L", "L", "H", "H", "L", "L", "H", "H", "L", "L", "H", "H", "L", "L",
     ];
-    let reply = wait_for_mocks(&pic, call_id, mocked_texts);
-    let reply: Result<LLMMetricsAPIResult, String> =
-        decode_one(&reply).expect("Failed to decode calculate_llm_metrics reply");
-    reply.expect("It should return a non-error value");
+
+    let (_, model_id) =
+        llm_fairness_with_variable_queries_test(&pic, canister_id, "pisa", mocked_texts, None);
 
     // Calculate average metrics
     let datasets = vec!["pisa".to_string(), "compas".to_string()];

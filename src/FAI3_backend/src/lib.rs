@@ -6,7 +6,7 @@ mod data_management;
 pub mod errors;
 mod hugging_face;
 pub mod inference_providers;
-mod job_management;
+pub mod job_management;
 pub mod llm_fairness;
 pub mod llm_language_evaluations;
 mod metrics_calculation;
