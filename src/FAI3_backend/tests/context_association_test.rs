@@ -223,7 +223,7 @@ fn test_llm_cat_test_wrong_hugging_face_responses() {
     let model = get_model(&pic, canister_id, model_id);
     let llm_data = get_llm_model_data(&model);
     assert_ne!(llm_data.cat_metrics, None);
-    assert_eq!(llm_data.cat_metrics_history.len(), 0);
+    assert_eq!(llm_data.cat_metrics_history.len(), 1);
     
     let cat_metrics = llm_data.cat_metrics.unwrap();
 
@@ -284,7 +284,7 @@ fn test_llm_cat_test_invalid_hugging_face_responses() {
     let model = get_model(&pic, canister_id, model_id);
     let llm_data = get_llm_model_data(&model);
     assert_ne!(llm_data.cat_metrics, None);
-    assert_eq!(llm_data.cat_metrics_history.len(), 0);
+    assert_eq!(llm_data.cat_metrics_history.len(), 1);
     
     let cat_metrics = llm_data.cat_metrics.unwrap();
 
@@ -338,7 +338,7 @@ fn test_llm_cat_perfect_balance_test() {
     let model = get_model(&pic, canister_id, model_id);
     let llm_data = get_llm_model_data(&model);
     assert_ne!(llm_data.cat_metrics, None);
-    assert_eq!(llm_data.cat_metrics_history.len(), 0);
+    assert_eq!(llm_data.cat_metrics_history.len(), 1);
     
     let cat_metrics = llm_data.cat_metrics.unwrap();
 
@@ -395,7 +395,7 @@ fn test_llm_cat_all_stereotypes_test() {
     let model = get_model(&pic, canister_id, model_id);
     let llm_data = get_llm_model_data(&model);
     assert_ne!(llm_data.cat_metrics, None);
-    assert_eq!(llm_data.cat_metrics_history.len(), 0);
+    assert_eq!(llm_data.cat_metrics_history.len(), 1);
     
     let cat_metrics = llm_data.cat_metrics.unwrap();
 
@@ -449,7 +449,7 @@ fn test_llm_cat_all_anti_stereotype_test() {
     let model = get_model(&pic, canister_id, model_id);
     let llm_data = get_llm_model_data(&model);
     assert_ne!(llm_data.cat_metrics, None);
-    assert_eq!(llm_data.cat_metrics_history.len(), 0);
+    assert_eq!(llm_data.cat_metrics_history.len(), 1);
     
     let cat_metrics = llm_data.cat_metrics.unwrap();
 

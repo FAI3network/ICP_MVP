@@ -1,107 +1,175 @@
-// use candid::{Principal, decode_one, encode_args};
-// use FAI3_backend::types::{get_llm_model_data, LanguageEvaluationResult, LanguageEvaluationMetrics};
-// use FAI3_backend::errors::GenericError;
-// mod common;
-// use common::{
-//     create_pic, create_llm_model, get_model, add_hf_api_key,
-//     wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body, wait_for_mocks_strings,
-// };
-// use FAI3_backend::llm_language_evaluations::LanguageEvaluationAnswer;
+use candid::{Principal, decode_one, encode_args};
+use FAI3_backend::types::{get_llm_model_data, LanguageEvaluationResult, LanguageEvaluationMetrics, JobType};
+use FAI3_backend::errors::GenericError;
+use FAI3_backend::job_management::JOB_STATUS_COMPLETED;
+use pocket_ic::PocketIc;
+mod common;
+use common::{
+    create_pic, create_llm_model, get_model, add_hf_api_key,
+    wait_for_http_request, mock_http_response, mock_correct_hugging_face_response_body, wait_for_mocks_strings,
+     wait_for_job_to_finish,
+};
+use FAI3_backend::llm_language_evaluations::LanguageEvaluationAnswer;
+use std::time::Duration;
 
-// fn json_answer(answer: &str) -> String {
-//     serde_json::to_string(&LanguageEvaluationAnswer {
-//         choice: answer.to_string()
-//     }).unwrap()
-// }
+fn json_answer(answer: &str) -> String {
+    serde_json::to_string(&LanguageEvaluationAnswer {
+        choice: answer.to_string()
+    }).unwrap()
+}
 
-// #[test]
-// fn test_language_evaluations_with_multiple_languages() {
-//     let (pic, canister_id) = create_pic();
-//     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
-//     add_hf_api_key(&pic, canister_id, model_id);
-//     let seed: u32 = 0;
-//     let max_queries: usize = 10;
+fn evaluate_languages(pic: &PocketIc, canister_id: Principal, model_id: u128,  languages: &Vec<&str>, max_queries: usize, mocked_texts: &Vec<String>) -> LanguageEvaluationResult {
+    let seed: u32 = 0;
+    // Submit an update call to the test canister to calculate all LLM metrics
+    let encoded_args = encode_args((model_id, languages, max_queries, seed)).unwrap();
+    let call_id = pic.submit_call(
+        canister_id,
+        Principal::anonymous(),
+        "llm_evaluate_languages",
+        encoded_args,
+    ).expect("llm_evaluate_languages call should be submitted.");
     
-//    // Calculate average metrics
-//     let languages = vec!["es", "en"];
-//     // Submit an update call to the test canister to calculate all LLM metrics
-//     let encoded_args = encode_args((model_id, languages, max_queries, seed)).unwrap();
-//     let call_id = pic.submit_call(
-//         canister_id,
-//         Principal::anonymous(),
-//         "llm_evaluate_languages",
-//         encoded_args,
-//     ).expect("llm_evaluate_languages call should be submitted.");
+    let reply = pic.await_call(call_id).unwrap();
+    let result: Result<u128, GenericError> = decode_one(&reply).expect("Failed to decode llm_evaluate_languages reply.");
 
-//     let mocked_texts = vec![
-//         json_answer("La Respuesta A y B, son Correctas"),
-//         json_answer("8"), // incorrect answer
-//         json_answer("La Respuesta A y B, son Correctas."),
-//         json_answer("Todos los grados de yododeficiencia (leve, moderada o severa), pueden potencialmente causar daño neurológico en el feto"),
-//         json_answer("La Respuesta C y D, son Correctas"),
-//         json_answer("Hans Peters"),
-//         json_answer("Protein"), // incorrect answer
-//         json_answer("Anther is kidney shaped"),
-//         json_answer("i and ii"),
-//         json_answer("In pectoral girdle"),
-//     ];
+    assert!(result.is_ok(), "Result for job_id should be ok");
+
+    let job_id = result.unwrap();
+
+    for i in 0..mocked_texts.len() {
+        pic.advance_time(Duration::from_secs(2));
+        // We need a pair of ticks for the test canister method to make the http outcall
+        // and for the management canister to start processing the http outcall.
+        wait_for_http_request(&pic);
+        
+        let canister_http_requests = pic.get_canister_http();
+        let canister_http_request = &canister_http_requests[0];
+
+        let mock_hf_response_body = mock_correct_hugging_face_response_body(mocked_texts.get(i).unwrap());
+        let mock_canister_http_response = mock_http_response(canister_http_request, mock_hf_response_body);
+        pic.mock_canister_http_response(mock_canister_http_response);
+
+        pic.tick();
+        pic.tick();
+    }
     
-//     let reply = wait_for_mocks_strings(&pic, call_id, &mocked_texts);
-//     let result: Result<LanguageEvaluationResult, GenericError> = decode_one(&reply).expect("Failed to decode llm_evaluate_languages reply.");
-
-//     assert!(result.is_ok(), "Result should be ok");
-
-//     let result: LanguageEvaluationResult = result.unwrap();
-
-//     fn assert_overall_metrics(metrics: &LanguageEvaluationMetrics) {
-//         assert_eq!(metrics.n, 10);
-//         assert_eq!(metrics.correct_responses, 8);
-//         assert_eq!(metrics.incorrect_responses, 2);
-//         assert_eq!(metrics.error_count, 0);
-//         assert_eq!(metrics.invalid_responses, 0);
-        
-//         assert_eq!(metrics.overall_accuracy, Some(0.8));
-//         assert_eq!(metrics.accuracy_on_valid_responses, Some(0.8));
-//     }
-
-//     fn assert_language_metrics(metrics: &LanguageEvaluationMetrics) {
-//         assert_eq!(metrics.n, 5);
-//         assert_eq!(metrics.correct_responses, 4);
-//         assert_eq!(metrics.incorrect_responses, 1);
-//         assert_eq!(metrics.error_count, 0);
-//         assert_eq!(metrics.invalid_responses, 0);
-        
-//         assert_eq!(metrics.overall_accuracy, Some(0.8));
-//         assert_eq!(metrics.accuracy_on_valid_responses, Some(0.8));
-//     }
-
-//     fn assert_score_result(result: &LanguageEvaluationResult) {
-//         assert_eq!(result.data_points.len(), 10);
-//         assert_eq!(result.language_model_evaluation_id, 1);
-//         assert_eq!(result.max_queries, 10);
-//         assert_eq!(result.languages, vec!["es", "en"]);
-//         assert_overall_metrics(&result.metrics);
-        
-//         // check metrics for en language
-//         assert_eq!(result.metrics_per_language.len(), 2);
-//         let (es_label, es_metrics) = result.metrics_per_language.get(0).unwrap();
-//         assert_eq!("es", es_label);
-//         assert_language_metrics(&es_metrics);
-//         let (en_label, en_metrics) = result.metrics_per_language.get(1).unwrap();
-//         assert_eq!("en", en_label);
-//         assert_language_metrics(&en_metrics);
-//     }
-
-//     assert_score_result(&result);
+    pic.advance_time(Duration::from_secs(2));
     
-//     // checking it was saved correctly
-//     let model = get_model(&pic, canister_id, model_id);
-//     let llm_model_data = get_llm_model_data(&model);
+    // There should be no more pending canister http outcalls.
+    let canister_http_requests = pic.get_canister_http();
+    assert_eq!(canister_http_requests.len(), 0);
 
-//     assert_eq!(llm_model_data.language_evaluations.len(), 1);
-//     let evaluation = llm_model_data.language_evaluations.get(0).unwrap();
-//     assert_score_result(&evaluation);
-// }
+    ic_cdk::println!("asdf4");
+
+    // Now we wait until the job finishes
+    let job = wait_for_job_to_finish(&pic, canister_id, job_id)
+        .expect("Job should finish on time");
+
+    ic_cdk::println!("asdf5");
+    
+    let language_evaluation_id = if let JobType::LanguageEvaluation { language_model_evaluation_id } = job.job_type {
+        language_model_evaluation_id
+    } else {
+        panic!("job_type should be LanguageEvaluation");
+    };
+
+    let encoded_args = encode_args((model_id, language_evaluation_id)).unwrap();
+    let call_id = pic.submit_call(
+        canister_id,
+        Principal::anonymous(),
+        "get_language_evaluation",
+        encoded_args,
+    ).expect("get_language_evaluation call should be submitted.");
+
+    let reply = pic.await_call(call_id).unwrap();
+    let result: Result<LanguageEvaluationResult, GenericError> = decode_one(&reply).expect("Failed to decode get_language_evaluation reply.");
+
+    assert!(result.is_ok(), "Result for LanguageEvaluationResult should be ok");
+
+    let result: LanguageEvaluationResult = result.unwrap();
+
+    return result;
+}
+
+// TODO: use a reduced version of the CSV to test both languages
+// Otherwise it will only run english
+#[test]
+fn test_language_evaluations_with_multiple_languages() {
+    let (pic, canister_id) = create_pic();
+    let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
+    add_hf_api_key(&pic, canister_id, model_id);
+    
+    let max_queries: usize = 10;
+    
+   // Calculate average metrics
+    let languages: Vec<&str> = vec!["en", "es"];
+
+    let mocked_texts = vec![
+        json_answer("a"),
+        json_answer("d"), // incorrect answer
+        json_answer("b"),
+        json_answer("a"),
+        json_answer("c"),
+        json_answer("c"),
+        json_answer("a"), // incorrect answer
+        json_answer("a"),
+        json_answer("c"),
+        json_answer("d"),
+    ];
+
+    let result = evaluate_languages(&pic, canister_id, model_id, &languages, max_queries, &mocked_texts);
+
+
+    fn assert_overall_metrics(metrics: &LanguageEvaluationMetrics) {
+        assert_eq!(metrics.n, 10);
+        assert_eq!(metrics.correct_responses, 8);
+        assert_eq!(metrics.incorrect_responses, 2);
+        assert_eq!(metrics.error_count, 0);
+        assert_eq!(metrics.invalid_responses, 0);
+        
+        assert_eq!(metrics.overall_accuracy, Some(0.8));
+        assert_eq!(metrics.accuracy_on_valid_responses, Some(0.8));
+    }
+
+    fn assert_language_metrics(metrics: &LanguageEvaluationMetrics) {
+        assert_eq!(metrics.n, 5);
+        assert_eq!(metrics.correct_responses, 4);
+        assert_eq!(metrics.incorrect_responses, 1);
+        assert_eq!(metrics.error_count, 0);
+        assert_eq!(metrics.invalid_responses, 0);
+        
+        assert_eq!(metrics.overall_accuracy, Some(0.8));
+        assert_eq!(metrics.accuracy_on_valid_responses, Some(0.8));
+    }
+
+    fn assert_score_result(result: &LanguageEvaluationResult) {
+        assert_eq!(result.data_points.len(), 10);
+        assert_eq!(result.language_model_evaluation_id, 1);
+        assert_eq!(result.max_queries, 10);
+        assert_eq!(result.languages, vec!["en", "es"]);
+        assert_overall_metrics(&result.metrics);
+        
+        // check metrics for en language
+        assert_eq!(result.metrics_per_language.len(), 2);
+
+        let (en_label, en_metrics) = result.metrics_per_language.get(0).unwrap();
+        assert_eq!("en", en_label);
+        assert_language_metrics(&en_metrics);
+        let (es_label, es_metrics) = result.metrics_per_language.get(1).unwrap();
+        assert_eq!("es", es_label);
+        assert_language_metrics(&es_metrics);
+    }
+
+    assert_score_result(&result);
+    
+    // checking it was saved correctly
+    let model = get_model(&pic, canister_id, model_id);
+    let llm_model_data = get_llm_model_data(&model);
+
+    assert_eq!(llm_model_data.language_evaluations.len(), 1);
+    let evaluation = llm_model_data.language_evaluations.get(0).unwrap();
+    assert_score_result(&evaluation);
+}
 
 // #[test]
 // fn test_language_evaluations_perfect_score() {
