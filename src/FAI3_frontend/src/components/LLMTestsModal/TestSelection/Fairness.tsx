@@ -36,7 +36,9 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
 
   return (
     <Form {...form}>
-      <div className="space-y-8 flex flex-col text-left w-full">
+      <div className="space-y-4 flex flex-col text-left w-full">
+        <h2 className="text-2xl font-semibold">Fairness Test</h2>
+
         <FormField
           control={form.control}
           name="dataset"
@@ -82,7 +84,7 @@ export default function Fairness({ form }: { form: UseFormReturn<formSchemaType,
         />
       </div>
 
-      <form className="space-y-8 flex flex-col text-left w-full">
+      <form className="space-y-4 flex flex-col text-left w-full mx-0">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <FormField
             control={form.control}

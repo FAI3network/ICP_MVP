@@ -73,11 +73,21 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
       })();
     }
     if (selectedTest.includes("Fairness")) {
+      if (fairnessForm.getValues("dataset").length === 0) {
+        toasts.errrorToast("Please select at least one dataset for the fairness test.");
+        setLoading(false);
+        return;
+      }
       await fairnessForm.handleSubmit(async (data) => {
         runTest({ modelId: modelId!, max_queries: data.max_queries, seed: data.seed, dataset: data.dataset.map((dataset: string) => dataset.split(" (")[0]) }, "FAIRNESS");
       })();
     }
     if (selectedTest.includes("Kaleidoscope")) {
+      if (kaleidoscopeForm.getValues("languages").length === 0) {
+        toasts.errrorToast("Please select at least one language for the Kaleidoscope test.");
+        setLoading(false);
+        return;
+      }
       await kaleidoscopeForm.handleSubmit(async (data) => {
         runTest({ modelId: modelId!, languages: data.languages, max_queries: data.max_queries, seed: data.seed }, "KALEIDOSCOPE");
       })();
@@ -95,7 +105,7 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
       <ModalHeader>
         <ModalTitle>Which test would you like to run?</ModalTitle>
       </ModalHeader>
-      <ModalBody className="flex flex-col gap-4">
+      <ModalBody className="flex flex-col gap-8">
         <Select options={["Context Association", "Fairness", "Kaleidoscope"]} multiple selection={selectedTest} setSelection={(selection: string) => setSelectedTest(selection)} />
 
         {selectedTest.includes("Context Association") && <ContextAssociation form={catForm} />}
@@ -103,7 +113,7 @@ export default function TestSelection({ setLoading, fetchModel }: { setLoading: 
         {selectedTest.includes("Kaleidoscope") && <Kaleidoscope form={kaleidoscopeForm} />}
 
       </ModalBody>
-      <ModalFooter>
+      <ModalFooter className="mt-4">
         <Button variant="secondary" onClick={closeModal}>
           Cancel
         </Button>

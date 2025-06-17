@@ -21,7 +21,9 @@ export default function Kaleidoscope({ form }: { form: UseFormReturn<formSchemaT
 
     return (
         <Form {...form}>
-            <div className="space-y-8 flex flex-col text-left w-full">
+            <div className="space-y-4 flex flex-col text-left w-full">
+                <h2 className="text-2xl font-semibold">Kaleidoscope Test (Language Evaluation)</h2>
+
                 <FormField
                     control={form.control}
                     name="languages"
@@ -67,7 +69,7 @@ export default function Kaleidoscope({ form }: { form: UseFormReturn<formSchemaT
                 />
             </div>
 
-            <form className="space-y-8 flex flex-col text-left w-full">
+            <form className="space-y-4 flex flex-col text-left w-full">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     <FormField
                         control={form.control}

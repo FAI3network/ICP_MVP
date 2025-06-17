@@ -15,7 +15,8 @@ interface formSchemaType {
 export default function ContextAssociation({ form }: { form: UseFormReturn<formSchemaType, any, formSchemaType> }) {
   return (
     <Form {...form}>
-      <form className="space-y-8 flex flex-col text-left w-full">
+      <form className="space-y-4 flex flex-col text-left w-full mx-0">
+        <h2 className="text-2xl font-semibold">Context Association Test</h2>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <FormField
             control={form.control}
