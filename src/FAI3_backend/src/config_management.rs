@@ -35,3 +35,20 @@ pub fn get_config(config_key: String) -> Result<String, GenericError> {
         }
     }
 }
+
+pub fn internal_get_config(config_key: String) -> Result<String, GenericError> {
+    let result = CONFIGURATION.with(|config| {
+        let config_tree = config.borrow();
+        config_tree.get(&config_key)
+    });
+
+    match result {
+        Some(value) => return Ok(value),
+        None => {
+            return Err(GenericError::new(
+                GenericError::CONFIGURATION_KEY_NOT_FOUND,
+                "Key not set",
+            ))
+        }
+    }
+}

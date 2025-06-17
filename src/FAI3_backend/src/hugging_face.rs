@@ -77,7 +77,6 @@ fn transform_hf_response(raw: TransformArgs) -> HttpResponse {
                 *id = serde_json::Value::String("".to_string());
             }
             if let Some(created) = obj.get_mut("created") {
-                ic_cdk::println!("Changing created");
                 *created = serde_json::Value::Number(serde_json::Number::from(0));
             }
         }
@@ -195,7 +194,7 @@ pub async fn call_hugging_face(
     });
 
     ic_cdk::println!("Endpoint url: {}", url);
-    ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
+    // ic_cdk::println!("json payload: {}", String::from_utf8_lossy(&json_payload));
 
     let request_arg = CanisterHttpRequestArgument {
         url,
@@ -222,13 +221,13 @@ pub async fn call_hugging_face(
         ));
     }
 
-    ic_cdk::println!("Json response: {}", String::from_utf8_lossy(&response.body));
+    // ic_cdk::println!("Json response: {}", String::from_utf8_lossy(&response.body));
 
     // 1) Parse raw bytes into a `serde_json::Value`
-    let json_val: serde_json::Value =
-        serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
+    // let json_val: serde_json::Value =
+    //    serde_json::from_slice(&response.body).map_err(|e| e.to_string())?;
 
-    ic_cdk::println!("HF response: {}", &json_val);
+    // ic_cdk::println!("HF response: {}", &json_val);
 
     return provider.get_response_text(&response.body);
 }

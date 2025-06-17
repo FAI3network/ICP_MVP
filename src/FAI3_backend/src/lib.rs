@@ -47,19 +47,6 @@ thread_local! {
         )
     );
 
-    static JOBS: RefCell<StableBTreeMap<u128, Job, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(8)))
-        )
-    );
-
-    static NEXT_JOB_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
-        Cell::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(9))),
-            1
-        ).unwrap()
-    );
-
     static MODELS: RefCell<StableBTreeMap<u128, Model, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))
@@ -105,6 +92,33 @@ thread_local! {
         Cell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(7))),
             1
+        ).unwrap()
+    );
+
+    static JOBS: RefCell<StableBTreeMap<u128, Job, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(8)))
+        )
+    );
+
+    static NEXT_JOB_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(9))),
+            1
+        ).unwrap()
+    );
+
+    static NEXT_CONTEXT_ASSOCIATION_TEST_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(10))),
+            1
+        ).unwrap()
+    );
+
+    static LAST_PROCESSED_JOB_ID: RefCell<Cell<u128, VirtualMemory<DefaultMemoryImpl>>> = RefCell::new(
+        Cell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(11))),
+            0
         ).unwrap()
     );
 }
