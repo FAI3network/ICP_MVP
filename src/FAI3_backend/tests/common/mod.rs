@@ -10,7 +10,15 @@ use pocket_ic::{
     },
 };
 use FAI3_backend::types::{
-    Model, ModelDetails, UpdatedDetails, KeyValuePair, PrivilegedIndex,
+    Model, ModelDetails, UpdatedDetails, KeyValuePair, PrivilegedIndex, Job,
+};
+use FAI3_backend::job_management::{
+    JOB_STATUS_PENDING,
+    JOB_STATUS_IN_PROGRESS,
+    JOB_STATUS_COMPLETED,
+    JOB_STATUS_FAILED,
+    JOB_STATUS_STOPPED,
+    JOB_STATUS_PAUSED,
 };
 
 // 2T cycles
@@ -86,12 +94,17 @@ pub fn add_hf_api_key(pic: &PocketIc, canister_id: CanisterId, model_id: u128) {
 }
 
 pub fn get_all_models(pic: &PocketIc, canister_id: CanisterId) -> Vec<Model> {
+    let limit: usize = 100;
+    let offset: usize = 0;
+    let model_type: Option<String> = None;
+    
+    let encoded_args = encode_args((limit, offset, model_type)).unwrap();
     // Testing get_all_models method.
     let reply = pic.query_call(
         canister_id,
         Principal::anonymous(),
         "get_all_models",
-        encode_one(()).unwrap()
+        encoded_args
     ).expect("Failed to call get_all_models method");
 
     // Decode the Candid serialized reply to match the expected plain string.
@@ -308,4 +321,37 @@ pub fn wait_for_mocks_strings(pic: &PocketIc, call_id: RawMessageId, mocked_text
     }
 
     return pic.await_call(call_id).unwrap();
+}
+
+pub fn retrieve_job(pic: &PocketIc, canister_id: Principal, job_id: u128) -> Job {
+    let call_id = pic.submit_call(
+        canister_id,
+        Principal::anonymous(),
+        "get_job",
+        encode_one(job_id).expect("It should be able to encode an argument"),
+    ).expect("get_job call should succeed");
+
+    let reply = pic.await_call(call_id).unwrap();
+    let decoded_reply: Option<Job> = decode_one(&reply).expect("Failed to decode get_job reply");
+
+    let job = decoded_reply.expect("It should be a valid job");
+
+    return job;
+}
+
+pub fn wait_for_job_to_finish(pic: &PocketIc, canister_id: Principal, job_id: u128) -> Result<Job, String> {
+    let max_iterations = 100000;
+    let mut iterations = 0;
+    while iterations < max_iterations {
+        pic.tick();
+
+        let job = retrieve_job(&pic, canister_id, job_id);
+        if job.status == JOB_STATUS_COMPLETED || job.status == JOB_STATUS_FAILED {
+            return Ok(job);
+        }
+
+        iterations += 1;
+    }
+
+    return Err("Job didn't finish on time.".to_string());
 }
