@@ -143,6 +143,7 @@ const COMPAS_DATASET: LLMFairnessDataset<'static> = LLMFairnessDataset {
 const LLMFAIRNESS_DATASETS: &'static [LLMFairnessDataset<'static>] =
     &[PISA_DATASET, PISA_TEST_DATASET, COMPAS_DATASET];
 
+
 /// Formats a single example for llm fairness call
 pub fn format_example(
     dataset_subject_label: &str,

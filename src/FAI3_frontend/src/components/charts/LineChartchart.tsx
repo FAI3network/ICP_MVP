@@ -51,20 +51,27 @@ export default function LineChartchart({
         for (const key of formattedDataKey) {
           value = value[key];
         }
-        result[varName] = iterable ? value[0] : value;
+
+        const newResult = iterable ? value[0] : value
+        result[varName] = newResult ?? 0; // Fallback to 0 if value is undefined
       }
       // if dataKey is a direct key
       else {
-        result["data"] = chartData[i][dataKey];
+        // result["data"] = chartData[i][dataKey];
+        const newResult = iterable ? chartData[i][dataKey][0] : chartData[i][dataKey];
+        result[varName] = newResult ?? 0; // Fallback to 0 if value is undefined
       }
 
       if (!variableNames.includes(varName)) {
         variableNames.push(varName);
+        // console.log("Variable Name:", varName, "Value:", result[varName]);
       }
     }
-
+    
     dataset.push(result);
+    // console.log("Dataset Entry:", result);
   }
+
   return (
     <ChartContainer
       config={{ [dataKey]: { label, color } }}
