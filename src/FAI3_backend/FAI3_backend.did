@@ -323,6 +323,11 @@ type CatElementCounts = record {
     total_count : nat64;
 };
 
+type LanguageEvaluationDataPointsResponse = variant {
+  Ok : record { 0 : vec LanguageEvaluationDataPoint; 1 : nat64 };
+  Err : GenericError;
+};
+
 service : () -> {
     //Job management
     "create_job": (nat) -> (nat);
@@ -396,4 +401,6 @@ service : () -> {
 
     "llm_evaluate_languages": (model_id : nat, languages : vec text, max_queries : nat64, seed : nat32) -> (variant { Ok : nat; Err : text });
     get_language_evaluation_counts : () -> (LanguageEvaluationCounts) query;
+
+    get_language_evaluation_data_points : (nat, nat, nat32, nat64) -> (LanguageEvaluationDataPointsResponse) query;
 }
