@@ -44,7 +44,7 @@ export const Modal = React.forwardRef(({ className, onClose = null, isOpen = fal
           className
         )}
         style={{ display: isModalOpen ? "flex" : "none" }}
-        onClick={close}
+        // onClick={close}
       >
         <div className={cn("relative w-full h-full flex items-center justify-center", className)} {...props} />
       </div>

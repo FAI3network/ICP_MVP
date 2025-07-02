@@ -13,20 +13,20 @@ import { GenericError } from "../../../../../declarations/FAI3_backend/FAI3_back
 import { useWorker } from "@/hooks";
 
 const catFormSchema = z.object({
-  max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
+  max_queries: z.number().min(0, "Max queries must be between 0 and 1000").max(1000, "Max queries must be between 1 and 1000"),
   seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
   shuffle: z.boolean(),
 });
 
 const fairnessFormSchema = z.object({
-  max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
+  max_queries: z.number().min(0, "Max queries must be between 0 and 1000").max(1000, "Max queries must be between 1 and 1000"),
   seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
   dataset: z.array(z.string()).min(1, "At least one dataset must be selected"),
 });
 
 const kaleidoscopeFormSchema = z.object({
   languages: z.array(z.string()).min(1, "At least one dataset must be selected"),
-  max_queries: z.number().min(1, "Max queries must be between 1 and 1000").max(1000, "Max queries must be between 1 and 1000"),
+  max_queries: z.number().min(0, "Max queries must be between 0 and 1000").max(1000, "Max queries must be between 1 and 1000"),
   seed: z.number().min(0, "Seed must be between 0 and 1000").max(1000, "Seed must be between 0 and 1000"),
 });
 
