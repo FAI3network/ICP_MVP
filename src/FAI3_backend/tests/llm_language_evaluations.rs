@@ -346,7 +346,6 @@ fn test_hugging_face_invalid_json_responses() {
     let (pic, canister_id) = create_pic();
     let model_id: u128 = create_llm_model(&pic, canister_id, "Test Model".to_string());
     add_hf_api_key(&pic, canister_id, model_id);
-    // let seed: u32 = 1;
     let max_queries: usize = 2;
     
    // Calculate average metrics
