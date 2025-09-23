@@ -277,6 +277,7 @@ pub fn restart_job_queue() {
 }
 
 pub fn bootstrap_job_queue() {
+    ic_cdk::println!("Bootstrapping job queue");
     ic_cdk_timers::set_timer(
         core::time::Duration::from_secs(1),
         || {
@@ -292,6 +293,7 @@ pub fn bootstrap_job_queue() {
             });
 
             if !already_busy {
+                ic_cdk::println!("Executing new job run");
                 ic_cdk::spawn(async {
 
                     crate::job_management::process_job_queue().await;
@@ -363,6 +365,7 @@ pub fn set_last_processed_job_id(job_id: u128) {
 /// are in each module. The queue just calls the modules
 /// And updates the last_processed_job memory number.
 pub async fn process_job_queue() {
+    ic_cdk::println!("Processing job queue");
     // If balance is low, then we stop the queue
     let cycles: u64 = ic_cdk::api::canister_balance();
     if cycles < QUEUE_CYCLE_THRESHOLD {

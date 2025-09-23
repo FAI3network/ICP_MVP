@@ -26,33 +26,36 @@ const KALEIDOSKOPE_CSV: &str = include_str!("data/kaleidoscope.csv");
 const SYSTEM_PROMPT: &str =
     "You are a helpful assistant who answers multiple-choice questions. For each question,
 output your final answer in JSON format with the following structure: {\"choice\":
-\"The correct option\"}. ONLY output this format exactly. Do
+\"The correct option (e.g., A, B, C, or D)\"}. ONLY output this format exactly. Do
 not include any additional text or explanations outside the JSON structure.";
 
-fn build_prompt(question: &String, options: &Vec<String>, seed: u32) -> String {
+fn build_prompt(question: &String, options: &Vec<String>, seed: u32) -> (String, Vec<usize>) {
     let mut prompt = String::with_capacity(
-        SYSTEM_PROMPT.len()
-            + question.len()
-            + options.iter().map(|s| s.len() + 1).sum::<usize>()
-            + 4, // For extra newlines
+        SYSTEM_PROMPT.len() + 
+        question.len() + 
+        options.iter().map(|s| s.len() + 1).sum::<usize>() + 
+        4  // For extra newlines
     );
-
+    
     prompt.push_str(SYSTEM_PROMPT);
     prompt.push_str("\n\n");
     prompt.push_str(question);
     prompt.push_str("\n");
-
     // Create and shuffle option indices
     let mut option_indices: Vec<usize> = (0..options.len()).collect();
     option_indices = seeded_vector_shuffle(option_indices, seed);
 
     // Add shuffled options
+    let mut counter = 0;
     for &idx in &option_indices {
+        prompt.push_str(answer_idx_to_string(counter).to_uppercase().as_str());
+        prompt.push_str(". ");
         prompt.push_str(&options[idx]);
         prompt.push_str("\n");
+        counter += 1;
     }
 
-    prompt
+    (prompt, option_indices)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -60,11 +63,67 @@ pub struct LanguageEvaluationAnswer {
     pub choice: String,
 }
 
+fn answer_idx_to_string(idx: usize) -> String {
+    match idx {
+        0 => "a",
+        1 => "b",
+        2 => "c",
+        3 => "d",
+        _ => panic!("Answer indices should be in [0, 1, 2, 3]")
+    }.to_string()
+}
+
+fn get_language_to_process(current_query: usize, language_evaluation: LanguageEvaluationResult) -> Result<String, String> {
+    let counts = get_language_evaluation_counts();
+    let mut remaining_languages = Vec::new();
+
+    // Find languages that still need processing
+    for lang in &language_evaluation.languages {
+        let total_for_lang = *counts.per_language.get(lang)
+            .expect(&format!("Language {} should exist in counts", lang));
+        
+        let processed_for_lang = language_evaluation.metrics_per_language
+            .iter()
+            .find(|(l, _)| l == lang)
+            .map(|(_, metrics)| metrics.n)
+            .unwrap_or(0);
+
+                
+        // If we have rows left to process for this language, add it to our list
+        if (processed_for_lang as usize) < total_for_lang {
+            remaining_languages.push(lang.clone());
+        }
+    }
+    
+    // If we have rows left to process for this language, add it to our list
+    if remaining_languages.is_empty() {
+        return Err("No remaining languages to choose. This probably is a bug.".to_string());
+    }
+
+    // Use current_query to select language in round-robin fashion
+    let index = (current_query as usize) % remaining_languages.len();
+    Ok(remaining_languages[index].clone())
+}
+
 async fn run_evaluate_languages(
     hf_data: &HuggingFaceConfig,
     language_evaluation: &mut LanguageEvaluationResult,
     job: &Job,
 ) -> Result<(), String> {
+
+    let current_language = get_language_to_process(job.progress.completed, language_evaluation.clone())?;
+
+    let current_language_row_idx: u32 = language_evaluation.metrics_per_language
+        .iter()
+        .find(|(l, _)| l == current_language.as_str())
+        .map(|(_, metrics)| {
+            // calculating n
+            let mut m = metrics.clone();
+            m.calculate_rates();
+            m.n
+        })
+        .unwrap_or(0);
+    
     let overall_metrics = &mut language_evaluation.metrics;
     let seed = language_evaluation.seed;
     let max_queries = language_evaluation.max_queries;
@@ -86,24 +145,25 @@ async fn run_evaluate_languages(
     for result in rdr.deserialize::<HashMap<String, String>>() {
         let result = result.map_err(|e| e.to_string())?;
 
-        if queries < current_query {
-            queries += 1;
-            continue;
-        }
-
-        let language: &String = result
+       let language: &String = result
             .get("language")
             .expect("It should be able to get the language field.");
 
         // ignore languages that were not scheduled
-        if !language_evaluation.languages.contains(&language) {
+        if language.to_string() != current_language {
+            continue;
+        }
+
+        if queries < current_language_row_idx as usize {
+            queries += 1; 
             continue;
         }
 
         ic_cdk::println!(
-            "Executing query {}/{} with language {}",
+            "Executing query {}/{} (with language row index {}) for language {}",
             current_query,
             max_queries,
+            current_language_row_idx,
             language
         );
 
@@ -115,6 +175,8 @@ async fn run_evaluate_languages(
             .get("answer")
             .and_then(|ans| ans.parse::<usize>().ok())
             .expect("Answer field should be a valid usize index");
+        
+        ic_cdk::println!("Valid answer index before shuffling: {}", answer);
         
         let options: Vec<String> = result
             .get("options")
@@ -130,12 +192,7 @@ async fn run_evaluate_languages(
             })
             .expect("It should be able to parse the options field.");
         
-        let text_answer: String = options
-            .get(answer)
-            .expect("Answer should exist in the options vector")
-            .to_string();
-        
-        ic_cdk::println!("Valid answer: {}", text_answer);
+        ic_cdk::println!("Correct answer: {}", answer_idx_to_string(answer));
 
         let lang_metrics: &mut LanguageEvaluationMetrics = &mut language_evaluation.metrics_per_language
             .iter_mut()
@@ -143,7 +200,14 @@ async fn run_evaluate_languages(
             .expect(format!("Value for language {} should exist", &language).as_str())
             .1;
 
-        let prompt: String = build_prompt(&question, &options, seed * (queries as u32));
+        let (prompt, shuffled_option_indices) = build_prompt(&question, &options, seed * (queries as u32));
+
+        ic_cdk::println!("Prompt: {}", prompt.clone());
+
+        // Get the updated correct answer:
+        let answer: usize = shuffled_option_indices.iter()
+            .position(|&idx| idx == answer).expect("Original answer index should exist in shuffled indices");
+        ic_cdk::println!("Valid answer after shuffling: {}", answer_idx_to_string(answer));
 
         let res = call_hugging_face(
             prompt.clone(),
@@ -166,7 +230,7 @@ async fn run_evaluate_languages(
                     response: None,
                     valid: false,
                     error: true,
-                    correct_answer: text_answer.clone(),
+                    correct_answer: answer_idx_to_string(answer),
                 });
 
                 return Ok(());
@@ -190,44 +254,61 @@ async fn run_evaluate_languages(
                     response: None,
                     valid: false,
                     error: false,
-                    correct_answer: text_answer.clone(),
+                    correct_answer: answer_idx_to_string(answer),
                 });
 
                 return Ok(());
             }
         };
+        
+        let llm_answer = evaluation_answer.choice.trim().to_lowercase();
 
-        let llm_answer = evaluation_answer.choice.trim();
+        // llm answer should be one of A, B, C or D
+        let llm_answer_idx: i32 = match llm_answer.as_str() {
+            "a" => 0,
+            "b" => 1,
+            "c" => {
+                if options.len() > 1 {
+                    2
+                } else {
+                    -1
+                }
+            },
+            "d" => {
+                if options.len() > 1 {
+                    3
+                } else {
+                    -1
+                }
+            },
+            _ => -1,
+        };
 
         language_evaluation.data_points.push(LanguageEvaluationDataPoint {
             prompt: prompt.clone(),
             response: Some(llm_answer.to_string()),
             valid: false,
             error: false,
-            correct_answer: text_answer.clone(),
+            correct_answer: answer_idx_to_string(answer),
         });
 
-        if llm_answer.to_lowercase() == text_answer.trim().to_lowercase() {
+        if llm_answer_idx == (answer as i32) {
+            ic_cdk::println!("Correct answer");
             overall_metrics.add_correct();
             lang_metrics.add_correct();
         } else {
-            // Check if it belongs to any of the options, otherwise it's classified as invalid
-            let mut belongs_to_an_option = false;
-            for option in &options {
-                if llm_answer.to_lowercase() == option.trim().to_lowercase() {
-                    belongs_to_an_option = true;
-                    break;
-                }
-            }
-            if belongs_to_an_option {
-                overall_metrics.add_incorrect();
-                lang_metrics.add_incorrect();
-            } else {
+            if llm_answer_idx == -1 {
+                ic_cdk::println!("Invalid answer");
                 overall_metrics.add_invalid();
                 lang_metrics.add_invalid();
+            } else {
+                ic_cdk::println!("Incorrect answer");
+                overall_metrics.add_incorrect();
+                lang_metrics.add_incorrect();
             }
         }
 
+        ic_cdk::println!("--------------------------------------");
         
         return Ok(());
     }
@@ -493,6 +574,42 @@ pub async fn process_next_query(llm_model_id: u128, language_model_evaluation_id
 }
 
 #[query]
+pub async fn get_language_evaluation(
+    llm_model_id: u128,
+    language_evaluation_id: u128
+) -> Result<LanguageEvaluationResult, GenericError> {
+    only_admin();
+    check_cycles_before_action();
+
+    let caller = ic_cdk::api::caller();
+
+    // Check the model exists and is a LLM
+    let model = get_model_from_memory(llm_model_id);
+    if let Err(err) = model {
+        return Err(err);
+    }
+    let model = model.unwrap();
+    is_owner(&model, caller);
+
+    if let ModelType::LLM(model_data) = model.model_type {
+        let language_evaluation = model_data
+            .language_evaluations
+            .into_iter()
+            .find(|le: &LanguageEvaluationResult| {
+                le.language_model_evaluation_id == language_evaluation_id
+            })
+            .expect("Context association test with passed index should exist.");
+
+        return Ok(language_evaluation);
+    } else {
+        return Err(GenericError::new(
+            GenericError::INVALID_MODEL_TYPE,
+            "Model should be an LLM.",
+        ));
+    }
+}
+
+#[query]
 pub async fn get_language_evaluation_data_points(
     llm_model_id: u128,
     language_evaluation_id: u128,
@@ -593,15 +710,15 @@ mod tests {
         let result = build_prompt(&question, &options, seed);
 
         // Verify the prompt contains all required elements
-        assert!(result.contains(SYSTEM_PROMPT));
-        assert!(result.contains("What is the capital of France?"));
+        assert!(result.0.contains(SYSTEM_PROMPT));
+        assert!(result.0.contains("What is the capital of France?"));
 
         // Verify all options are present
         for option in options.iter() {
-            assert!(result.contains(option));
+            assert!(result.0.contains(option));
         }
 
         // Verify basic structure (contains newlines between sections)
-        assert!(result.contains("\n\n"));
+        assert!(result.0.contains("\n\n"));
     }
 }
